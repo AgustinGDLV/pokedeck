@@ -14,8 +14,31 @@ const struct DeckSpeciesInfo gSpeciesDeckInfo[NUM_SPECIES] =
         .playerHurt = NULL,
         .opponentHurt = NULL,
         .objectPalette = gSlowpokeObjectPal,
+        .playerYOffset = -1,
+        .opponentYOffset = -1,
 
         .portrait = gSlowpokePortraitGfx,
         .portraitPalette = gSlowpokePortraitPal,
+    },
+
+    [SPECIES_SLOWBRO] =
+    {
+        .baseHP = 120,
+        .basePWR = 15,
+        .move = MOVE_HEADBUTT,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gSlowbroPlayerIdleGfx,
+        .opponentIdle = gSlowbroOpponentIdleGfx,
+        .playerAttack = gSlowbroPlayerAttackGfx,
+        .opponentAttack = NULL,
+        .playerHurt = NULL,
+        .opponentHurt = NULL,
+        .objectPalette = gSlowbroObjectPal,
+        .playerYOffset = 0,
+        .opponentYOffset = -4,
+
+        .portrait = gSlowbroPortraitGfx,
+        .portraitPalette = gSlowbroPortraitPal,
     },
 };
