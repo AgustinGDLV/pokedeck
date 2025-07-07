@@ -14,7 +14,7 @@ const struct OamData sOamData_8x8 =
     .priority = 1,
 };
 
-const struct OamData sOamData_32x32 =
+const struct OamData sOamData_Battler =
 {
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(32x32),
@@ -22,12 +22,21 @@ const struct OamData sOamData_32x32 =
     .priority = 1,
 };
 
-const struct OamData sOamData_64x64 =
+const struct OamData sOamData_Shadow =
+{
+    .objMode = ST_OAM_OBJ_BLEND,
+    .bpp = ST_OAM_4BPP,
+    .shape = SPRITE_SHAPE(32x32),
+    .size = SPRITE_SIZE(32x32),
+    .priority = 1,
+};
+
+const struct OamData sOamData_Portrait =
 {
     .bpp = ST_OAM_4BPP,
     .shape = SPRITE_SHAPE(64x64),
     .size = SPRITE_SIZE(64x64),
-    .priority = 1,
+    .priority = 2,
 };
 
 const u8 sShadowGfx[] = INCBIN_U8("graphics/deck_battle_interface/shadow.4bpp");
@@ -40,11 +49,11 @@ static const struct SpriteTemplate sShadowSpriteTemplate =
 {
 	.tileTag = TAG_SHADOW,
 	.paletteTag = TAG_MISC_PAL,
-	.oam = &sOamData_32x32,
+	.oam = &sOamData_Shadow,
 	.anims = gDummySpriteAnimTable,
 	.images = NULL,
 	.affineAnims = gDummySpriteAffineAnimTable,
-	.callback = SpriteCallbackDummy,
+	.callback = SpriteCB_Shadow,
 };
 
 static const struct SpriteSheet sCursorSpriteSheet = { sCursorGfx, sizeof(sCursorGfx), TAG_CURSOR };
@@ -59,18 +68,17 @@ static const struct SpriteTemplate sCursorSpriteTemplate =
 	.callback = SpriteCB_Cursor,
 };
 
-static const union AnimCmd sAnim_None[] =
+static const union AnimCmd sAnim_Paused[] =
 {
-    ANIMCMD_FRAME(0, 8),
+    ANIMCMD_FRAME(0, 12),
     ANIMCMD_END,
 };
 
 static const union AnimCmd sAnim_Idle[] =
 {
-    ANIMCMD_FRAME(0, 8),
-    ANIMCMD_FRAME(16, 8),
-    ANIMCMD_FRAME(0, 8),
-    ANIMCMD_END,
+    ANIMCMD_FRAME(0, 12),
+    ANIMCMD_FRAME(16, 12),
+    ANIMCMD_JUMP(0),
 };
 
 static const union AnimCmd sAnim_Attack[] =
@@ -83,7 +91,7 @@ static const union AnimCmd sAnim_Attack[] =
 
 static const union AnimCmd *const sAnims_Battler[] =
 {
-    sAnim_None,
+    sAnim_Paused,
     sAnim_Idle,
     sAnim_Attack,
 };

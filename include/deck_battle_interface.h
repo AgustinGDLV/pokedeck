@@ -7,8 +7,9 @@
 #define TAG_CURSOR      2002
 #define TAG_BATTLER_OBJ 2003 // 2003-2014
 
-#define ANIM_IDLE   0
-#define ANIM_ATTACK 1
+#define ANIM_PAUSED 0
+#define ANIM_IDLE   1
+#define ANIM_ATTACK 2
 
 #define PORTRAIT_SIZE   (64 * 64 / 2)
 #define OBJECT_SIZE     (32 * 64 / 2)
@@ -26,7 +27,6 @@ struct DeckBattleGraphics
     u8 battlerSpriteIds[MAX_DECK_BATTLERS_COUNT];
     u8 shadowSpriteIds[MAX_DECK_BATTLERS_COUNT];
     u8 portraitSpriteId;
-    u8 cursorSpriteId;
 };
 
 void ClearDeckBattleGraphicsStruct(void);
@@ -35,6 +35,14 @@ void InitDeckBattleWindows(void);
 void InitDeckBattleGfx(void);
 void LoadBattlerPortrait(enum BattleId battler);
 void LoadBattlerObjectSprite(enum BattleId battler);
+void CreateSelectionCursorOverBattler(enum BattleId battler);
+void RemoveSelectionCursorOverBattler(enum BattleId battler);
+void PrintBattlerMoveInfo(enum BattleId battler);
+void PrintBattlerStats(enum BattleId battler);
+void PrintTargetBattlerPrompt(enum BattleId battler);
+void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale);
+void SetBattlerPortraitVisibility(bool32 visible);
+void StartBattlerAnim(enum BattleId battler, u32 animId);
 
 extern struct DeckBattleGraphics gDeckBattleGraphics;
 

@@ -43,6 +43,8 @@ struct DeckSpeciesInfo
     const u8 *playerHurt;
     const u8 *opponentHurt;
     const u16 *objectPalette;
+    const s8 playerYOffset;
+    const s8 opponentYOffset;
 
     const u8 *portrait;
     const u16 *portraitPalette;
@@ -62,6 +64,7 @@ struct DeckBattleStruct
     u8 actingSide;
     u8 remainingActions[NUM_BATTLE_SIDES];
     u8 maxActions[NUM_BATTLE_SIDES];
+    enum BattlePosition selectedPosition; // for player selection
     enum BattleId battlerAtPosition[NUM_BATTLE_SIDES][POSITIONS_COUNT];
 };
 

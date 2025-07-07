@@ -11,3 +11,8 @@ u32 GetDeckBattlerSide(enum BattleId battler)
     else
         return B_SIDE_OPPONENT;
 }
+
+u32 GetDeckBattlerAtPosition(u32 side, enum BattlePosition position)
+{
+    return gDeckBattleStruct.battlerAtPosition[side][position];
+}
