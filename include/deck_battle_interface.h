@@ -27,13 +27,17 @@ struct DeckBattleGraphics
     u8 battlerSpriteIds[MAX_DECK_BATTLERS_COUNT];
     u8 shadowSpriteIds[MAX_DECK_BATTLERS_COUNT];
     u8 portraitSpriteId;
+    u8 bobTaskId;
 };
 
 void ClearDeckBattleGraphicsStruct(void);
 void LoadBattleBoxesAndBackground(void);
 void InitDeckBattleWindows(void);
 void InitDeckBattleGfx(void);
+void SetBattlerBobPause(bool32 pause);
+bool32 IsBattlerBobActive(void);
 void LoadBattlerPortrait(enum BattleId battler);
+void SetBattlerPortraitVisibility(bool32 visible);
 void LoadBattlerObjectSprite(enum BattleId battler);
 void CreateSelectionCursorOverBattler(enum BattleId battler);
 void RemoveSelectionCursorOverBattler(enum BattleId battler);
@@ -41,7 +45,6 @@ void PrintBattlerMoveInfo(enum BattleId battler);
 void PrintBattlerStats(enum BattleId battler);
 void PrintTargetBattlerPrompt(enum BattleId battler);
 void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale);
-void SetBattlerPortraitVisibility(bool32 visible);
 void StartBattlerAnim(enum BattleId battler, u32 animId);
 
 extern struct DeckBattleGraphics gDeckBattleGraphics;

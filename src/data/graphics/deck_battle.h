@@ -83,9 +83,9 @@ static const union AnimCmd sAnim_Idle[] =
 
 static const union AnimCmd sAnim_Attack[] =
 {
-    ANIMCMD_FRAME(0, 8),
-    ANIMCMD_FRAME(16, 8),
-    ANIMCMD_FRAME(0, 8),
+    ANIMCMD_FRAME(0, 16),
+    ANIMCMD_FRAME(16, 16),
+    ANIMCMD_FRAME(0, 16),
     ANIMCMD_END,
 };
 

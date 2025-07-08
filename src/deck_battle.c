@@ -177,6 +177,7 @@ static void Task_PlayerSelectAction(u8 taskId)
         SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
         SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
         gTasks[taskId].func = Task_PlayerSelectTarget;
+        SetBattlerBobPause(TRUE);
     }
     if (gMain.newKeys & B_BUTTON)
     {

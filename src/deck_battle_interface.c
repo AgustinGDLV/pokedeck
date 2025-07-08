@@ -50,8 +50,6 @@
 static void LoadDummySpriteTiles(void);
 static void SpriteCB_Cursor(struct Sprite *sprite);
 static void SpriteCB_Shadow(struct Sprite *sprite);
-static void SpriteCB_PlayerBattler(struct Sprite *sprite);
-static void SpriteCB_OpponentBattler(struct Sprite *sprite);
 
 // windows and bgs
 enum Windows
@@ -184,7 +182,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_PlayerBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_PLAYER_1] =
     {
@@ -194,7 +192,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_PlayerBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_PLAYER_2] =
     {
@@ -204,7 +202,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_PlayerBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_PLAYER_3] =
     {
@@ -214,7 +212,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_PlayerBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_PLAYER_4] =
     {
@@ -224,7 +222,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_PlayerBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_PLAYER_5] =
     {
@@ -234,7 +232,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_PlayerBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_OPPONENT_0] =
     {
@@ -244,7 +242,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_OpponentBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_OPPONENT_1] =
     {
@@ -254,7 +252,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_OpponentBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_OPPONENT_2] =
     {
@@ -264,7 +262,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_OpponentBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_OPPONENT_3] =
     {
@@ -274,7 +272,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_OpponentBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_OPPONENT_4] =
     {
@@ -284,7 +282,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_OpponentBattler,
+        .callback = SpriteCallbackDummy,
     },
     [B_OPPONENT_5] =
     {
@@ -294,7 +292,7 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
         .anims = sAnims_Battler,
         .images = NULL,
         .affineAnims = gDummySpriteAffineAnimTable,
-        .callback = SpriteCB_OpponentBattler,
+        .callback = SpriteCallbackDummy,
     },
 };
 
@@ -351,80 +349,91 @@ static void LoadDummySpriteTiles(void)
     }
 }
 
+#define tTimer  data[0]
+#define tActive data[1]
+#define tPause  data[2]
+
+void Task_DoBattlerBobEffect(u8 taskId)
+{
+    u32 battler;
+    if (gTasks[taskId].tPause && gTasks[taskId].tTimer == 0)
+    {
+        gTasks[taskId].tActive = FALSE;
+    }
+    else
+    {
+        gTasks[taskId].tActive = TRUE;
+        switch (++gTasks[taskId].tTimer)
+        {
+        // Move left.
+        case 16:
+            for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+            for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+            break;
+        case 32:
+            for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+            for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+            break;
+        case 48:
+            for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+            for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+            break;
+        // Pause.
+        case 64:
+            break;
+        // Move right.
+        case 80:
+            for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+            for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+            break;
+        case 96:
+            for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+            for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+            break;
+        case 112:
+            for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+            for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+            break;
+        case 128:
+            gTasks[taskId].tTimer = 0;
+            break;
+        }
+    }
+}
+
+void SetBattlerBobPause(bool32 pause)
+{
+    gTasks[gDeckBattleGraphics.bobTaskId].tPause = pause;
+}
+
+bool32 IsBattlerBobActive(void)
+{
+    return gTasks[gDeckBattleGraphics.bobTaskId].tActive;
+}
+
+#undef tTimer
+#undef tActive
+#undef tPause
+
 #define sBattlerId  data[0]
-#define sTimer      data[1]
-#define sCursorId   data[2]
+#define sCursorId   data[1]
 
 static void SpriteCB_Shadow(struct Sprite *sprite)
 {
     sprite->x2 = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].x2;
     sprite->y2 = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].y2;
-}
-
-static void SpriteCB_PlayerBattler(struct Sprite *sprite)
-{
-    switch (++sprite->sTimer)
-    {
-    // Move left.
-    case 16:
-        sprite->x2 += 1;
-        break;
-    case 32:
-        sprite->x2 += 1;
-        break;
-    case 48:
-        sprite->x2 += 1;
-        break;
-    // Pause.
-    case 64:
-        break;
-    // Move right.
-    case 80:
-        sprite->x2 -= 1;
-        break;
-    case 96:
-        sprite->x2 -= 1;
-        break;
-    case 112:
-        sprite->x2 -= 1;
-        break;
-    case 128:
-        sprite->sTimer = 0;
-        break;
-    }
-}
-
-static void SpriteCB_OpponentBattler(struct Sprite *sprite)
-{
-    switch (++sprite->sTimer)
-    {
-    // Move left.
-    case 16:
-        sprite->x2 -= 1;
-        break;
-    case 32:
-        sprite->x2 -= 1;
-        break;
-    case 48:
-        sprite->x2 -= 1;
-        break;
-    // Pause.
-    case 64:
-        break;
-    // Move right.
-    case 80:
-        sprite->x2 += 1;
-        break;
-    case 96:
-        sprite->x2 += 1;
-        break;
-    case 112:
-        sprite->x2 += 1;
-        break;
-    case 128:
-        sprite->sTimer = 0;
-        break;
-    }
 }
 
 static void SpriteCB_Cursor(struct Sprite *sprite)
@@ -451,6 +460,11 @@ void LoadBattlerPortrait(enum BattleId battler)
 
     gSprites[gDeckBattleGraphics.portraitSpriteId].oam.paletteNum = index;
     gSprites[gDeckBattleGraphics.portraitSpriteId].invisible = FALSE;
+}
+
+void SetBattlerPortraitVisibility(bool32 visible)
+{
+    gSprites[gDeckBattleGraphics.portraitSpriteId].invisible = (visible ? FALSE : TRUE);
 }
 
 void LoadBattlerObjectSprite(enum BattleId battler)
@@ -498,9 +512,12 @@ void InitDeckBattleGfx(void)
         gSprites[gDeckBattleGraphics.battlerSpriteIds[i]].sBattlerId = i;
         gSprites[gDeckBattleGraphics.shadowSpriteIds[i]].sBattlerId = i;
     }
+
     // Blend shadow sprites; may not be the best use of our blend.
     SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_TGT2_ALL | BLDCNT_EFFECT_BLEND);
     SetGpuReg(REG_OFFSET_BLDALPHA, BLDALPHA_BLEND(8, 6));
+
+    CreateTask(Task_DoBattlerBobEffect, 1);
 }
 
 void CreateSelectionCursorOverBattler(enum BattleId battler)
@@ -515,6 +532,9 @@ void RemoveSelectionCursorOverBattler(enum BattleId battler)
     DestroySprite(&gSprites[gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].sCursorId]);
     gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].sCursorId = SPRITE_NONE;
 }
+
+#undef sBattlerId
+#undef sCursorId
 
 static const u8 sTextColorNormal[] = { 0, 1, 2 };
 
@@ -557,11 +577,6 @@ void PrintTargetBattlerPrompt(enum BattleId battler)
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
     AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
-}
-
-void SetBattlerPortraitVisibility(bool32 visible)
-{
-    gSprites[gDeckBattleGraphics.portraitSpriteId].invisible = (visible ? FALSE : TRUE);
 }
 
 void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale)
