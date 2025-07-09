@@ -10,6 +10,7 @@
 #define ANIM_PAUSED 0
 #define ANIM_IDLE   1
 #define ANIM_ATTACK 2
+#define ANIM_HURT   3
 
 #define PORTRAIT_SIZE   (64 * 64 / 2)
 #define OBJECT_SIZE     (32 * 64 / 2)
@@ -41,11 +42,14 @@ void SetBattlerPortraitVisibility(bool32 visible);
 void LoadBattlerObjectSprite(enum BattleId battler);
 void CreateSelectionCursorOverBattler(enum BattleId battler);
 void RemoveSelectionCursorOverBattler(enum BattleId battler);
+void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale);
+void StartBattlerAnim(enum BattleId battler, u32 animId);
+struct Sprite * GetBattlerSprite(enum BattleId battler);
 void PrintBattlerMoveInfo(enum BattleId battler);
 void PrintBattlerStats(enum BattleId battler);
 void PrintTargetBattlerPrompt(enum BattleId battler);
-void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale);
-void StartBattlerAnim(enum BattleId battler, u32 animId);
+void PrintMoveUseString(void);
+void PrintMoveOutcomeString(void);
 
 extern struct DeckBattleGraphics gDeckBattleGraphics;
 

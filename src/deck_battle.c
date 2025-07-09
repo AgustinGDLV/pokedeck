@@ -31,6 +31,7 @@ static void Task_OpenDeckBattle(u8 taskId);
 static void Task_CloseDeckBattle(u8 taskId);
 static void Task_PlayerSelectAction(u8 taskId);
 static void Task_PlayerSelectTarget(u8 taskId);
+static void Task_ExecuteAction(u8 taskId);
 static void InitBattleStructData(void);
 static void InitBattleMonData(void);
 
@@ -112,6 +113,9 @@ void CB2_OpenDeckBattleCustom(void)
             break;
     }
 }
+
+#define tState  data[0]
+#define tTimer  data[1]
 
 static void Task_OpenDeckBattle(u8 taskId)
 {
@@ -236,6 +240,57 @@ static void Task_PlayerSelectTarget(u8 taskId)
         SetGpuReg(REG_OFFSET_BG1VOFS, 0);
         gTasks[taskId].func = Task_PlayerSelectAction;
     }
+    if (gMain.newKeys & A_BUTTON)
+    {
+        PlaySE(SE_SELECT);
+        gBattlerTarget = GetDeckBattlerAtPosition(B_SIDE_OPPONENT, gDeckBattleStruct.selectedPosition);
+        RemoveSelectionCursorOverBattler(gBattlerTarget);
+        gTasks[taskId].tState = 0;
+        gTasks[taskId].func = Task_ExecuteAction;
+    }
+}
+
+static void Task_ExecuteAction(u8 taskId)
+{
+    switch (gTasks[taskId].tState)
+    {
+    case 0: // Do attack animation.
+        SetBattlerGrayscale(gBattlerAttacker, FALSE);
+        StartBattlerAnim(gBattlerAttacker, ANIM_ATTACK);
+        PrintMoveUseString();
+        ++gTasks[taskId].tState;
+        break;
+    case 1: // Wait for attack animation to execute cry.
+        if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
+            ++gTasks[taskId].tState;
+        break;
+    case 2: // TODO: Do animation depending on move effect.
+        StartBattlerAnim(gBattlerTarget, ANIM_HURT);
+        PrintMoveOutcomeString();
+        ++gTasks[taskId].tState;
+        break;
+    case 3: // Wait for hurt animation.
+        if (++gTasks[taskId].tTimer >= 90)
+            ++gTasks[taskId].tState;
+        break;
+    case 4:
+        gDeckBattleStruct.selectedPosition = POSITION_0;
+        LoadBattlerPortrait(B_PLAYER_0);
+        PrintBattlerMoveInfo(B_PLAYER_0);
+        PrintBattlerStats(B_PLAYER_0);
+        CreateSelectionCursorOverBattler(GetDeckBattlerAtPosition(B_SIDE_PLAYER, POSITION_0));
+        StartSpriteAnim(&gSprites[gDeckBattleGraphics.battlerSpriteIds[GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition)]], ANIM_IDLE);
+
+        SetBattlerGrayscale(gBattlerAttacker, FALSE);
+        SetBattlerPortraitVisibility(TRUE);
+        SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+        SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+
+        gTasks[taskId].tTimer = 0;
+        gTasks[taskId].tState = 0;
+        gTasks[taskId].func = Task_PlayerSelectAction;
+        break;
+    }
 }
 
 static void Task_CloseDeckBattle(u8 taskId)
@@ -253,6 +308,9 @@ static void Task_CloseDeckBattle(u8 taskId)
     // Return to overworld.
     SetMainCallback2(CB2_ReturnToField);
 }
+
+#undef tState
+#undef tTimer
 
 static void InitBattleStructData(void)
 {

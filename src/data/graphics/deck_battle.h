@@ -89,9 +89,16 @@ static const union AnimCmd sAnim_Attack[] =
     ANIMCMD_END,
 };
 
+static const union AnimCmd sAnim_Hurt[] =
+{
+    ANIMCMD_FRAME(0, 32),
+    ANIMCMD_END,
+};
+
 static const union AnimCmd *const sAnims_Battler[] =
 {
     sAnim_Paused,
     sAnim_Idle,
     sAnim_Attack,
+    sAnim_Hurt,
 };

@@ -51,6 +51,7 @@ static void LoadDummySpriteTiles(void);
 static void SpriteCB_Cursor(struct Sprite *sprite);
 static void SpriteCB_Shadow(struct Sprite *sprite);
 static void SpriteCB_BattlerAttack(struct Sprite *sprite);
+static void SpriteCB_BattlerHurt(struct Sprite *sprite);
 
 // windows and bgs
 enum Windows
@@ -641,9 +642,46 @@ static void SpriteCB_BattlerAttack(struct Sprite *sprite)
         case 24:            
             sprite->sTimer = 0;
             sprite->sAnimState = 0;
+            StartSpriteAnim(sprite, ANIM_PAUSED);
             sprite->callback = SpriteCallbackDummy;
             break;
         }
+    }
+}
+
+static void SpriteCB_BattlerHurt(struct Sprite *sprite)
+{
+    u32 *dst, *src;
+    switch (sprite->sAnimState)
+    {
+    case 0: // Copy hurt sprite tiles.
+        dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
+        if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+            src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].playerHurt;
+        else
+            src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].opponentHurt;
+        for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
+            dst[i] = src[i];
+        StartSpriteAnim(sprite, ANIM_HURT);
+        ++sprite->sAnimState;
+        break;
+    case 1: // Wait for hurt anim to finish.
+        if (sprite->animEnded)
+            ++sprite->sAnimState;
+        break;
+    case 2:
+        dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
+        if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+            src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].playerIdle;
+        else
+            src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].opponentIdle;
+        for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
+            dst[i] = src[i];
+
+        sprite->sAnimState = 0;
+        StartSpriteAnim(sprite, ANIM_PAUSED);
+        sprite->callback = SpriteCallbackDummy;
+        break;
     }
 }
 
@@ -657,7 +695,15 @@ void StartBattlerAnim(enum BattleId battler, u32 animId) // TODO: overwrite spri
         case ANIM_ATTACK:
             gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerAttack;
             break;
+        case ANIM_HURT:
+            gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerHurt;
+            break;
     }
+}
+
+struct Sprite * GetBattlerSprite(enum BattleId battler)
+{
+    return &gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]];
 }
 
 #undef sBattlerId
@@ -702,6 +748,28 @@ void PrintTargetBattlerPrompt(enum BattleId battler)
 {
     StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[battler].species));
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Attack {STR_VAR_2}?"));
+
+    FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
+}
+
+void PrintMoveUseString(void)
+{
+    StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[gBattlerAttacker].species));
+    StringCopy(gStringVar3, GetMoveName(gSpeciesDeckInfo[gDeckBattleMons[gBattlerAttacker].species].move));
+    StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} used {STR_VAR_3}!"));
+
+    FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
+}
+
+void PrintMoveOutcomeString(void)
+{
+    StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[gBattlerTarget].species));
+    ConvertIntToDecimalStringN(gStringVar3, gDeckBattleMons[gBattlerAttacker].pwr, STR_CONV_MODE_LEFT_ALIGN, 2);
+    StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} took {STR_VAR_3} damage!"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
     AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
