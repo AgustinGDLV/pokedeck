@@ -50,6 +50,7 @@
 static void LoadDummySpriteTiles(void);
 static void SpriteCB_Cursor(struct Sprite *sprite);
 static void SpriteCB_Shadow(struct Sprite *sprite);
+static void SpriteCB_BattlerAttack(struct Sprite *sprite);
 
 // windows and bgs
 enum Windows
@@ -429,6 +430,8 @@ bool32 IsBattlerBobActive(void)
 
 #define sBattlerId  data[0]
 #define sCursorId   data[1]
+#define sAnimState  data[2]
+#define sTimer      data[3]
 
 static void SpriteCB_Shadow(struct Sprite *sprite)
 {
@@ -533,8 +536,134 @@ void RemoveSelectionCursorOverBattler(enum BattleId battler)
     gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].sCursorId = SPRITE_NONE;
 }
 
+void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale)
+{
+    SetGrayscaleOrOriginalPalette(16 + gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].oam.paletteNum, (grayscale ? FALSE : TRUE));
+}
+
+static void SpriteCB_BattlerAttack(struct Sprite *sprite)
+{
+    u32 *dst, *src;
+    switch (sprite->sAnimState)
+    {
+    case 0: // Wait for bob to finish.
+        if (!IsBattlerBobActive())
+        {
+            StartSpriteAnim(sprite, ANIM_PAUSED);
+            ++sprite->sAnimState;
+        }
+        break;
+    case 1: // Move forward and copy attack sprite tiles.
+        switch (++sprite->sTimer)
+        {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+            {
+                sprite->x2 += 1;
+                sprite->y2 -= 1;
+            }
+            else
+            {
+                sprite->x2 -= 1;
+                sprite->y2 += 1;
+            }
+            break;
+        case 6:
+            dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
+            if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+                src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].playerAttack;
+            else
+                src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].opponentAttack;
+            for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
+                dst[i] = src[i];
+
+            StartSpriteAnim(sprite, ANIM_ATTACK);
+            sprite->sTimer = 0;
+            ++sprite->sAnimState;
+            break;
+        }
+        break;
+    case 2: // Play cry on frame 2.
+        if (sprite->animCmdIndex == 1)
+        {
+            PlayCry_Normal(gDeckBattleMons[sprite->sBattlerId].species, 0);
+            ++sprite->sAnimState;
+        }
+        break;
+    case 3: // Do shake.
+        if (sprite->animCmdIndex == 1)
+        {
+            sprite->x2 ^= 1;
+            sprite->y2 ^= 1;
+        }
+        else
+        {
+            sprite->x2 ^= 1; // shake happens an odd number of times, needs to be evened out
+            sprite->y2 ^= 1;
+            ++sprite->sAnimState;
+        }
+        break;
+    case 4: // Wait for attack anim to finish.
+        if (sprite->animEnded)
+            ++sprite->sAnimState;
+        break;
+    case 5: // Move back and copy idle sprite tiles.
+        switch (++sprite->sTimer)
+        {
+        case 4:
+            dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
+            if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+                src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].playerIdle;
+            else
+                src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].opponentIdle;
+            for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
+                dst[i] = src[i];
+            // fall through
+        case 8:
+        case 12:
+        case 16:
+        case 20:
+            if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+            {
+                sprite->x2 -= 1;
+                sprite->y2 += 1;
+            }
+            else
+            {
+                sprite->x2 += 1;
+                sprite->y2 -= 1;
+            }
+            break;
+        case 24:            
+            sprite->sTimer = 0;
+            sprite->sAnimState = 0;
+            sprite->callback = SpriteCallbackDummy;
+            break;
+        }
+    }
+}
+
+void StartBattlerAnim(enum BattleId battler, u32 animId) // TODO: overwrite sprite tiles?
+{
+    switch (animId)
+    {
+        default:
+            StartSpriteAnim(&gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]], animId);
+            break;
+        case ANIM_ATTACK:
+            gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerAttack;
+            break;
+    }
+}
+
 #undef sBattlerId
 #undef sCursorId
+#undef sAnimState
+#undef sTimer
 
 static const u8 sTextColorNormal[] = { 0, 1, 2 };
 
@@ -577,14 +706,4 @@ void PrintTargetBattlerPrompt(enum BattleId battler)
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
     AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
-}
-
-void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale)
-{
-    SetGrayscaleOrOriginalPalette(16 + gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].oam.paletteNum, (grayscale ? FALSE : TRUE));
-}
-
-void StartBattlerAnim(enum BattleId battler, u32 animId) // TODO: overwrite sprite tiles?
-{
-    StartSpriteAnim(&gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]], animId);
 }

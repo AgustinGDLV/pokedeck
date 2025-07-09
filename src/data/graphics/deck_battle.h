@@ -70,7 +70,7 @@ static const struct SpriteTemplate sCursorSpriteTemplate =
 
 static const union AnimCmd sAnim_Paused[] =
 {
-    ANIMCMD_FRAME(0, 12),
+    ANIMCMD_FRAME(0, 1),
     ANIMCMD_END,
 };
 
