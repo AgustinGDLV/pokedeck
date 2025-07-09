@@ -132,14 +132,16 @@ static void Task_OpenDeckBattle(u8 taskId)
 
 static void Task_PlayerSelectAction(u8 taskId)
 {
-    u32 battler;
-    if ((gMain.newKeys & DPAD_LEFT) && gDeckBattleStruct.selectedPosition > POSITION_0) // TODO: select accounting for expended actions and missing battlers
+    enum BattleId battler;
+    enum BattlePosition pos;
+    if ((gMain.newKeys & DPAD_LEFT) 
+        && (pos = GetPositionToMoveOnLeft(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition)) != POSITIONS_COUNT)
     {
         PlaySE(SE_SELECT);
         battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
         RemoveSelectionCursorOverBattler(battler);
         StartBattlerAnim(battler, ANIM_PAUSED);
-        gDeckBattleStruct.selectedPosition -= 1;
+        gDeckBattleStruct.selectedPosition = pos;
 
         battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
         CreateSelectionCursorOverBattler(battler);
@@ -148,13 +150,14 @@ static void Task_PlayerSelectAction(u8 taskId)
         PrintBattlerStats(battler);
         StartBattlerAnim(battler, ANIM_IDLE);
     }
-    if ((gMain.newKeys & DPAD_RIGHT) && gDeckBattleStruct.selectedPosition < POSITION_5)
+    if ((gMain.newKeys & DPAD_RIGHT) 
+        && (pos = GetPositionToMoveOnRight(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition)) != POSITIONS_COUNT)
     {
         PlaySE(SE_SELECT);
         battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
         RemoveSelectionCursorOverBattler(battler);
         StartBattlerAnim(battler, ANIM_PAUSED);
-        gDeckBattleStruct.selectedPosition += 1;
+        gDeckBattleStruct.selectedPosition = pos;
 
         battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
         CreateSelectionCursorOverBattler(battler);
@@ -168,7 +171,7 @@ static void Task_PlayerSelectAction(u8 taskId)
         PlaySE(SE_SELECT);
         gBattlerAttacker = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
         RemoveSelectionCursorOverBattler(gBattlerAttacker);
-        SetBattlerGrayscale(gBattlerAttacker, TRUE);
+        BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerAttacker)->oam.paletteNum), 4, RGB_WHITE);
 
         gDeckBattleStruct.selectedPosition = POSITION_0;
         battler = GetDeckBattlerAtPosition(B_SIDE_OPPONENT, gDeckBattleStruct.selectedPosition);
@@ -193,7 +196,7 @@ static void Task_PlayerSelectAction(u8 taskId)
 
 static void Task_PlayerSelectTarget(u8 taskId)
 {
-    u32 battler;
+    enum BattleId battler;
     if ((gMain.newKeys & DPAD_LEFT) && gDeckBattleStruct.selectedPosition > POSITION_0)
     {
         PlaySE(SE_SELECT);
@@ -233,8 +236,9 @@ static void Task_PlayerSelectTarget(u8 taskId)
         PrintBattlerMoveInfo(gDeckBattleStruct.selectedPosition);
         PrintBattlerStats(gDeckBattleStruct.selectedPosition);
         CreateSelectionCursorOverBattler(battler);
-        SetBattlerGrayscale(gBattlerAttacker, FALSE);
+        BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerAttacker)->oam.paletteNum), 0, RGB_WHITE);
 
+        SetBattlerBobPause(FALSE);
         SetBattlerPortraitVisibility(TRUE);
         SetGpuReg(REG_OFFSET_BG0VOFS, 0);
         SetGpuReg(REG_OFFSET_BG1VOFS, 0);
@@ -245,6 +249,7 @@ static void Task_PlayerSelectTarget(u8 taskId)
         PlaySE(SE_SELECT);
         gBattlerTarget = GetDeckBattlerAtPosition(B_SIDE_OPPONENT, gDeckBattleStruct.selectedPosition);
         RemoveSelectionCursorOverBattler(gBattlerTarget);
+        BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerAttacker)->oam.paletteNum), 0, RGB_WHITE);
         gTasks[taskId].tState = 0;
         gTasks[taskId].func = Task_ExecuteAction;
     }
@@ -252,6 +257,8 @@ static void Task_PlayerSelectTarget(u8 taskId)
 
 static void Task_ExecuteAction(u8 taskId)
 {
+    u32 side;
+    enum BattleId battler;
     switch (gTasks[taskId].tState)
     {
     case 0: // Do attack animation.
@@ -267,21 +274,37 @@ static void Task_ExecuteAction(u8 taskId)
     case 2: // TODO: Do animation depending on move effect.
         StartBattlerAnim(gBattlerTarget, ANIM_HURT);
         PrintMoveOutcomeString();
+        PlaySE(SE_EFFECTIVE);
         ++gTasks[taskId].tState;
         break;
     case 3: // Wait for hurt animation.
-        if (++gTasks[taskId].tTimer >= 90)
+        if (++gTasks[taskId].tTimer >= 60)
+        {
+            BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerTarget)->oam.paletteNum), 0, RGB_WHITE);
             ++gTasks[taskId].tState;
+        }
+        else if (gTasks[taskId].tTimer < 32)
+        {
+            if (gTasks[taskId].tTimer % 8 < 4)
+                BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerTarget)->oam.paletteNum), 12, RGB_WHITE);
+            else
+                BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerTarget)->oam.paletteNum), 0, RGB_WHITE);
+        }
         break;
     case 4:
-        gDeckBattleStruct.selectedPosition = POSITION_0;
-        LoadBattlerPortrait(B_PLAYER_0);
-        PrintBattlerMoveInfo(B_PLAYER_0);
-        PrintBattlerStats(B_PLAYER_0);
-        CreateSelectionCursorOverBattler(GetDeckBattlerAtPosition(B_SIDE_PLAYER, POSITION_0));
-        StartSpriteAnim(&gSprites[gDeckBattleGraphics.battlerSpriteIds[GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition)]], ANIM_IDLE);
+        side = GetDeckBattlerSide(gBattlerAttacker);
+        SetBattlerGrayscale(gBattlerAttacker, TRUE);
+        gDeckBattleMons[gBattlerAttacker].hasMoved = TRUE;
 
-        SetBattlerGrayscale(gBattlerAttacker, FALSE);
+        gDeckBattleStruct.selectedPosition = GetLeftmostPositionToMove(side);
+        battler = GetDeckBattlerAtPosition(side, gDeckBattleStruct.selectedPosition);
+        LoadBattlerPortrait(battler);
+        PrintBattlerMoveInfo(battler);
+        PrintBattlerStats(battler);
+        CreateSelectionCursorOverBattler(battler);
+        StartBattlerAnim(battler, ANIM_IDLE);
+
+        SetBattlerBobPause(FALSE);
         SetBattlerPortraitVisibility(TRUE);
         SetGpuReg(REG_OFFSET_BG0VOFS, 0);
         SetGpuReg(REG_OFFSET_BG1VOFS, 0);

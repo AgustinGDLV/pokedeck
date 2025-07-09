@@ -57,6 +57,7 @@ struct DeckBattlePokemon
     u16 maxHP;
     u16 pwr;
     enum BattlePosition position;
+    bool8 hasMoved;
 };
 
 struct DeckBattleStruct
