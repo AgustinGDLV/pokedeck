@@ -3,8 +3,15 @@
 
 u32 GetDeckBattlerSide(enum BattleId battler);
 u32 GetDeckBattlerAtPosition(u32 side, enum BattlePosition position);
+
+enum BattlePosition GetLeftmostOccupiedPosition(u32 side);
 enum BattlePosition GetLeftmostPositionToMove(u32 side);
-enum BattlePosition GetPositionToMoveOnLeft(u32 side, enum BattlePosition position);
-enum BattlePosition GetPositionToMoveOnRight(u32 side, enum BattlePosition position);
+
+enum BattlePosition GetOccupiedOnLeft(u32 side, enum BattlePosition position);
+enum BattlePosition GetNonAttackerOnLeft(u32 side, enum BattlePosition position);
+enum BattlePosition GetToMoveOnLeft(u32 side, enum BattlePosition position);
+enum BattlePosition GetOccupiedOnRight(u32 side, enum BattlePosition position);
+enum BattlePosition GetNonAttackerOnRight(u32 side, enum BattlePosition position);
+enum BattlePosition GetToMoveOnRight(u32 side, enum BattlePosition position);
 
 #endif
