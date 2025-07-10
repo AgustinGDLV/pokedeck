@@ -438,6 +438,7 @@ static void SpriteCB_Shadow(struct Sprite *sprite)
 {
     sprite->x2 = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].x2;
     sprite->y2 = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].y2;
+    sprite->invisible = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].invisible;
 }
 
 static void SpriteCB_Cursor(struct Sprite *sprite)

@@ -285,10 +285,10 @@ static void Task_ExecuteAction(u8 taskId)
         }
         else if (gTasks[taskId].tTimer < 32)
         {
-            if (gTasks[taskId].tTimer % 8 < 4)
-                BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerTarget)->oam.paletteNum), 12, RGB_WHITE);
+            if (gTasks[taskId].tTimer % 4 < 2)
+                GetBattlerSprite(gBattlerTarget)->invisible = TRUE;
             else
-                BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerTarget)->oam.paletteNum), 0, RGB_WHITE);
+                GetBattlerSprite(gBattlerTarget)->invisible = FALSE;
         }
         break;
     case 4:
