@@ -436,6 +436,7 @@ bool32 IsBattlerBobActive(void)
 
 static void SpriteCB_Shadow(struct Sprite *sprite)
 {
+    sprite->x = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].x;
     sprite->x2 = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].x2;
     sprite->y2 = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].y2;
     sprite->invisible = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].invisible;
@@ -488,10 +489,7 @@ void LoadBattlerObjectSprite(enum BattleId battler)
         dst[i] = src[i];
 
     gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].oam.paletteNum = index;
-    if (GetDeckBattlerSide(battler) == B_SIDE_PLAYER) // TODO: if ever reloaded, this will continually increase the battler's Y
-        gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].y += gSpeciesDeckInfo[gDeckBattleMons[battler].species].playerYOffset;
-    else
-        gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].y += gSpeciesDeckInfo[gDeckBattleMons[battler].species].opponentYOffset;
+    gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].y = GetBattlerYCoord(battler);
 }
 
 void InitDeckBattleGfx(void)
@@ -707,6 +705,19 @@ struct Sprite * GetBattlerSprite(enum BattleId battler)
     return &gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]];
 }
 
+u32 GetBattlerXCoord(enum BattleId battler)
+{
+    return PLAYER_OBJ_X + OBJ_OFFSET * gDeckBattleMons[battler].position;
+}
+
+u32 GetBattlerYCoord(enum BattleId battler)
+{
+    if (GetDeckBattlerSide(battler) == B_SIDE_PLAYER)
+        return PLAYER_OBJ_Y + gSpeciesDeckInfo[gDeckBattleMons[battler].species].playerYOffset;
+    else
+        return OPPONENT_OBJ_Y + gSpeciesDeckInfo[gDeckBattleMons[battler].species].opponentYOffset;
+}
+
 #undef sBattlerId
 #undef sCursorId
 #undef sAnimState
@@ -771,6 +782,27 @@ void PrintMoveOutcomeString(void)
     StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[gBattlerTarget].species));
     ConvertIntToDecimalStringN(gStringVar3, gDeckBattleMons[gBattlerAttacker].pwr, STR_CONV_MODE_LEFT_ALIGN, 2);
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} took {STR_VAR_3} damage!"));
+
+    FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
+}
+
+void PrintSwapTargetPrompt(enum BattleId battler)
+{
+    StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[battler].species));
+    StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Swap with {STR_VAR_2}?"));
+
+    FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
+}
+
+void PrintSwapString(enum BattleId battler1, enum BattleId battler2)
+{
+    StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[battler1].species));
+    StringCopy(gStringVar3, GetSpeciesName(gDeckBattleMons[battler2].species));
+    StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} and {STR_VAR_3} swapped\nplaces!"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
     AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);

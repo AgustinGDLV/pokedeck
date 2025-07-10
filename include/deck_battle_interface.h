@@ -35,6 +35,7 @@ void ClearDeckBattleGraphicsStruct(void);
 void LoadBattleBoxesAndBackground(void);
 void InitDeckBattleWindows(void);
 void InitDeckBattleGfx(void);
+
 void SetBattlerBobPause(bool32 pause);
 bool32 IsBattlerBobActive(void);
 void LoadBattlerPortrait(enum BattleId battler);
@@ -45,11 +46,16 @@ void RemoveSelectionCursorOverBattler(enum BattleId battler);
 void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale);
 void StartBattlerAnim(enum BattleId battler, u32 animId);
 struct Sprite * GetBattlerSprite(enum BattleId battler);
+u32 GetBattlerXCoord(enum BattleId battler);
+u32 GetBattlerYCoord(enum BattleId battler);
+
 void PrintBattlerMoveInfo(enum BattleId battler);
 void PrintBattlerStats(enum BattleId battler);
 void PrintTargetBattlerPrompt(enum BattleId battler);
 void PrintMoveUseString(void);
 void PrintMoveOutcomeString(void);
+void PrintSwapTargetPrompt(enum BattleId battler);
+void PrintSwapString(enum BattleId battler1, enum BattleId battler2);
 
 extern struct DeckBattleGraphics gDeckBattleGraphics;
 

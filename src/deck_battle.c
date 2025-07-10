@@ -30,9 +30,10 @@ static void VBlankCB2_DeckBattle(void);
 static void Task_OpenDeckBattle(u8 taskId);
 static void Task_CloseDeckBattle(u8 taskId);
 static void Task_PlayerSelectAction(u8 taskId);
-static void Task_PlayerSelectSingleAlly(u8 taskId);
+static void Task_PlayerSelectAllyToSwap(u8 taskId);
 static void Task_PlayerSelectSingleOpponent(u8 taskId);
-static void Task_ExecuteAction(u8 taskId);
+static void Task_ExecuteMove(u8 taskId);
+static void Task_ExecuteSwap(u8 taskId);
 static void InitBattleStructData(void);
 static void InitBattleMonData(void);
 
@@ -189,26 +190,33 @@ static void Task_PlayerSelectAction(u8 taskId)
     }
     if (gMain.newKeys & START_BUTTON) // Choose target to swap.
     {
-        PlaySE(SE_SELECT);
         gBattlerAttacker = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
-        RemoveSelectionCursorOverBattler(gBattlerAttacker);
-        SetBattlerGrayscale(gBattlerAttacker, TRUE);
+        if (gDeckBattleMons[gBattlerAttacker].hasSwapped)
+        {
+            PlaySE(SE_FAILURE);
+        }
+        else
+        {
+            RemoveSelectionCursorOverBattler(gBattlerAttacker);
+            SetBattlerGrayscale(gBattlerAttacker, TRUE);
 
-        pos = gDeckBattleStruct.selectedPosition;
-        gDeckBattleStruct.selectedPosition = GetLeftmostOccupiedPosition(B_SIDE_PLAYER);
-        if (gDeckBattleStruct.selectedPosition == pos) // make sure it's not the attacker
-            gDeckBattleStruct.selectedPosition = GetNonAttackerOnRight(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
-        battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
-        CreateSelectionCursorOverBattler(battler);
-        PrintTargetBattlerPrompt(battler);
-        PrintBattlerStats(battler);
-        StartBattlerAnim(battler, ANIM_IDLE);
+            PlaySE(SE_SELECT);
+            pos = gDeckBattleStruct.selectedPosition;
+            gDeckBattleStruct.selectedPosition = GetLeftmostOccupiedPosition(B_SIDE_PLAYER);
+            if (gDeckBattleStruct.selectedPosition == pos) // make sure it's not the attacker
+                gDeckBattleStruct.selectedPosition = GetNonAttackerOnRight(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
+            battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
+            CreateSelectionCursorOverBattler(battler);
+            PrintSwapTargetPrompt(battler);
+            PrintBattlerStats(battler);
+            StartBattlerAnim(battler, ANIM_IDLE);
 
-        SetBattlerPortraitVisibility(FALSE);
-        SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
-        SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
-        gTasks[taskId].func = Task_PlayerSelectSingleAlly;
-        SetBattlerBobPause(TRUE);
+            SetBattlerPortraitVisibility(FALSE);
+            SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
+            SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
+            gTasks[taskId].func = Task_PlayerSelectAllyToSwap;
+            SetBattlerBobPause(TRUE);
+        }
     }
     if (gMain.newKeys & B_BUTTON)
     {
@@ -218,7 +226,7 @@ static void Task_PlayerSelectAction(u8 taskId)
     }
 }
 
-static void Task_PlayerSelectSingleAlly(u8 taskId)
+static void Task_PlayerSelectAllyToSwap(u8 taskId)
 {
     enum BattleId battler;
     enum BattlePosition pos;
@@ -233,7 +241,7 @@ static void Task_PlayerSelectSingleAlly(u8 taskId)
 
         battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
         CreateSelectionCursorOverBattler(battler);
-        PrintTargetBattlerPrompt(battler);
+        PrintSwapTargetPrompt(battler);
         StartBattlerAnim(battler, ANIM_IDLE);
     }
     if ((gMain.newKeys & DPAD_RIGHT)
@@ -247,7 +255,7 @@ static void Task_PlayerSelectSingleAlly(u8 taskId)
 
         battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
         CreateSelectionCursorOverBattler(battler);
-        PrintTargetBattlerPrompt(battler);
+        PrintSwapTargetPrompt(battler);
         StartBattlerAnim(battler, ANIM_IDLE);
     }
     if (gMain.newKeys & B_BUTTON)
@@ -271,13 +279,21 @@ static void Task_PlayerSelectSingleAlly(u8 taskId)
         SetGpuReg(REG_OFFSET_BG1VOFS, 0);
         gTasks[taskId].func = Task_PlayerSelectAction;
     }
-    if (gMain.newKeys & A_BUTTON)
+    if ((gMain.newKeys & A_BUTTON) || (gMain.newKeys & START_BUTTON))
     {
-        PlaySE(SE_SELECT);
         gBattlerTarget = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
-        RemoveSelectionCursorOverBattler(gBattlerTarget);
-        gTasks[taskId].tState = 0;
-        gTasks[taskId].func = Task_ExecuteAction;
+        if (gDeckBattleMons[gBattlerTarget].hasSwapped)
+        {
+            PlaySE(SE_FAILURE);
+        }
+        else
+        {
+            PlaySE(SE_SELECT);
+            RemoveSelectionCursorOverBattler(gBattlerTarget);
+            SetBattlerGrayscale(gBattlerAttacker, FALSE);
+            gTasks[taskId].tState = 0;
+            gTasks[taskId].func = Task_ExecuteSwap;
+        }
     }
 }
 
@@ -321,11 +337,10 @@ static void Task_PlayerSelectSingleOpponent(u8 taskId)
         StartBattlerAnim(battler, ANIM_PAUSED);
 
         gDeckBattleStruct.selectedPosition = gDeckBattleMons[gBattlerAttacker].position;
-        battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gBattlerAttacker);
         LoadBattlerPortrait(gDeckBattleStruct.selectedPosition);
         PrintBattlerMoveInfo(gDeckBattleStruct.selectedPosition);
         PrintBattlerStats(gDeckBattleStruct.selectedPosition);
-        CreateSelectionCursorOverBattler(battler);
+        CreateSelectionCursorOverBattler(gBattlerAttacker);
         SetBattlerGrayscale(gBattlerAttacker, FALSE);
 
         SetBattlerBobPause(FALSE);
@@ -340,11 +355,11 @@ static void Task_PlayerSelectSingleOpponent(u8 taskId)
         gBattlerTarget = GetDeckBattlerAtPosition(B_SIDE_OPPONENT, gDeckBattleStruct.selectedPosition);
         RemoveSelectionCursorOverBattler(gBattlerTarget);
         gTasks[taskId].tState = 0;
-        gTasks[taskId].func = Task_ExecuteAction;
+        gTasks[taskId].func = Task_ExecuteMove;
     }
 }
 
-static void Task_ExecuteAction(u8 taskId)
+static void Task_ExecuteMove(u8 taskId)
 {
     u32 side;
     enum BattleId battler;
@@ -369,7 +384,7 @@ static void Task_ExecuteAction(u8 taskId)
     case 3: // Wait for hurt animation.
         if (++gTasks[taskId].tTimer >= 60)
         {
-            BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerTarget)->oam.paletteNum), 0, RGB_WHITE);
+            GetBattlerSprite(gBattlerTarget)->invisible = FALSE;
             ++gTasks[taskId].tState;
         }
         else if (gTasks[taskId].tTimer < 32)
@@ -384,6 +399,66 @@ static void Task_ExecuteAction(u8 taskId)
         side = GetDeckBattlerSide(gBattlerAttacker);
         SetBattlerGrayscale(gBattlerAttacker, TRUE);
         gDeckBattleMons[gBattlerAttacker].hasMoved = TRUE;
+
+        gDeckBattleStruct.selectedPosition = GetLeftmostPositionToMove(side);
+        battler = GetDeckBattlerAtPosition(side, gDeckBattleStruct.selectedPosition);
+        LoadBattlerPortrait(battler);
+        PrintBattlerMoveInfo(battler);
+        PrintBattlerStats(battler);
+        CreateSelectionCursorOverBattler(battler);
+        StartBattlerAnim(battler, ANIM_IDLE);
+
+        SetBattlerBobPause(FALSE);
+        SetBattlerPortraitVisibility(TRUE);
+        SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+        SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+
+        gTasks[taskId].tTimer = 0;
+        gTasks[taskId].tState = 0;
+        gTasks[taskId].func = Task_PlayerSelectAction;
+        break;
+    }
+}
+
+static void Task_ExecuteSwap(u8 taskId)
+{
+    u32 side;
+    enum BattleId battler;
+    switch (gTasks[taskId].tState)
+    {
+    case 0: // Do attack animation.
+        StartBattlerAnim(gBattlerAttacker, ANIM_ATTACK);
+        StartBattlerAnim(gBattlerTarget, ANIM_ATTACK);
+        PrintSwapString(gBattlerAttacker, gBattlerTarget);
+        ++gTasks[taskId].tState;
+        break;
+    case 1: // Wait for attack animation to execute cry.
+        if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
+            ++gTasks[taskId].tState;
+        break;
+    case 2: // Swap battler positions.
+        if (++gTasks[taskId].tTimer > 8)
+        {
+            u32 temp = gDeckBattleMons[gBattlerAttacker].position;
+            gDeckBattleMons[gBattlerAttacker].position = gDeckBattleMons[gBattlerTarget].position;
+            gDeckBattleMons[gBattlerTarget].position = temp;
+
+            GetBattlerSprite(gBattlerAttacker)->x = GetBattlerXCoord(gBattlerAttacker);
+            GetBattlerSprite(gBattlerTarget)->x = GetBattlerXCoord(gBattlerTarget);
+
+            PlaySE(SE_M_DOUBLE_TEAM);
+            gTasks[taskId].tTimer = 0;
+            ++gTasks[taskId].tState;
+        }
+        break;
+    case 3: // Wait for animation.
+        if (++gTasks[taskId].tTimer > 32)
+            ++gTasks[taskId].tState;
+        break;
+    case 4:
+        side = GetDeckBattlerSide(gBattlerAttacker);
+        gDeckBattleMons[gBattlerAttacker].hasSwapped = TRUE;
+        gDeckBattleMons[gBattlerTarget].hasSwapped = TRUE;
 
         gDeckBattleStruct.selectedPosition = GetLeftmostPositionToMove(side);
         battler = GetDeckBattlerAtPosition(side, gDeckBattleStruct.selectedPosition);
@@ -426,13 +501,7 @@ static void Task_CloseDeckBattle(u8 taskId)
 
 static void InitBattleStructData(void)
 {
-    for (u32 i = 0; i < NUM_BATTLE_SIDES; ++i)
-    {
-        for (u32 j = 0; j < POSITIONS_COUNT; ++j)
-        {
-            gDeckBattleStruct.battlerAtPosition[i][j] = i*6 + j;
-        }
-    }
+    gDeckBattleStruct.selectedPosition = GetLeftmostOccupiedPosition(B_SIDE_PLAYER);
 }
 
 // Placeholder until party data is used.

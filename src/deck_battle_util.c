@@ -15,7 +15,19 @@ u32 GetDeckBattlerSide(enum BattleId battler)
 
 u32 GetDeckBattlerAtPosition(u32 side, enum BattlePosition position)
 {
-    return gDeckBattleStruct.battlerAtPosition[side][position];
+    if (side == B_SIDE_PLAYER)
+    {
+        for (enum BattleId battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
+            if (gDeckBattleMons[battler].species != SPECIES_NONE && gDeckBattleMons[battler].position == position)
+                return battler;
+    }
+    else
+    {
+        for (enum BattleId battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+            if (gDeckBattleMons[battler].species != SPECIES_NONE && gDeckBattleMons[battler].position == position)
+                return battler;
+    }
+    return MAX_DECK_BATTLERS_COUNT; // no luck
 }
 
 enum BattlePosition GetLeftmostOccupiedPosition(u32 side)

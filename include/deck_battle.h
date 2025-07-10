@@ -58,6 +58,7 @@ struct DeckBattlePokemon
     u16 pwr;
     enum BattlePosition position;
     bool8 hasMoved;
+    bool8 hasSwapped;
 };
 
 struct DeckBattleStruct
@@ -66,7 +67,6 @@ struct DeckBattleStruct
     u8 remainingActions[NUM_BATTLE_SIDES];
     u8 maxActions[NUM_BATTLE_SIDES];
     enum BattlePosition selectedPosition; // for player selection
-    enum BattleId battlerAtPosition[NUM_BATTLE_SIDES][POSITIONS_COUNT];
 };
 
 void CB2_OpenDeckBattleCustom(void);
