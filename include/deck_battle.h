@@ -61,12 +61,26 @@ struct DeckBattlePokemon
     bool8 hasSwapped;
 };
 
+#define ACTION_ATTACK   0
+#define ACTION_SWAP     1
+
+#define MAX_ACTIONS     12
+
+struct BattleAction
+{
+    u8 type;
+    u8 attacker;
+    u8 target;
+    u16 move;
+};
+
 struct DeckBattleStruct
 {
-    u8 actingSide;
-    u8 remainingActions[NUM_BATTLE_SIDES];
-    u8 maxActions[NUM_BATTLE_SIDES];
     enum BattlePosition selectedPosition; // for player selection
+    u8 initialPositions[MAX_DECK_BATTLERS_COUNT];
+    struct BattleAction queuedActions[MAX_ACTIONS];
+    u8 actionsCount;
+    u8 executedCount;
 };
 
 void CB2_OpenDeckBattleCustom(void);

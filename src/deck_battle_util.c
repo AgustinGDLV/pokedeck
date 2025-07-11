@@ -51,7 +51,7 @@ enum BattlePosition GetLeftmostPositionToMove(u32 side)
         if (!gDeckBattleMons[battler].hasMoved && gDeckBattleMons[battler].hp != 0)
             return pos;
     }
-    return POSITION_0; // no luck
+    return POSITIONS_COUNT; // no luck
 }
 
 enum BattlePosition GetOccupiedOnLeft(u32 side, enum BattlePosition position)

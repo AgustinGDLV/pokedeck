@@ -32,10 +32,13 @@ static void Task_CloseDeckBattle(u8 taskId);
 static void Task_PlayerSelectAction(u8 taskId);
 static void Task_PlayerSelectAllyToSwap(u8 taskId);
 static void Task_PlayerSelectSingleOpponent(u8 taskId);
+static void Task_PrepareForActionPhase(u8 taskId);
+static void Task_ExecuteQueuedActionOrEnd(u8 taskId);
 static void Task_ExecuteMove(u8 taskId);
 static void Task_ExecuteSwap(u8 taskId);
 static void InitBattleStructData(void);
 static void InitBattleMonData(void);
+static void QueueAction(u32 type, u32 battlerAtk, u32 battlerDef, u32 move);
 
 // ewram data
 EWRAM_DATA struct DeckBattleStruct gDeckBattleStruct = {0};
@@ -186,7 +189,6 @@ static void Task_PlayerSelectAction(u8 taskId)
         SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
         SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
         gTasks[taskId].func = Task_PlayerSelectSingleOpponent;
-        SetBattlerBobPause(TRUE);
     }
     if (gMain.newKeys & START_BUTTON) // Choose target to swap.
     {
@@ -198,7 +200,7 @@ static void Task_PlayerSelectAction(u8 taskId)
         else
         {
             RemoveSelectionCursorOverBattler(gBattlerAttacker);
-            SetBattlerGrayscale(gBattlerAttacker, TRUE);
+            GetBattlerSprite(gBattlerAttacker)->oam.objMode = ST_OAM_OBJ_BLEND;
 
             PlaySE(SE_SELECT);
             pos = gDeckBattleStruct.selectedPosition;
@@ -215,7 +217,6 @@ static void Task_PlayerSelectAction(u8 taskId)
             SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
             SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
             gTasks[taskId].func = Task_PlayerSelectAllyToSwap;
-            SetBattlerBobPause(TRUE);
         }
     }
     if (gMain.newKeys & B_BUTTON)
@@ -271,9 +272,8 @@ static void Task_PlayerSelectAllyToSwap(u8 taskId)
         PrintBattlerMoveInfo(gDeckBattleStruct.selectedPosition);
         PrintBattlerStats(gDeckBattleStruct.selectedPosition);
         CreateSelectionCursorOverBattler(battler);
-        SetBattlerGrayscale(gBattlerAttacker, FALSE);
+        GetBattlerSprite(gBattlerAttacker)->oam.objMode = ST_OAM_OBJ_NORMAL;        
 
-        SetBattlerBobPause(FALSE);
         SetBattlerPortraitVisibility(TRUE);
         SetGpuReg(REG_OFFSET_BG0VOFS, 0);
         SetGpuReg(REG_OFFSET_BG1VOFS, 0);
@@ -290,9 +290,31 @@ static void Task_PlayerSelectAllyToSwap(u8 taskId)
         {
             PlaySE(SE_SELECT);
             RemoveSelectionCursorOverBattler(gBattlerTarget);
-            SetBattlerGrayscale(gBattlerAttacker, FALSE);
-            gTasks[taskId].tState = 0;
-            gTasks[taskId].func = Task_ExecuteSwap;
+            GetBattlerSprite(gBattlerTarget)->oam.objMode = ST_OAM_OBJ_BLEND;
+
+            QueueAction(ACTION_SWAP, gBattlerAttacker, gBattlerTarget, MOVE_NONE);
+            u32 temp = gDeckBattleMons[gBattlerAttacker].position;
+            gDeckBattleMons[gBattlerAttacker].position = gDeckBattleMons[gBattlerTarget].position;
+            gDeckBattleMons[gBattlerTarget].position = temp;
+            GetBattlerSprite(gBattlerAttacker)->x = GetBattlerXCoord(gBattlerAttacker);
+            GetBattlerSprite(gBattlerTarget)->x = GetBattlerXCoord(gBattlerTarget);
+            gDeckBattleMons[gBattlerAttacker].hasSwapped = TRUE;
+            gDeckBattleMons[gBattlerTarget].hasSwapped = TRUE;
+            StartBattlerAnim(gBattlerAttacker, ANIM_PAUSED);
+            StartBattlerAnim(gBattlerTarget, ANIM_PAUSED);
+
+            gDeckBattleStruct.selectedPosition = GetLeftmostPositionToMove(B_SIDE_PLAYER);
+            battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
+            LoadBattlerPortrait(battler);
+            PrintBattlerMoveInfo(battler);
+            PrintBattlerStats(battler);
+            CreateSelectionCursorOverBattler(battler);
+            StartBattlerAnim(battler, ANIM_IDLE);
+
+            SetBattlerPortraitVisibility(TRUE);
+            SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+            SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+            gTasks[taskId].func = Task_PlayerSelectAction;
         }
     }
 }
@@ -354,15 +376,104 @@ static void Task_PlayerSelectSingleOpponent(u8 taskId)
         PlaySE(SE_SELECT);
         gBattlerTarget = GetDeckBattlerAtPosition(B_SIDE_OPPONENT, gDeckBattleStruct.selectedPosition);
         RemoveSelectionCursorOverBattler(gBattlerTarget);
+        StartBattlerAnim(gBattlerTarget, ANIM_PAUSED);
+
+        QueueAction(ACTION_ATTACK, gBattlerAttacker, gBattlerTarget, MOVE_NONE);
+        u32 side = GetDeckBattlerSide(gBattlerAttacker);
+        SetBattlerGrayscale(gBattlerAttacker, TRUE);
+        gDeckBattleMons[gBattlerAttacker].hasMoved = TRUE;
+        StartBattlerAnim(gBattlerAttacker, ANIM_PAUSED);
+
+        gDeckBattleStruct.selectedPosition = GetLeftmostPositionToMove(side);
+        if (gDeckBattleStruct.selectedPosition != POSITIONS_COUNT)
+        {
+            battler = GetDeckBattlerAtPosition(side, gDeckBattleStruct.selectedPosition);
+            LoadBattlerPortrait(battler);
+            PrintBattlerMoveInfo(battler);
+            PrintBattlerStats(battler);
+            CreateSelectionCursorOverBattler(battler);
+            StartBattlerAnim(battler, ANIM_IDLE);
+
+            SetBattlerPortraitVisibility(TRUE);
+            SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+            SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+
+            gTasks[taskId].func = Task_PlayerSelectAction;
+        }
+        else
+        {
+            gTasks[taskId].func = Task_PrepareForActionPhase; 
+        }
+    }
+}
+
+static void Task_PrepareForActionPhase(u8 taskId)
+{
+    struct Sprite *sprite;
+    switch (gTasks[taskId].tState)
+    {
+    case 0:
+        for (enum BattleId battler = 0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+        {
+            gDeckBattleMons[battler].position = gDeckBattleStruct.initialPositions[battler];
+            SetBattlerGrayscale(battler, FALSE);
+            sprite = GetBattlerSprite(battler);
+            sprite->oam.objMode = ST_OAM_OBJ_NORMAL;
+            sprite->x = GetBattlerXCoord(battler);
+        }
+        ++gTasks[taskId].tState;
+        break;
+    case 1:
         gTasks[taskId].tState = 0;
-        gTasks[taskId].func = Task_ExecuteMove;
+        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
+        break;
+    }
+}
+
+static void Task_ExecuteQueuedActionOrEnd(u8 taskId)
+{
+    if (gDeckBattleStruct.executedCount < gDeckBattleStruct.actionsCount)
+    {
+        gBattlerAttacker = gDeckBattleStruct.queuedActions[gDeckBattleStruct.executedCount].attacker;
+        gBattlerTarget = gDeckBattleStruct.queuedActions[gDeckBattleStruct.executedCount].target;
+
+        gTasks[taskId].tTimer = 0;
+        gTasks[taskId].tState = 0;
+        if (gDeckBattleStruct.queuedActions[gDeckBattleStruct.executedCount].type == ACTION_ATTACK)
+            gTasks[taskId].func = Task_ExecuteMove;
+        else
+            gTasks[taskId].func = Task_ExecuteSwap;
+        ++gDeckBattleStruct.executedCount;
+    }
+    else
+    {
+        SetBattlerBobPause(FALSE);
+        SetBattlerPortraitVisibility(TRUE);
+        SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+        SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+
+        for (u32 i = 0; i < MAX_DECK_BATTLERS_COUNT; ++i)
+        {
+            gDeckBattleMons[i].hasMoved = FALSE;
+            gDeckBattleMons[i].hasSwapped = FALSE;
+        }
+        gDeckBattleStruct.actionsCount = 0;
+        gDeckBattleStruct.executedCount = 0;
+        
+        gDeckBattleStruct.selectedPosition = GetLeftmostPositionToMove(B_SIDE_PLAYER);
+        u32 battler = GetDeckBattlerAtPosition(B_SIDE_PLAYER, gDeckBattleStruct.selectedPosition);
+        LoadBattlerPortrait(battler);
+        PrintBattlerMoveInfo(battler);
+        PrintBattlerStats(battler);
+        CreateSelectionCursorOverBattler(battler);
+        StartBattlerAnim(battler, ANIM_IDLE);
+
+        gTasks[taskId].func = Task_PlayerSelectAction;
     }
 }
 
 static void Task_ExecuteMove(u8 taskId)
 {
-    u32 side;
-    enum BattleId battler;
     switch (gTasks[taskId].tState)
     {
     case 0: // Do attack animation.
@@ -396,34 +507,15 @@ static void Task_ExecuteMove(u8 taskId)
         }
         break;
     case 4:
-        side = GetDeckBattlerSide(gBattlerAttacker);
-        SetBattlerGrayscale(gBattlerAttacker, TRUE);
-        gDeckBattleMons[gBattlerAttacker].hasMoved = TRUE;
-
-        gDeckBattleStruct.selectedPosition = GetLeftmostPositionToMove(side);
-        battler = GetDeckBattlerAtPosition(side, gDeckBattleStruct.selectedPosition);
-        LoadBattlerPortrait(battler);
-        PrintBattlerMoveInfo(battler);
-        PrintBattlerStats(battler);
-        CreateSelectionCursorOverBattler(battler);
-        StartBattlerAnim(battler, ANIM_IDLE);
-
-        SetBattlerBobPause(FALSE);
-        SetBattlerPortraitVisibility(TRUE);
-        SetGpuReg(REG_OFFSET_BG0VOFS, 0);
-        SetGpuReg(REG_OFFSET_BG1VOFS, 0);
-
         gTasks[taskId].tTimer = 0;
         gTasks[taskId].tState = 0;
-        gTasks[taskId].func = Task_PlayerSelectAction;
+        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
         break;
     }
 }
 
 static void Task_ExecuteSwap(u8 taskId)
 {
-    u32 side;
-    enum BattleId battler;
     switch (gTasks[taskId].tState)
     {
     case 0: // Do attack animation.
@@ -456,26 +548,9 @@ static void Task_ExecuteSwap(u8 taskId)
             ++gTasks[taskId].tState;
         break;
     case 4:
-        side = GetDeckBattlerSide(gBattlerAttacker);
-        gDeckBattleMons[gBattlerAttacker].hasSwapped = TRUE;
-        gDeckBattleMons[gBattlerTarget].hasSwapped = TRUE;
-
-        gDeckBattleStruct.selectedPosition = GetLeftmostPositionToMove(side);
-        battler = GetDeckBattlerAtPosition(side, gDeckBattleStruct.selectedPosition);
-        LoadBattlerPortrait(battler);
-        PrintBattlerMoveInfo(battler);
-        PrintBattlerStats(battler);
-        CreateSelectionCursorOverBattler(battler);
-        StartBattlerAnim(battler, ANIM_IDLE);
-
-        SetBattlerBobPause(FALSE);
-        SetBattlerPortraitVisibility(TRUE);
-        SetGpuReg(REG_OFFSET_BG0VOFS, 0);
-        SetGpuReg(REG_OFFSET_BG1VOFS, 0);
-
         gTasks[taskId].tTimer = 0;
         gTasks[taskId].tState = 0;
-        gTasks[taskId].func = Task_PlayerSelectAction;
+        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
         break;
     }
 }
@@ -517,5 +592,22 @@ static void InitBattleMonData(void)
         gDeckBattleMons[i].maxHP = gSpeciesDeckInfo[gDeckBattleMons[i].species].baseHP;
         gDeckBattleMons[i].pwr = gSpeciesDeckInfo[gDeckBattleMons[i].species].basePWR;
         gDeckBattleMons[i].position = i % 6;
+        gDeckBattleStruct.initialPositions[i] = i % 6;
     }
+}
+
+static void QueueAction(u32 type, u32 battlerAtk, u32 battlerDef, u32 move)
+{
+    gDeckBattleStruct.queuedActions[gDeckBattleStruct.actionsCount].type = type;
+    gDeckBattleStruct.queuedActions[gDeckBattleStruct.actionsCount].attacker = battlerAtk;
+    gDeckBattleStruct.queuedActions[gDeckBattleStruct.actionsCount].target = battlerDef;
+    gDeckBattleStruct.queuedActions[gDeckBattleStruct.actionsCount].move = move;
+
+    if (type == ACTION_SWAP)
+    {
+        gDeckBattleStruct.initialPositions[battlerAtk] = gDeckBattleMons[battlerAtk].position;
+        gDeckBattleStruct.initialPositions[battlerDef] = gDeckBattleMons[battlerDef].position;
+    }
+
+    ++gDeckBattleStruct.actionsCount;
 }

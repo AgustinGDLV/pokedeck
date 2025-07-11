@@ -692,6 +692,7 @@ void StartBattlerAnim(enum BattleId battler, u32 animId) // TODO: overwrite spri
             StartSpriteAnim(&gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]], animId);
             break;
         case ANIM_ATTACK:
+            SetBattlerBobPause(TRUE);
             gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerAttack;
             break;
         case ANIM_HURT:
@@ -707,7 +708,10 @@ struct Sprite * GetBattlerSprite(enum BattleId battler)
 
 u32 GetBattlerXCoord(enum BattleId battler)
 {
-    return PLAYER_OBJ_X + OBJ_OFFSET * gDeckBattleMons[battler].position;
+    if (GetDeckBattlerSide(battler) == B_SIDE_PLAYER)
+        return PLAYER_OBJ_X + OBJ_OFFSET * gDeckBattleMons[battler].position;
+    else
+        return OPPONENT_OBJ_X + OBJ_OFFSET * gDeckBattleMons[battler].position;
 }
 
 u32 GetBattlerYCoord(enum BattleId battler)
