@@ -271,7 +271,8 @@ static void Task_PlayerSelectAllyToSwap(u8 taskId)
         // Reselect acting battler.
         UpdateBattlerSelection(gBattlerAttacker, TRUE);
         DisplayActionSelectionInfo(gBattlerAttacker);
-        GetBattlerSprite(gBattlerAttacker)->oam.objMode = ST_OAM_OBJ_NORMAL;        
+        GetBattlerSprite(gBattlerAttacker)->oam.objMode = ST_OAM_OBJ_NORMAL;   
+        gDeckStruct.selectedPos = gDeckMons[gBattlerAttacker].pos;     
 
         // Set up UI for action selection.
         SetBattlerPortraitVisibility(TRUE);
@@ -353,6 +354,7 @@ static void Task_PlayerSelectSingleOpponent(u8 taskId)
         UpdateBattlerSelection(gBattlerAttacker, TRUE);
         DisplayActionSelectionInfo(gBattlerAttacker);
         SetBattlerGrayscale(gBattlerAttacker, FALSE);
+        gDeckStruct.selectedPos = gDeckMons[gBattlerAttacker].pos;
 
         // Set up UI for action selection.
         SetBattlerPortraitVisibility(TRUE);
@@ -655,6 +657,7 @@ static void ResetTurnValues(void)
     {
         gDeckMons[battler].hasMoved = FALSE;
         gDeckMons[battler].hasSwapped = FALSE;
+        gDeckMons[battler].initialPos = gDeckMons[battler].pos;
     }
     gDeckStruct.actionsCount = 0;
     gDeckStruct.executedCount = 0;
