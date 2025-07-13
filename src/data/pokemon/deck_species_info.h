@@ -1,4 +1,4 @@
-const struct DeckSpeciesInfo gSpeciesDeckInfo[NUM_SPECIES] =
+const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 {
     [SPECIES_SLOWPOKE] =
     {

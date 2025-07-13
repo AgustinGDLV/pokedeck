@@ -57,6 +57,6 @@ void PrintMoveOutcomeString(void);
 void PrintSwapTargetPrompt(enum BattleId battler);
 void PrintSwapString(enum BattleId battler1, enum BattleId battler2);
 
-extern struct DeckBattleGraphics gDeckBattleGraphics;
+extern struct DeckBattleGraphics gDeckGraphics;
 
 #endif

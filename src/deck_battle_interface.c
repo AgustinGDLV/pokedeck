@@ -299,17 +299,17 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[MAX_DECK_BATTLERS_COU
 };
 
 // ewram data
-EWRAM_DATA struct DeckBattleGraphics gDeckBattleGraphics = {0};
+EWRAM_DATA struct DeckBattleGraphics gDeckGraphics = {0};
 
 // code
 void ClearDeckBattleGraphicsStruct(void)
 {
     for (u32 i = 0; i < POSITIONS_COUNT; ++i)
     {
-        gDeckBattleGraphics.battlerSpriteIds[B_SIDE_PLAYER] = SPRITE_NONE;
-        gDeckBattleGraphics.battlerSpriteIds[B_SIDE_OPPONENT] = SPRITE_NONE;
+        gDeckGraphics.battlerSpriteIds[B_SIDE_PLAYER] = SPRITE_NONE;
+        gDeckGraphics.battlerSpriteIds[B_SIDE_OPPONENT] = SPRITE_NONE;
     }
-    gDeckBattleGraphics.portraitSpriteId = SPRITE_NONE;
+    gDeckGraphics.portraitSpriteId = SPRITE_NONE;
 }
 
 void LoadBattleBoxesAndBackground(void)
@@ -370,21 +370,21 @@ void Task_DoBattlerBobEffect(u8 taskId)
         // Move left.
         case 16:
             for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 += 1;
             for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 -= 1;
             break;
         case 32:
             for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 += 1;
             for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 -= 1;
             break;
         case 48:
             for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 += 1;
             for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 -= 1;
             break;
         // Pause.
         case 64:
@@ -392,21 +392,21 @@ void Task_DoBattlerBobEffect(u8 taskId)
         // Move right.
         case 80:
             for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 -= 1;
             for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 += 1;
             break;
         case 96:
             for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 -= 1;
             for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 += 1;
             break;
         case 112:
             for (battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 -= 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 -= 1;
             for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].x2 += 1;
+                gSprites[gDeckGraphics.battlerSpriteIds[battler]].x2 += 1;
             break;
         case 128:
             gTasks[taskId].tTimer = 0;
@@ -417,12 +417,12 @@ void Task_DoBattlerBobEffect(u8 taskId)
 
 void SetBattlerBobPause(bool32 pause)
 {
-    gTasks[gDeckBattleGraphics.bobTaskId].tPause = pause;
+    gTasks[gDeckGraphics.bobTaskId].tPause = pause;
 }
 
 bool32 IsBattlerBobActive(void)
 {
-    return gTasks[gDeckBattleGraphics.bobTaskId].tActive;
+    return gTasks[gDeckGraphics.bobTaskId].tActive;
 }
 
 #undef tTimer
@@ -436,15 +436,15 @@ bool32 IsBattlerBobActive(void)
 
 static void SpriteCB_Shadow(struct Sprite *sprite)
 {
-    sprite->x = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].x;
-    sprite->x2 = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].x2;
-    sprite->y2 = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].y2;
-    sprite->invisible = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].invisible;
+    sprite->x = gSprites[gDeckGraphics.battlerSpriteIds[sprite->sBattlerId]].x;
+    sprite->x2 = gSprites[gDeckGraphics.battlerSpriteIds[sprite->sBattlerId]].x2;
+    sprite->y2 = gSprites[gDeckGraphics.battlerSpriteIds[sprite->sBattlerId]].y2;
+    sprite->invisible = gSprites[gDeckGraphics.battlerSpriteIds[sprite->sBattlerId]].invisible;
 }
 
 static void SpriteCB_Cursor(struct Sprite *sprite)
 {
-    sprite->x2 = gSprites[gDeckBattleGraphics.battlerSpriteIds[sprite->sBattlerId]].x2;
+    sprite->x2 = gSprites[gDeckGraphics.battlerSpriteIds[sprite->sBattlerId]].x2;
     if (++sprite->animDelayCounter > 12)
     {
         sprite->y2 ^= 1;
@@ -457,20 +457,20 @@ void LoadBattlerPortrait(enum BattleId battler)
     u32 *dst, *src, index;
 
     FreeSpritePaletteByTag(TAG_PORTRAIT); // just in case?
-    index = LoadSpritePaletteWithTag(gSpeciesDeckInfo[gDeckBattleMons[battler].species].portraitPalette, TAG_PORTRAIT);
+    index = LoadSpritePaletteWithTag(gDeckSpeciesInfo[gDeckMons[battler].species].portraitPalette, TAG_PORTRAIT);
 
     dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_PORTRAIT)));
-    src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[battler].species].portrait;
+    src = (u32 *)gDeckSpeciesInfo[gDeckMons[battler].species].portrait;
     for (u32 i = 0; i < PORTRAIT_SIZE / 4; ++i)
         dst[i] = src[i];
 
-    gSprites[gDeckBattleGraphics.portraitSpriteId].oam.paletteNum = index;
-    gSprites[gDeckBattleGraphics.portraitSpriteId].invisible = FALSE;
+    gSprites[gDeckGraphics.portraitSpriteId].oam.paletteNum = index;
+    gSprites[gDeckGraphics.portraitSpriteId].invisible = FALSE;
 }
 
 void SetBattlerPortraitVisibility(bool32 visible)
 {
-    gSprites[gDeckBattleGraphics.portraitSpriteId].invisible = (visible ? FALSE : TRUE);
+    gSprites[gDeckGraphics.portraitSpriteId].invisible = (visible ? FALSE : TRUE);
 }
 
 void LoadBattlerObjectSprite(enum BattleId battler)
@@ -478,18 +478,18 @@ void LoadBattlerObjectSprite(enum BattleId battler)
     u32 *dst, *src, index;
     
     FreeSpritePaletteByTag(TAG_BATTLER_OBJ + battler); // just in case?
-    index = LoadSpritePaletteWithTag(gSpeciesDeckInfo[gDeckBattleMons[battler].species].objectPalette, TAG_BATTLER_OBJ + battler);
+    index = LoadSpritePaletteWithTag(gDeckSpeciesInfo[gDeckMons[battler].species].objectPalette, TAG_BATTLER_OBJ + battler);
 
     dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + battler)));
     if (GetDeckBattlerSide(battler) == B_SIDE_PLAYER)
-        src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[battler].species].playerIdle;
+        src = (u32 *)gDeckSpeciesInfo[gDeckMons[battler].species].playerIdle;
     else
-        src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[battler].species].opponentIdle;
+        src = (u32 *)gDeckSpeciesInfo[gDeckMons[battler].species].opponentIdle;
     for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
         dst[i] = src[i];
 
-    gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].oam.paletteNum = index;
-    gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].y = GetBattlerYCoord(battler);
+    gSprites[gDeckGraphics.battlerSpriteIds[battler]].oam.paletteNum = index;
+    gSprites[gDeckGraphics.battlerSpriteIds[battler]].y = GetBattlerYCoord(battler);
 }
 
 void InitDeckBattleGfx(void)
@@ -499,21 +499,21 @@ void InitDeckBattleGfx(void)
     LoadSpriteSheet(&sCursorSpriteSheet);
 
     LoadDummySpriteTiles();
-    gDeckBattleGraphics.portraitSpriteId = CreateSprite(&sPortraitSpriteTemplate, PORTRAIT_X, PORTRAIT_Y, 0);
+    gDeckGraphics.portraitSpriteId = CreateSprite(&sPortraitSpriteTemplate, PORTRAIT_X, PORTRAIT_Y, 0);
     for (u32 i = 0; i < MAX_DECK_BATTLERS_COUNT; ++i)
     {
         if (GetDeckBattlerSide(i) == B_SIDE_PLAYER)
         {
-            gDeckBattleGraphics.battlerSpriteIds[i] = CreateSprite(&sBattlerSpriteTemplates[i], PLAYER_OBJ_X + OBJ_OFFSET*i, PLAYER_OBJ_Y, 0);
-            gDeckBattleGraphics.shadowSpriteIds[i] = CreateSprite(&sShadowSpriteTemplate, PLAYER_OBJ_X + OBJ_OFFSET*i, PLAYER_OBJ_Y, 64);
+            gDeckGraphics.battlerSpriteIds[i] = CreateSprite(&sBattlerSpriteTemplates[i], PLAYER_OBJ_X + OBJ_OFFSET*i, PLAYER_OBJ_Y, 0);
+            gDeckGraphics.shadowSpriteIds[i] = CreateSprite(&sShadowSpriteTemplate, PLAYER_OBJ_X + OBJ_OFFSET*i, PLAYER_OBJ_Y, 64);
         }
         else
         {
-            gDeckBattleGraphics.battlerSpriteIds[i] = CreateSprite(&sBattlerSpriteTemplates[i], OPPONENT_OBJ_X + OBJ_OFFSET*(i-B_OPPONENT_0), OPPONENT_OBJ_Y, 0);
-            gDeckBattleGraphics.shadowSpriteIds[i] = CreateSprite(&sShadowSpriteTemplate, OPPONENT_OBJ_X + OBJ_OFFSET*(i-B_OPPONENT_0), OPPONENT_OBJ_Y, 64);
+            gDeckGraphics.battlerSpriteIds[i] = CreateSprite(&sBattlerSpriteTemplates[i], OPPONENT_OBJ_X + OBJ_OFFSET*(i-B_OPPONENT_0), OPPONENT_OBJ_Y, 0);
+            gDeckGraphics.shadowSpriteIds[i] = CreateSprite(&sShadowSpriteTemplate, OPPONENT_OBJ_X + OBJ_OFFSET*(i-B_OPPONENT_0), OPPONENT_OBJ_Y, 64);
         }
-        gSprites[gDeckBattleGraphics.battlerSpriteIds[i]].sBattlerId = i;
-        gSprites[gDeckBattleGraphics.shadowSpriteIds[i]].sBattlerId = i;
+        gSprites[gDeckGraphics.battlerSpriteIds[i]].sBattlerId = i;
+        gSprites[gDeckGraphics.shadowSpriteIds[i]].sBattlerId = i;
     }
 
     // Blend shadow sprites; may not be the best use of our blend.
@@ -525,20 +525,20 @@ void InitDeckBattleGfx(void)
 
 void CreateSelectionCursorOverBattler(enum BattleId battler)
 {
-    struct Sprite *sprite = &gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]];
+    struct Sprite *sprite = &gSprites[gDeckGraphics.battlerSpriteIds[battler]];
     sprite->sCursorId = CreateSprite(&sCursorSpriteTemplate, sprite->x, sprite->y - 16, 0);
     gSprites[sprite->sCursorId].sBattlerId = battler;
 }
 
 void RemoveSelectionCursorOverBattler(enum BattleId battler)
 {
-    DestroySprite(&gSprites[gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].sCursorId]);
-    gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].sCursorId = SPRITE_NONE;
+    DestroySprite(&gSprites[gSprites[gDeckGraphics.battlerSpriteIds[battler]].sCursorId]);
+    gSprites[gDeckGraphics.battlerSpriteIds[battler]].sCursorId = SPRITE_NONE;
 }
 
 void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale)
 {
-    SetGrayscaleOrOriginalPalette(16 + gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].oam.paletteNum, (grayscale ? FALSE : TRUE));
+    SetGrayscaleOrOriginalPalette(16 + gSprites[gDeckGraphics.battlerSpriteIds[battler]].oam.paletteNum, (grayscale ? FALSE : TRUE));
 }
 
 static void SpriteCB_BattlerAttack(struct Sprite *sprite)
@@ -575,9 +575,9 @@ static void SpriteCB_BattlerAttack(struct Sprite *sprite)
         case 6:
             dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
             if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
-                src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].playerAttack;
+                src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].playerAttack;
             else
-                src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].opponentAttack;
+                src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].opponentAttack;
             for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
                 dst[i] = src[i];
 
@@ -590,7 +590,7 @@ static void SpriteCB_BattlerAttack(struct Sprite *sprite)
     case 2: // Play cry on frame 2.
         if (sprite->animCmdIndex == 1)
         {
-            PlayCry_Normal(gDeckBattleMons[sprite->sBattlerId].species, 0);
+            PlayCry_Normal(gDeckMons[sprite->sBattlerId].species, 0);
             ++sprite->sAnimState;
         }
         break;
@@ -617,9 +617,9 @@ static void SpriteCB_BattlerAttack(struct Sprite *sprite)
         case 4:
             dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
             if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
-                src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].playerIdle;
+                src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].playerIdle;
             else
-                src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].opponentIdle;
+                src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].opponentIdle;
             for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
                 dst[i] = src[i];
             // fall through
@@ -656,9 +656,9 @@ static void SpriteCB_BattlerHurt(struct Sprite *sprite)
     case 0: // Copy hurt sprite tiles.
         dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
         if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
-            src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].playerHurt;
+            src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].playerHurt;
         else
-            src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].opponentHurt;
+            src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].opponentHurt;
         for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
             dst[i] = src[i];
         StartSpriteAnim(sprite, ANIM_HURT);
@@ -671,9 +671,9 @@ static void SpriteCB_BattlerHurt(struct Sprite *sprite)
     case 2:
         dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
         if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
-            src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].playerIdle;
+            src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].playerIdle;
         else
-            src = (u32 *)gSpeciesDeckInfo[gDeckBattleMons[sprite->sBattlerId].species].opponentIdle;
+            src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].opponentIdle;
         for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
             dst[i] = src[i];
 
@@ -689,37 +689,37 @@ void StartBattlerAnim(enum BattleId battler, u32 animId) // TODO: overwrite spri
     switch (animId)
     {
         default:
-            StartSpriteAnim(&gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]], animId);
+            StartSpriteAnim(&gSprites[gDeckGraphics.battlerSpriteIds[battler]], animId);
             break;
         case ANIM_ATTACK:
             SetBattlerBobPause(TRUE);
-            gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerAttack;
+            gSprites[gDeckGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerAttack;
             break;
         case ANIM_HURT:
-            gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerHurt;
+            gSprites[gDeckGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerHurt;
             break;
     }
 }
 
 struct Sprite * GetBattlerSprite(enum BattleId battler)
 {
-    return &gSprites[gDeckBattleGraphics.battlerSpriteIds[battler]];
+    return &gSprites[gDeckGraphics.battlerSpriteIds[battler]];
 }
 
 u32 GetBattlerXCoord(enum BattleId battler)
 {
     if (GetDeckBattlerSide(battler) == B_SIDE_PLAYER)
-        return PLAYER_OBJ_X + OBJ_OFFSET * gDeckBattleMons[battler].position;
+        return PLAYER_OBJ_X + OBJ_OFFSET * gDeckMons[battler].pos;
     else
-        return OPPONENT_OBJ_X + OBJ_OFFSET * gDeckBattleMons[battler].position;
+        return OPPONENT_OBJ_X + OBJ_OFFSET * gDeckMons[battler].pos;
 }
 
 u32 GetBattlerYCoord(enum BattleId battler)
 {
     if (GetDeckBattlerSide(battler) == B_SIDE_PLAYER)
-        return PLAYER_OBJ_Y + gSpeciesDeckInfo[gDeckBattleMons[battler].species].playerYOffset;
+        return PLAYER_OBJ_Y + gDeckSpeciesInfo[gDeckMons[battler].species].playerYOffset;
     else
-        return OPPONENT_OBJ_Y + gSpeciesDeckInfo[gDeckBattleMons[battler].species].opponentYOffset;
+        return OPPONENT_OBJ_Y + gDeckSpeciesInfo[gDeckMons[battler].species].opponentYOffset;
 }
 
 #undef sBattlerId
@@ -731,7 +731,7 @@ static const u8 sTextColorNormal[] = { 0, 1, 2 };
 
 void PrintBattlerMoveInfo(enum BattleId battler)
 {
-    StringCopy(gStringVar1, gMovesInfo[gSpeciesDeckInfo[gDeckBattleMons[battler].species].move].name);
+    StringCopy(gStringVar1, gMovesInfo[gDeckSpeciesInfo[gDeckMons[battler].species].move].name);
     StringAppend(gStringVar1, COMPOUND_STRING(": Damages one\ntarget.")); // TODO: gDeckMovesInfo
 
     FillWindowPixelBuffer(WINDOW_BATTLER_INFO, PIXEL_FILL(0));
@@ -743,14 +743,14 @@ void PrintBattlerStats(enum BattleId battler)
 {
     u8 *strPtr;
     u32 digits = 0;
-    ConvertIntToDecimalStringN(gStringVar1, gDeckBattleMons[battler].hp, STR_CONV_MODE_LEFT_ALIGN, 3);
-    for (u32 i = gDeckBattleMons[battler].hp; i > 0; i /= 10)
+    ConvertIntToDecimalStringN(gStringVar1, gDeckMons[battler].hp, STR_CONV_MODE_LEFT_ALIGN, 3);
+    for (u32 i = gDeckMons[battler].hp; i > 0; i /= 10)
         ++digits;
     strPtr = &gStringVar1[digits];
     *strPtr = CHAR_SLASH;
     ++strPtr;
-    ConvertIntToDecimalStringN(strPtr, gDeckBattleMons[battler].maxHP, STR_CONV_MODE_LEFT_ALIGN, 3);
-    ConvertIntToDecimalStringN(gStringVar2, gDeckBattleMons[battler].pwr, STR_CONV_MODE_LEFT_ALIGN, 3);
+    ConvertIntToDecimalStringN(strPtr, gDeckMons[battler].maxHP, STR_CONV_MODE_LEFT_ALIGN, 3);
+    ConvertIntToDecimalStringN(gStringVar2, gDeckMons[battler].pwr, STR_CONV_MODE_LEFT_ALIGN, 3);
 
     FillWindowPixelBuffer(WINDOW_HP_PWR, PIXEL_FILL(0));
     AddTextPrinterParameterized3(WINDOW_HP_PWR, FONT_SMALL_NARROW, 0, 0, sTextColorNormal, TEXT_SKIP_DRAW, COMPOUND_STRING("HP"));
@@ -762,7 +762,7 @@ void PrintBattlerStats(enum BattleId battler)
 
 void PrintTargetBattlerPrompt(enum BattleId battler)
 {
-    StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[battler].species));
+    StringCopy(gStringVar2, GetSpeciesName(gDeckMons[battler].species));
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Attack {STR_VAR_2}?"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
@@ -772,8 +772,8 @@ void PrintTargetBattlerPrompt(enum BattleId battler)
 
 void PrintMoveUseString(void)
 {
-    StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[gBattlerAttacker].species));
-    StringCopy(gStringVar3, GetMoveName(gSpeciesDeckInfo[gDeckBattleMons[gBattlerAttacker].species].move));
+    StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gBattlerAttacker].species));
+    StringCopy(gStringVar3, GetMoveName(gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move));
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} used {STR_VAR_3}!"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
@@ -783,8 +783,8 @@ void PrintMoveUseString(void)
 
 void PrintMoveOutcomeString(void)
 {
-    StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[gBattlerTarget].species));
-    ConvertIntToDecimalStringN(gStringVar3, gDeckBattleMons[gBattlerAttacker].pwr, STR_CONV_MODE_LEFT_ALIGN, 2);
+    StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gBattlerTarget].species));
+    ConvertIntToDecimalStringN(gStringVar3, gDeckMons[gBattlerAttacker].pwr, STR_CONV_MODE_LEFT_ALIGN, 2);
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} took {STR_VAR_3} damage!"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
@@ -794,7 +794,7 @@ void PrintMoveOutcomeString(void)
 
 void PrintSwapTargetPrompt(enum BattleId battler)
 {
-    StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[battler].species));
+    StringCopy(gStringVar2, GetSpeciesName(gDeckMons[battler].species));
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Swap with {STR_VAR_2}?"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
@@ -804,8 +804,8 @@ void PrintSwapTargetPrompt(enum BattleId battler)
 
 void PrintSwapString(enum BattleId battler1, enum BattleId battler2)
 {
-    StringCopy(gStringVar2, GetSpeciesName(gDeckBattleMons[battler1].species));
-    StringCopy(gStringVar3, GetSpeciesName(gDeckBattleMons[battler2].species));
+    StringCopy(gStringVar2, GetSpeciesName(gDeckMons[battler1].species));
+    StringCopy(gStringVar3, GetSpeciesName(gDeckMons[battler2].species));
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} and {STR_VAR_3} swapped\nplaces!"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));

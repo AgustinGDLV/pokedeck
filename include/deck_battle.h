@@ -56,7 +56,8 @@ struct DeckBattlePokemon
     u16 hp;
     u16 maxHP;
     u16 pwr;
-    enum BattlePosition position;
+    enum BattlePosition pos;
+    enum BattlePosition initialPos;
     bool8 hasMoved;
     bool8 hasSwapped;
 };
@@ -76,8 +77,7 @@ struct BattleAction
 
 struct DeckBattleStruct
 {
-    enum BattlePosition selectedPosition; // for player selection
-    u8 initialPositions[MAX_DECK_BATTLERS_COUNT];
+    enum BattlePosition selectedPos; // for player selection
     struct BattleAction queuedActions[MAX_ACTIONS];
     u8 actionsCount;
     u8 executedCount;
@@ -85,8 +85,8 @@ struct DeckBattleStruct
 
 void CB2_OpenDeckBattleCustom(void);
 
-extern struct DeckBattleStruct gDeckBattleStruct;
-extern struct DeckBattlePokemon gDeckBattleMons[MAX_DECK_BATTLERS_COUNT];
-extern const struct DeckSpeciesInfo gSpeciesDeckInfo[NUM_SPECIES];
+extern struct DeckBattleStruct gDeckStruct;
+extern struct DeckBattlePokemon gDeckMons[MAX_DECK_BATTLERS_COUNT];
+extern const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES];
 
 #endif
