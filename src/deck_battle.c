@@ -559,10 +559,24 @@ static void InitBattleMonData(void)
 {
     for (u32 i = 0; i < MAX_DECK_BATTLERS_COUNT; ++i)
     {
-        if (i % 6 == 3)
+        switch (i % 6)
+        {
+        case 1:
+            gDeckMons[i].species = SPECIES_BELLSPROUT;
+            break;
+        case 2:
+            gDeckMons[i].species = SPECIES_MAREEP;
+            break;
+        case 3:
             gDeckMons[i].species = SPECIES_SLOWBRO;
-        else
+            break;
+        case 4:
+            gDeckMons[i].species = SPECIES_SWABLU;
+            break;
+        default:
             gDeckMons[i].species = SPECIES_SLOWPOKE;
+            break;
+        }
         gDeckMons[i].hp = gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
         gDeckMons[i].maxHP = gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
         gDeckMons[i].pwr = gDeckSpeciesInfo[gDeckMons[i].species].basePWR;
