@@ -62,6 +62,7 @@ struct DeckBattlePokemon
     bool8 hasSwapped;
 };
 
+// action constants
 #define ACTION_ATTACK   0
 #define ACTION_SWAP     1
 
@@ -73,6 +74,30 @@ struct BattleAction
     u8 attacker;
     u8 target;
     u16 move;
+};
+
+// move constants
+enum MoveTarget
+{
+    MOVE_TARGET_SINGLE_OPPONENT,
+    MOVE_TARGET_ALL_OPPONENTS,
+    MOVE_TARGET_LEFT_ALLY,
+    MOVE_TARGET_COUNT,
+};
+
+enum DeckMoveEffect
+{
+    DECK_EFFECT_HIT,
+    DECK_EFFECT_POWER_UP,
+    DECK_EFFECT_COUNT,
+};
+
+struct DeckMoveInfo
+{
+    const u8* name;
+    const u8* description;
+    u8 target;
+    u8 effect;
 };
 
 struct DeckBattleStruct
@@ -88,5 +113,6 @@ void CB2_OpenDeckBattleCustom(void);
 extern struct DeckBattleStruct gDeckStruct;
 extern struct DeckBattlePokemon gDeckMons[MAX_DECK_BATTLERS_COUNT];
 extern const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES];
+extern const struct DeckMoveInfo gDeckMovesInfo[MOVES_COUNT];
 
 #endif

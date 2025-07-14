@@ -8,6 +8,7 @@
 #include "event_object_movement.h"
 #include "gpu_regs.h"
 #include "graphics.h"
+#include "line_break.h"
 #include "m4a.h"
 #include "main.h"
 #include "malloc.h"
@@ -731,8 +732,10 @@ static const u8 sTextColorNormal[] = { 0, 1, 2 };
 
 void PrintBattlerMoveInfo(enum BattleId battler)
 {
-    StringCopy(gStringVar1, gMovesInfo[gDeckSpeciesInfo[gDeckMons[battler].species].move].name);
-    StringAppend(gStringVar1, COMPOUND_STRING(": Damages one\ntarget.")); // TODO: gDeckMovesInfo
+    StringCopy(gStringVar1, gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[battler].species].move].name);
+    StringAppend(gStringVar1, COMPOUND_STRING(": "));
+    StringAppend(gStringVar1, gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[battler].species].move].description);
+    BreakStringAutomatic(gStringVar1, 128, 2, FONT_SHORT_NARROW, SHOW_SCROLL_PROMPT);
 
     FillWindowPixelBuffer(WINDOW_BATTLER_INFO, PIXEL_FILL(0));
     AddTextPrinterParameterized3(WINDOW_BATTLER_INFO, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
@@ -783,11 +786,26 @@ void PrintMoveUseString(void)
 
 void PrintMoveOutcomeString(void)
 {
-    StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gBattlerTarget].species));
-    ConvertIntToDecimalStringN(gStringVar3, gDeckMons[gBattlerAttacker].pwr, STR_CONV_MODE_LEFT_ALIGN, 2);
-    StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} took {STR_VAR_3} damage!"));
+    // *TODO - move strings
+    if (gDeckMovesInfo[gCurrentMove].effect == DECK_EFFECT_HIT && gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_SINGLE_OPPONENT)
+    {
+        StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gBattlerTarget].species));
+        ConvertIntToDecimalStringN(gStringVar3, gDeckMons[gBattlerAttacker].pwr, STR_CONV_MODE_LEFT_ALIGN, 2);
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} took {STR_VAR_3} damage!"));
+    }
+    else if (gDeckMovesInfo[gCurrentMove].effect == DECK_EFFECT_HIT && gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_ALL_OPPONENTS)
+    {
+        ConvertIntToDecimalStringN(gStringVar3, gDeckMons[gBattlerAttacker].pwr, STR_CONV_MODE_LEFT_ALIGN, 2);
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Opponents took {STR_VAR_3} damage!"));
+    }
+    else if (gDeckMovesInfo[gCurrentMove].effect == DECK_EFFECT_POWER_UP)
+    {
+        StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gBattlerTarget].species));
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2}'s power was boosted!"));
+    }
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
+    BreakStringAutomatic(gStringVar1, 128, 2, FONT_SHORT_NARROW, SHOW_SCROLL_PROMPT);
     AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }

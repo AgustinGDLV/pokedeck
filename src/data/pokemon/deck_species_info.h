@@ -4,7 +4,7 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
     {
         .baseHP = 80,
         .basePWR = 12,
-        .move = MOVE_TACKLE,
+        .move = MOVE_VINE_WHIP,
         .ability = ABILITY_NONE,
 
         .playerIdle = gBellsproutPlayerIdleGfx,
@@ -46,7 +46,7 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
     {
         .baseHP = 120,
         .basePWR = 15,
-        .move = MOVE_HEADBUTT,
+        .move = MOVE_SURF,
         .ability = ABILITY_NONE,
 
         .playerIdle = gSlowbroPlayerIdleGfx,
@@ -67,7 +67,7 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
     {
         .baseHP = 90,
         .basePWR = 10,
-        .move = MOVE_TACKLE,
+        .move = MOVE_HELPING_HAND,
         .ability = ABILITY_NONE,
 
         .playerIdle = gMareepPlayerIdleGfx,
@@ -88,7 +88,7 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
     {
         .baseHP = 90,
         .basePWR = 10,
-        .move = MOVE_TACKLE,
+        .move = MOVE_HELPING_HAND,
         .ability = ABILITY_NONE,
 
         .playerIdle = gSwabluPlayerIdleGfx,
