@@ -103,7 +103,7 @@ void CB2_OpenDeckBattleCustom(void)
                 gMain.state++;
             break;
         case 1:
-            PlayBGM(MUS_NONE);
+            PlayBGM(MUS_VS_WILD);
             SetVBlankCallback(NULL); 
             ClearVramOamPlttRegs();
             SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);

@@ -18,6 +18,8 @@ $(SONG_BUILDDIR)/%.o: $(SONG_SUBDIR)/%.s $(EXPANSION_BATTLE_CONFIG)
 	$(AS) $(ASFLAGS) -I sound -o $@ $<
 $(MID_BUILDDIR)/%.o: $(MID_ASM_DIR)/%.s
 	$(AS) $(ASFLAGS) -I sound -o $@ $<
+$(GBS_BUILDDIR)/%.o: $(GBS_SUBDIR)/%.s
+	$(AS) $(ASFLAGS) -I sound -o $@ $<
 
 # Compressed cries
 $(CRY_BIN_DIR)/%.bin: $(CRY_SUBDIR)/%.aif 

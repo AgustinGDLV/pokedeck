@@ -80,6 +80,7 @@ SECTIONS {
         src/libgcnmultiboot.o(.text);
         src/m4a_1.o(.text);
         src/m4a.o(.text);
+        src/gbs.o(.text);
         src/agb_flash.o(.text);
         src/agb_flash_1m.o(.text);
         src/agb_flash_mx.o(.text);
@@ -106,12 +107,14 @@ SECTIONS {
     ALIGN(4)
     {
         sound/songs/*.o(.rodata);
+        sound/songs/gbs/*.o(.rodata);
     } > ROM =0
 
     lib_rodata :
     SUBALIGN(4)
     {
         src/m4a.o(.rodata);
+        src/gbs.o(.rodata);
         src/agb_flash.o(.rodata);
         src/agb_flash_1m.o(.rodata);
         src/agb_flash_mx.o(.rodata);

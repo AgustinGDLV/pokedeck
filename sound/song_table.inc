@@ -1,3 +1,4 @@
+#include "constants/songs.h"
 	.align 2
 
 gSongTable::
@@ -611,6 +612,10 @@ gSongTable::
 	song ph_nurse_blend, 2, 2
 	song ph_nurse_held, 2, 2
 	song ph_nurse_solo, 2, 2
+
+gGBSSongTable::
+	song_gbs MUS_VS_WILD, gbs_Music_AlolaWildBattle, 0, 0 @ Battle! (Wild Pokémon - Johto)
+	.4byte 0xFFFFFFFF
 
 	.align 2
 dummy_song_header:
