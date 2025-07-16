@@ -273,7 +273,8 @@ struct MusicPlayerTrack
 {
     u8 flags;
     u8 wait;
-    u8 patternLevel;
+    u8 patternLevel:4;
+    u8 gbsIdentifier:4;
     u8 repN;
     u8 gateTime;
     u8 key;
@@ -342,6 +343,7 @@ struct MusicPlayerInfo
     u16 fadeOI;
     u16 fadeOC;
     u16 fadeOV;
+    u16 gbsTempo;
     struct MusicPlayerTrack *tracks;
     struct ToneData *tone;
     u32 ident;
@@ -364,8 +366,15 @@ struct Song
     u16 me;
 };
 
+struct GBSSongItem
+{
+    u32 songID;
+    struct Song song;
+};
+
 extern const struct MusicPlayer gMPlayTable[];
 extern const struct Song gSongTable[];
+extern const struct GBSSongItem gGBSSongTable[];
 
 
 
@@ -464,6 +473,7 @@ void ply_goto(struct MusicPlayerInfo *, struct MusicPlayerTrack *);
 void ply_patt(struct MusicPlayerInfo *, struct MusicPlayerTrack *);
 void ply_pend(struct MusicPlayerInfo *, struct MusicPlayerTrack *);
 void ply_rept(struct MusicPlayerInfo *, struct MusicPlayerTrack *);
+void ply_gbs_switch(struct MusicPlayerInfo *, struct MusicPlayerTrack *);
 void ply_memacc(struct MusicPlayerInfo *, struct MusicPlayerTrack *);
 void ply_prio(struct MusicPlayerInfo *, struct MusicPlayerTrack *);
 void ply_tempo(struct MusicPlayerInfo *, struct MusicPlayerTrack *);

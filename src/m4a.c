@@ -17,6 +17,7 @@ COMMON_DATA struct MusicPlayerInfo gMPlayInfo_SE2 = {0};
 COMMON_DATA struct MusicPlayerTrack gPokemonCryTracks[MAX_POKEMON_CRIES * 2] = {0};
 COMMON_DATA struct PokemonCrySong gPokemonCrySong = {0};
 COMMON_DATA u8 gMPlayMemAccArea[0x10] = {0};
+COMMON_DATA u8 gUsedCGBChannels = 0;
 COMMON_DATA struct MusicPlayerInfo gMPlayInfo_SE3 = {0};
 
 u32 MidiKeyToFreq(struct WaveData *wav, u8 key, u8 fineAdjust)
@@ -101,11 +102,23 @@ void m4aSoundMain(void)
     SoundMain();
 }
 
+const struct Song *GetSong(int songID)
+{
+    for (int i = 0; gGBSSongTable[i].songID != 0xFFFFFFFF; i++)
+    {
+        if (gGBSSongTable[i].songID == songID)
+        {
+            return &gGBSSongTable[i].song;
+        }
+    }
+    return &gSongTable[songID];
+}
+
 void m4aSongNumStart(u16 n)
 {
     const struct MusicPlayer *mplayTable = gMPlayTable;
     const struct Song *songTable = gSongTable;
-    const struct Song *song = &songTable[n];
+    const struct Song *song = GetSong(n);
     const struct MusicPlayer *mplay = &mplayTable[song->ms];
 
     MPlayStart(mplay->info, song->header);
@@ -115,7 +128,7 @@ void m4aSongNumStartOrChange(u16 n)
 {
     const struct MusicPlayer *mplayTable = gMPlayTable;
     const struct Song *songTable = gSongTable;
-    const struct Song *song = &songTable[n];
+    const struct Song *song = GetSong(n);
     const struct MusicPlayer *mplay = &mplayTable[song->ms];
 
     if (mplay->info->songHeader != song->header)
@@ -136,7 +149,7 @@ void m4aSongNumStartOrContinue(u16 n)
 {
     const struct MusicPlayer *mplayTable = gMPlayTable;
     const struct Song *songTable = gSongTable;
-    const struct Song *song = &songTable[n];
+    const struct Song *song = GetSong(n);
     const struct MusicPlayer *mplay = &mplayTable[song->ms];
 
     if (mplay->info->songHeader != song->header)
@@ -151,7 +164,7 @@ void m4aSongNumStop(u16 n)
 {
     const struct MusicPlayer *mplayTable = gMPlayTable;
     const struct Song *songTable = gSongTable;
-    const struct Song *song = &songTable[n];
+    const struct Song *song = GetSong(n);
     const struct MusicPlayer *mplay = &mplayTable[song->ms];
 
     if (mplay->info->songHeader == song->header)
@@ -162,7 +175,7 @@ void m4aSongNumContinue(u16 n)
 {
     const struct MusicPlayer *mplayTable = gMPlayTable;
     const struct Song *songTable = gSongTable;
-    const struct Song *song = &songTable[n];
+    const struct Song *song = GetSong(n);
     const struct MusicPlayer *mplay = &mplayTable[song->ms];
 
     if (mplay->info->songHeader == song->header)
@@ -632,7 +645,14 @@ void MPlayStart(struct MusicPlayerInfo *mplayInfo, struct SongHeader *songHeader
         mplayInfo->tempoI = 150;
         mplayInfo->tempoU = 0x100;
         mplayInfo->tempoC = 0;
+        mplayInfo->gbsTempo = 0x100;
         mplayInfo->fadeOI = 0;
+
+        // Restore the master volume of the GB channels in case GBS changed it.
+        REG_NR50 = 0x77;
+
+        // Restore bias level.
+        //REG_SOUNDBIAS = (REG_SOUNDBIAS & 0xFC00) | 0x200;
 
         i = 0;
         track = mplayInfo->tracks;
@@ -934,6 +954,7 @@ void CgbSound(void)
 
     // Most comparision operations that cast to s8 perform 'and' by 0xFF.
     int mask = 0xff;
+    gUsedCGBChannels = 0;
 
     if (soundInfo->c15)
         soundInfo->c15--;
@@ -944,6 +965,8 @@ void CgbSound(void)
     {
         if (!(channels->statusFlags & SOUND_CHANNEL_SF_ON))
             continue;
+
+        gUsedCGBChannels |= 1 << (ch - 1);
 
         /* 1. determine hardware channel registers */
         switch (ch)
