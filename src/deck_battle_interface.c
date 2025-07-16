@@ -806,16 +806,6 @@ static const u16 sHpBarBottomTiles[] = {0x24, 0x1C, 0x1B, 0x22};
 static const u16 sHpBarMiddleTiles[] = {0x1A, 0x19, 0x14, 0xD, 0xA, 0x9, 0x8, 0x7, 0x18};
 static const u16 sHpBarTopTiles[] = {0x4, 0x23, 0x13};
 
-static void ClearPlayerHPBar(void)
-{
-    *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 19)) = sHpBarBottomTiles[0];
-    *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 18)) = sHpBarMiddleTiles[0];
-    *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 17)) = sHpBarMiddleTiles[0];
-    *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 16)) = sHpBarMiddleTiles[0];
-    *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 15)) = sHpBarMiddleTiles[0];
-    *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 14)) = sHpBarTopTiles[0];
-}
-
 static void SetHPBarColor(enum BattleId battler)
 {
     u16 palette;
@@ -832,48 +822,48 @@ static void SetHPBarColor(enum BattleId battler)
 
 void UpdatePlayerHPBar(enum BattleId battler)
 {
-    u16 *dst;
     u32 pixels = ((gDeckMons[battler].hp * 100) / gDeckMons[battler].maxHP) * 36 / 100;
-    ClearPlayerHPBar();
     SetHPBarColor(battler);
 
-    // Update bottom tile.
-    dst = (u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 19);
-    if (pixels >= 3)
-    {
-        *dst = sHpBarBottomTiles[3];
-        pixels -= 3;
-    }
+    if (pixels >= 3) // bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 19)) = sHpBarBottomTiles[3];
     else
-    {
-        *dst = sHpBarBottomTiles[pixels];
-        CopyBgTilemapBufferToVram(0);
-        return;
-    }
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 19)) = sHpBarBottomTiles[pixels];
 
-    // Update middle tiles.
-    for (u32 i = 0; i < 4; ++i)
-    {
-        dst = (u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 18 - i);
-        if (pixels >= 8)
-        {
-            *dst = sHpBarMiddleTiles[8];
-            pixels -= 8;
-        }
-        else
-        {
-            *dst = sHpBarMiddleTiles[pixels];
-            CopyBgTilemapBufferToVram(0);
-            return;
-        }
-    }
+    if (pixels >= 11) // 1st from bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 18)) = sHpBarMiddleTiles[8];
+    else if (pixels >= 3)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 18)) = sHpBarMiddleTiles[pixels-3];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 18)) = sHpBarMiddleTiles[0];
 
-    // Update top tile.
-    dst = (u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 14);
-    if (pixels > 1)
-        *dst = sHpBarTopTiles[2];
-    else if (pixels > 0)
-        *dst = sHpBarTopTiles[1];
+    if (pixels >= 19) // 2nd from bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 17)) = sHpBarMiddleTiles[8];
+    else if (pixels >= 11)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 17)) = sHpBarMiddleTiles[pixels-11];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 17)) = sHpBarMiddleTiles[0];
+
+    if (pixels >= 27) // 3rd from bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 16)) = sHpBarMiddleTiles[8];
+    else if (pixels >= 19)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 16)) = sHpBarMiddleTiles[pixels-19];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 16)) = sHpBarMiddleTiles[0];
+
+    if (pixels >= 35) // 4th from bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 15)) = sHpBarMiddleTiles[8];
+    else if (pixels >= 27)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 15)) = sHpBarMiddleTiles[pixels-27];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 15)) = sHpBarMiddleTiles[0];
+
+    if (pixels == 36) // in case of overflow
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 14)) = sHpBarTopTiles[2];
+    else if (pixels == 35)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 14)) = sHpBarTopTiles[1];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 14)) = sHpBarTopTiles[0];
 
     CopyBgTilemapBufferToVram(0);
 }
