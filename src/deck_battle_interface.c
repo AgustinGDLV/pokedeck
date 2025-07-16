@@ -58,7 +58,6 @@ static void SpriteCB_BattlerHurt(struct Sprite *sprite);
 enum Windows
 {
     WINDOW_BATTLER_INFO,
-    WINDOW_HP_PWR,
     WINDOW_MESSAGE,
     WINDOW_COUNT,
 };
@@ -68,32 +67,22 @@ static const struct WindowTemplate sDeckBattleWinTemplates[WINDOW_COUNT + 1] =
     [WINDOW_BATTLER_INFO] =
     {
         .bg = 1,
-        .tilemapLeft = 7,
+        .tilemapLeft = 6,
         .tilemapTop = 15,
-        .width = 13,
+        .width = 21,
         .height = 4,
         .paletteNum = 0,
         .baseBlock = 1,
     },
-    [WINDOW_HP_PWR] =
-    {
-        .bg = 1,
-        .tilemapLeft = 23,
-        .tilemapTop = 15,
-        .width = 6,
-        .height = 4,
-        .paletteNum = 0,
-        .baseBlock = 1 + 13*4,
-    },
     [WINDOW_MESSAGE] =
     {
         .bg = 1,
-        .tilemapLeft = 4,
+        .tilemapLeft = 3,
         .tilemapTop = 35,
-        .width = 19,
+        .width = 24,
         .height = 4,
         .paletteNum = 0,
-        .baseBlock = 1 + 13*4 + 6*4,
+        .baseBlock = 1 + 21*4,
     },
     DUMMY_WIN_TEMPLATE,
 };
@@ -735,10 +724,10 @@ void PrintBattlerMoveInfo(enum BattleId battler)
     StringCopy(gStringVar1, gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[battler].species].move].name);
     StringAppend(gStringVar1, COMPOUND_STRING(": "));
     StringAppend(gStringVar1, gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[battler].species].move].description);
-    BreakStringAutomatic(gStringVar1, 128, 2, FONT_SHORT_NARROW, SHOW_SCROLL_PROMPT);
+    BreakStringAutomatic(gStringVar1, 180, 2, FONT_NORMAL, SHOW_SCROLL_PROMPT);
 
     FillWindowPixelBuffer(WINDOW_BATTLER_INFO, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_BATTLER_INFO, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_BATTLER_INFO, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_BATTLER_INFO, COPYWIN_FULL);
 }
 
@@ -748,7 +737,7 @@ void PrintTargetBattlerPrompt(enum BattleId battler)
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Attack {STR_VAR_2}?"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
@@ -759,7 +748,7 @@ void PrintMoveUseString(void)
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} used {STR_VAR_3}!"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
@@ -784,8 +773,8 @@ void PrintMoveOutcomeString(void)
     }
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    BreakStringAutomatic(gStringVar1, 128, 2, FONT_SHORT_NARROW, SHOW_SCROLL_PROMPT);
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    BreakStringAutomatic(gStringVar1, 128, 2, FONT_NORMAL, SHOW_SCROLL_PROMPT);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
@@ -795,7 +784,7 @@ void PrintSwapTargetPrompt(enum BattleId battler)
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Swap with {STR_VAR_2}?"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
@@ -806,7 +795,7 @@ void PrintSwapString(enum BattleId battler1, enum BattleId battler2)
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} and {STR_VAR_3} swapped\nplaces!"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
