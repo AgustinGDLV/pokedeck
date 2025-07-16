@@ -5,6 +5,7 @@
 #include "deck_battle_interface.h"
 #include "deck_battle_util.h"
 #include "event_object_movement.h"
+#include "field_weather.h"
 #include "gpu_regs.h"
 #include "m4a.h"
 #include "main.h"
@@ -12,6 +13,7 @@
 #include "menu.h"
 #include "overworld.h"
 #include "palette.h"
+#include "scanline_effect.h"
 #include "sound.h"
 #include "sprite.h"
 #include "task.h"
@@ -27,6 +29,7 @@
 // forward declarations
 static void MainCB2_DeckBattle(void);
 static void VBlankCB2_DeckBattle(void);
+static void Task_DoBattleIntro(u8 taskId);
 static void Task_OpenDeckBattle(u8 taskId);
 static void Task_CloseDeckBattle(u8 taskId);
 static void Task_PlayerSelectAction(u8 taskId);
@@ -90,6 +93,8 @@ static void VBlankCB2_DeckBattle(void)
 
 void OpenDeckBattle(void)
 {
+    PlayBGM(MUS_VS_WILD);
+    FadeScreen(FADE_TO_BLACK, 0);
     SetMainCallback2(CB2_OpenDeckBattleCustom);
 }
 
@@ -103,7 +108,6 @@ void CB2_OpenDeckBattleCustom(void)
                 gMain.state++;
             break;
         case 1:
-            PlayBGM(MUS_VS_WILD);
             SetVBlankCallback(NULL); 
             ClearVramOamPlttRegs();
             SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_OBJ_ON | DISPCNT_OBJ_1D_MAP);
@@ -135,7 +139,10 @@ void CB2_OpenDeckBattleCustom(void)
             for (enum BattleId battler = 0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
                 LoadBattlerObjectSprite(battler);
             gMain.state++;
+            break;
         case 7:
+            UpdatePlayerHPBar(B_PLAYER_0);
+            BeginNormalPaletteFade(PALETTES_ALL, 4, 16, 0, RGB_BLACK);
             SetVBlankCallback(VBlankCB2_DeckBattle);
             CreateTask(Task_OpenDeckBattle, 0);
             SetMainCallback2(MainCB2_DeckBattle);
@@ -148,13 +155,18 @@ void CB2_OpenDeckBattleCustom(void)
 
 static void Task_OpenDeckBattle(u8 taskId)
 {
-    if (!gPaletteFade.active)
+    if (gTasks[taskId].tState == 0)
     {
         LoadBattlerPortrait(B_PLAYER_0);
         PrintBattlerMoveInfo(B_PLAYER_0);
-        UpdatePlayerHPBar(B_PLAYER_0);
+        // HP bar updated before fade begins
         CreateSelectionCursorOverBattler(GetDeckBattlerAtPos(B_SIDE_PLAYER, POSITION_0));
         StartSpriteAnim(&gSprites[gDeckGraphics.battlerSpriteIds[GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos)]], ANIM_IDLE);
+        gTasks[taskId].tState += 1;
+    }
+    else if (!gPaletteFade.active)
+    {
+        gTasks[taskId].tState = 0;
         gTasks[taskId].func = Task_PlayerSelectAction;
     }
 }
@@ -239,6 +251,7 @@ static void Task_PlayerSelectAction(u8 taskId)
     if (gMain.newKeys & B_BUTTON)
     {
         BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
+        PlayBGM(MUS_OLDALE);
         gTasks[taskId].func = Task_CloseDeckBattle;
         PlaySE(SE_SELECT);
     }
