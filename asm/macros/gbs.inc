@@ -1,5 +1,6 @@
 	.include "sound/MPlayDef.s"
-	.include "constants/constants.inc"
+	.set TRUE, 1
+	.set FALSE, 0
 
 	enum_start 1
 	enum C_ @ 1

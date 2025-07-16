@@ -614,7 +614,7 @@ gSongTable::
 	song ph_nurse_solo, 2, 2
 
 gGBSSongTable::
-	song_gbs MUS_VS_WILD, gbs_Music_AlolaWildBattle, 0, 0 @ Battle! (Wild Pokémon - Johto)
+	song_gbs MUS_VS_WILD, gbs_johtowildbattle_Header, 0, 0 @ Battle! (Wild Pokémon - Johto)
 	.4byte 0xFFFFFFFF
 
 	.align 2
