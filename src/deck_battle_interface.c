@@ -58,7 +58,6 @@ static void SpriteCB_BattlerHurt(struct Sprite *sprite);
 enum Windows
 {
     WINDOW_BATTLER_INFO,
-    WINDOW_HP_PWR,
     WINDOW_MESSAGE,
     WINDOW_COUNT,
 };
@@ -68,32 +67,22 @@ static const struct WindowTemplate sDeckBattleWinTemplates[WINDOW_COUNT + 1] =
     [WINDOW_BATTLER_INFO] =
     {
         .bg = 1,
-        .tilemapLeft = 7,
+        .tilemapLeft = 6,
         .tilemapTop = 15,
-        .width = 13,
+        .width = 21,
         .height = 4,
         .paletteNum = 0,
         .baseBlock = 1,
     },
-    [WINDOW_HP_PWR] =
-    {
-        .bg = 1,
-        .tilemapLeft = 23,
-        .tilemapTop = 15,
-        .width = 6,
-        .height = 4,
-        .paletteNum = 0,
-        .baseBlock = 1 + 13*4,
-    },
     [WINDOW_MESSAGE] =
     {
         .bg = 1,
-        .tilemapLeft = 4,
+        .tilemapLeft = 3,
         .tilemapTop = 35,
-        .width = 19,
+        .width = 24,
         .height = 4,
         .paletteNum = 0,
-        .baseBlock = 1 + 13*4 + 6*4,
+        .baseBlock = 1 + 21*4,
     },
     DUMMY_WIN_TEMPLATE,
 };
@@ -735,32 +724,11 @@ void PrintBattlerMoveInfo(enum BattleId battler)
     StringCopy(gStringVar1, gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[battler].species].move].name);
     StringAppend(gStringVar1, COMPOUND_STRING(": "));
     StringAppend(gStringVar1, gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[battler].species].move].description);
-    BreakStringAutomatic(gStringVar1, 128, 2, FONT_SHORT_NARROW, SHOW_SCROLL_PROMPT);
+    BreakStringAutomatic(gStringVar1, 180, 2, FONT_NORMAL, SHOW_SCROLL_PROMPT);
 
     FillWindowPixelBuffer(WINDOW_BATTLER_INFO, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_BATTLER_INFO, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_BATTLER_INFO, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_BATTLER_INFO, COPYWIN_FULL);
-}
-
-void PrintBattlerStats(enum BattleId battler)
-{
-    u8 *strPtr;
-    u32 digits = 0;
-    ConvertIntToDecimalStringN(gStringVar1, gDeckMons[battler].hp, STR_CONV_MODE_LEFT_ALIGN, 3);
-    for (u32 i = gDeckMons[battler].hp; i > 0; i /= 10)
-        ++digits;
-    strPtr = &gStringVar1[digits];
-    *strPtr = CHAR_SLASH;
-    ++strPtr;
-    ConvertIntToDecimalStringN(strPtr, gDeckMons[battler].maxHP, STR_CONV_MODE_LEFT_ALIGN, 3);
-    ConvertIntToDecimalStringN(gStringVar2, gDeckMons[battler].pwr, STR_CONV_MODE_LEFT_ALIGN, 3);
-
-    FillWindowPixelBuffer(WINDOW_HP_PWR, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_HP_PWR, FONT_SMALL_NARROW, 0, 0, sTextColorNormal, TEXT_SKIP_DRAW, COMPOUND_STRING("HP"));
-    AddTextPrinterParameterized3(WINDOW_HP_PWR, FONT_SMALL_NARROW, 12, 0, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
-    AddTextPrinterParameterized3(WINDOW_HP_PWR, FONT_SMALL_NARROW, 0, 12, sTextColorNormal, TEXT_SKIP_DRAW, COMPOUND_STRING("PWR"));
-    AddTextPrinterParameterized3(WINDOW_HP_PWR, FONT_SMALL_NARROW, 18, 12, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar2);
-    CopyWindowToVram(WINDOW_HP_PWR, COPYWIN_FULL);
 }
 
 void PrintTargetBattlerPrompt(enum BattleId battler)
@@ -769,7 +737,7 @@ void PrintTargetBattlerPrompt(enum BattleId battler)
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Attack {STR_VAR_2}?"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
@@ -780,7 +748,7 @@ void PrintMoveUseString(void)
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} used {STR_VAR_3}!"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
@@ -805,8 +773,8 @@ void PrintMoveOutcomeString(void)
     }
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    BreakStringAutomatic(gStringVar1, 128, 2, FONT_SHORT_NARROW, SHOW_SCROLL_PROMPT);
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    BreakStringAutomatic(gStringVar1, 128, 2, FONT_NORMAL, SHOW_SCROLL_PROMPT);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
@@ -816,7 +784,7 @@ void PrintSwapTargetPrompt(enum BattleId battler)
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Swap with {STR_VAR_2}?"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
@@ -827,6 +795,75 @@ void PrintSwapString(enum BattleId battler1, enum BattleId battler2)
     StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} and {STR_VAR_3} swapped\nplaces!"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_SHORT_NARROW, 2, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
+}
+
+#define POS_TO_SCR_ADDR(x,y) (32*(y) + (x))
+#define SCR_MAP_ENTRY(tile, pal, hflip, vflip) ((tile) | (hflip ? (1<<10) : 0) | (vflip ? (1 << 11) : 0) | (pal << 12))
+
+static const u16 sHpBarBottomTiles[] = {0x24, 0x1C, 0x1B, 0x22};
+static const u16 sHpBarMiddleTiles[] = {0x1A, 0x19, 0x14, 0xD, 0xA, 0x9, 0x8, 0x7, 0x18};
+static const u16 sHpBarTopTiles[] = {0x4, 0x23, 0x13};
+
+static void SetHPBarColor(enum BattleId battler)
+{
+    u16 palette;
+    u32 pct = ((gDeckMons[battler].hp * 100) / gDeckMons[battler].maxHP);
+    DebugPrintf("pct: %d", pct);
+    if (pct > 50)
+        palette = RGB(0, 27, 0);
+    else if (pct > 20)
+        palette = RGB(27, 27, 0);
+    else
+        palette = RGB(27, 0, 0);
+    LoadPalette(&palette, BG_PLTT_ID(0) + 3, PLTT_SIZEOF(1));
+}
+
+void UpdatePlayerHPBar(enum BattleId battler)
+{
+    u32 pixels = ((gDeckMons[battler].hp * 100) / gDeckMons[battler].maxHP) * 36 / 100;
+    SetHPBarColor(battler);
+
+    if (pixels >= 3) // bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 19)) = sHpBarBottomTiles[3];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 19)) = sHpBarBottomTiles[pixels];
+
+    if (pixels >= 11) // 1st from bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 18)) = sHpBarMiddleTiles[8];
+    else if (pixels >= 3)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 18)) = sHpBarMiddleTiles[pixels-3];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 18)) = sHpBarMiddleTiles[0];
+
+    if (pixels >= 19) // 2nd from bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 17)) = sHpBarMiddleTiles[8];
+    else if (pixels >= 11)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 17)) = sHpBarMiddleTiles[pixels-11];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 17)) = sHpBarMiddleTiles[0];
+
+    if (pixels >= 27) // 3rd from bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 16)) = sHpBarMiddleTiles[8];
+    else if (pixels >= 19)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 16)) = sHpBarMiddleTiles[pixels-19];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 16)) = sHpBarMiddleTiles[0];
+
+    if (pixels >= 35) // 4th from bottom
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 15)) = sHpBarMiddleTiles[8];
+    else if (pixels >= 27)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 15)) = sHpBarMiddleTiles[pixels-27];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 15)) = sHpBarMiddleTiles[0];
+
+    if (pixels == 36) // in case of overflow
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 14)) = sHpBarTopTiles[2];
+    else if (pixels == 35)
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 14)) = sHpBarTopTiles[1];
+    else
+        *((u16 *)(BG_SCREEN_ADDR(24)) + POS_TO_SCR_ADDR(28, 14)) = sHpBarTopTiles[0];
+
+    CopyBgTilemapBufferToVram(0);
 }
