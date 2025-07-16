@@ -152,7 +152,7 @@ static void Task_OpenDeckBattle(u8 taskId)
     {
         LoadBattlerPortrait(B_PLAYER_0);
         PrintBattlerMoveInfo(B_PLAYER_0);
-        // PrintBattlerStats(B_PLAYER_0);
+        UpdatePlayerHPBar(B_PLAYER_0);
         CreateSelectionCursorOverBattler(GetDeckBattlerAtPos(B_SIDE_PLAYER, POSITION_0));
         StartSpriteAnim(&gSprites[gDeckGraphics.battlerSpriteIds[GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos)]], ANIM_IDLE);
         gTasks[taskId].func = Task_PlayerSelectAction;
@@ -829,7 +829,7 @@ static void InitBattleMonData(void)
             gDeckMons[i].species = SPECIES_SLOWPOKE;
             break;
         }
-        gDeckMons[i].hp = gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
+        gDeckMons[i].hp = 100 - i*15; // gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
         gDeckMons[i].maxHP = gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
         gDeckMons[i].pwr = gDeckSpeciesInfo[gDeckMons[i].species].basePWR;
         gDeckMons[i].pos = i % 6;
@@ -857,14 +857,14 @@ static void DisplayActionSelectionInfo(enum BattleId battler)
 {
     LoadBattlerPortrait(battler);
     PrintBattlerMoveInfo(battler);
-    // PrintBattlerStats(battler);
+    UpdatePlayerHPBar(battler);
 }
 
 // Update graphics for swap selection.
 static void DisplaySwapSelectionInfo(enum BattleId battler)
 {
     PrintSwapTargetPrompt(battler);
-    // PrintBattlerStats(battler);
+    UpdatePlayerHPBar(battler);
 }
 
 // Update graphics for target selection.

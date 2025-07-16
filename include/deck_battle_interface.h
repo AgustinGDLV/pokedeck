@@ -50,12 +50,13 @@ u32 GetBattlerXCoord(enum BattleId battler);
 u32 GetBattlerYCoord(enum BattleId battler);
 
 void PrintBattlerMoveInfo(enum BattleId battler);
-void PrintBattlerStats(enum BattleId battler);
 void PrintTargetBattlerPrompt(enum BattleId battler);
 void PrintMoveUseString(void);
 void PrintMoveOutcomeString(void);
 void PrintSwapTargetPrompt(enum BattleId battler);
 void PrintSwapString(enum BattleId battler1, enum BattleId battler2);
+
+void UpdatePlayerHPBar(enum BattleId battler);
 
 extern struct DeckBattleGraphics gDeckGraphics;
 
