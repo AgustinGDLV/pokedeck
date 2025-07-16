@@ -16,7 +16,7 @@
 #define OBJECT_SIZE     (32 * 64 / 2)
 
 #define PORTRAIT_X      36
-#define PORTRAIT_Y      124
+#define PORTRAIT_Y      126
 #define PLAYER_OBJ_X    28
 #define PLAYER_OBJ_Y    96
 #define OPPONENT_OBJ_X  52

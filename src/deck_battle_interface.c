@@ -742,27 +742,6 @@ void PrintBattlerMoveInfo(enum BattleId battler)
     CopyWindowToVram(WINDOW_BATTLER_INFO, COPYWIN_FULL);
 }
 
-void PrintBattlerStats(enum BattleId battler)
-{
-    u8 *strPtr;
-    u32 digits = 0;
-    ConvertIntToDecimalStringN(gStringVar1, gDeckMons[battler].hp, STR_CONV_MODE_LEFT_ALIGN, 3);
-    for (u32 i = gDeckMons[battler].hp; i > 0; i /= 10)
-        ++digits;
-    strPtr = &gStringVar1[digits];
-    *strPtr = CHAR_SLASH;
-    ++strPtr;
-    ConvertIntToDecimalStringN(strPtr, gDeckMons[battler].maxHP, STR_CONV_MODE_LEFT_ALIGN, 3);
-    ConvertIntToDecimalStringN(gStringVar2, gDeckMons[battler].pwr, STR_CONV_MODE_LEFT_ALIGN, 3);
-
-    FillWindowPixelBuffer(WINDOW_HP_PWR, PIXEL_FILL(0));
-    AddTextPrinterParameterized3(WINDOW_HP_PWR, FONT_SMALL_NARROW, 0, 0, sTextColorNormal, TEXT_SKIP_DRAW, COMPOUND_STRING("HP"));
-    AddTextPrinterParameterized3(WINDOW_HP_PWR, FONT_SMALL_NARROW, 12, 0, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);
-    AddTextPrinterParameterized3(WINDOW_HP_PWR, FONT_SMALL_NARROW, 0, 12, sTextColorNormal, TEXT_SKIP_DRAW, COMPOUND_STRING("PWR"));
-    AddTextPrinterParameterized3(WINDOW_HP_PWR, FONT_SMALL_NARROW, 18, 12, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar2);
-    CopyWindowToVram(WINDOW_HP_PWR, COPYWIN_FULL);
-}
-
 void PrintTargetBattlerPrompt(enum BattleId battler)
 {
     StringCopy(gStringVar2, GetSpeciesName(gDeckMons[battler].species));
