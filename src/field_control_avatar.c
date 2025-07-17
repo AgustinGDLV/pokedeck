@@ -43,6 +43,8 @@
 
 static EWRAM_DATA u8 sWildEncounterImmunitySteps = 0;
 static EWRAM_DATA u16 sPrevMetatileBehavior = 0;
+static EWRAM_DATA u8 sCurrentDirection = 0;
+static EWRAM_DATA u8 sPreviousDirection = 0;
 
 COMMON_DATA u8 gSelectedObjectEvent = 0;
 
@@ -82,6 +84,14 @@ static void SetMsgSignPostAndVarFacing(u32 playerDirection);
 static void SetUpWalkIntoSignScript(const u8 *script, u32 playerDirection);
 static u32 GetFacingSignpostType(u16 metatileBehvaior, u32 direction);
 static const u8 *GetSignpostScriptAtMapPosition(struct MapPosition * position);
+static void GetInFrontOfPlayerPositionNonDiagonal(struct MapPosition *);
+
+static u8 GetDirectionFromBitfield(u8 bitfield)
+{
+    u8 direction = 0;
+    while (bitfield >>= 1) direction++;
+    return direction;
+}
 
 void FieldClearPlayerInput(struct FieldInput *input)
 {
@@ -98,6 +108,59 @@ void FieldClearPlayerInput(struct FieldInput *input)
     input->input_field_1_2 = FALSE;
     input->input_field_1_3 = FALSE;
     input->dpadDirection = 0;
+}
+
+static void SetDirectionFromHeldKeys(u16 heldKeys)
+{
+    u8 dpadDirections = 0;
+
+    if (heldKeys & DPAD_UP)
+        dpadDirections |= (1 << DIR_NORTH);
+    if (heldKeys & DPAD_DOWN)
+        dpadDirections |= (1 << DIR_SOUTH);
+    if (heldKeys & DPAD_LEFT)
+        dpadDirections |= (1 << DIR_WEST);
+    if (heldKeys & DPAD_RIGHT)
+        dpadDirections |= (1 << DIR_EAST);
+
+    if (dpadDirections == 0) // no dir is pushed
+    {
+        sCurrentDirection = DIR_NONE;
+        sPreviousDirection = DIR_NONE;
+        return;
+    }
+
+    if ((dpadDirections & (dpadDirections - 1)) == 0) // only 1 dir is pushed
+    {
+        // simply set currDir to that dir
+        sCurrentDirection = GetDirectionFromBitfield(dpadDirections);
+        sPreviousDirection = DIR_NONE;
+        return;
+    }
+
+    // Check for diagonal movement
+    if (dpadDirections & (1 << DIR_NORTH) && dpadDirections & (1 << DIR_EAST))
+        sCurrentDirection = DIR_NORTHEAST;
+    else if (dpadDirections & (1 << DIR_NORTH) && dpadDirections & (1 << DIR_WEST))
+        sCurrentDirection = DIR_NORTHWEST;
+    else if (dpadDirections & (1 << DIR_SOUTH) && dpadDirections & (1 << DIR_EAST))
+        sCurrentDirection = DIR_SOUTHEAST;
+    else if (dpadDirections & (1 << DIR_SOUTH) && dpadDirections & (1 << DIR_WEST))
+        sCurrentDirection = DIR_SOUTHWEST;
+    
+    else if (((dpadDirections >> sCurrentDirection) & 1) == 0) // none of the multiple dirs pushed is currDir
+    {
+        sCurrentDirection = DIR_NONE;
+        sPreviousDirection = DIR_NONE;
+    }
+    else if ((sPreviousDirection == DIR_NONE) || (((dpadDirections >> sPreviousDirection) & 1) == 0))
+    {
+        // turn
+        sCurrentDirection = GetDirectionFromBitfield(dpadDirections & ~(1 << sCurrentDirection));
+        sPreviousDirection = sCurrentDirection;
+    }
+    // else, currDir and prevDir are the dirs pushed
+    // do nothing (keep the same currDir and prevDir)
 }
 
 void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
@@ -137,14 +200,8 @@ void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
             input->checkStandardWildEncounter = TRUE;
     }
 
-    if (heldKeys & DPAD_UP)
-        input->dpadDirection = DIR_NORTH;
-    else if (heldKeys & DPAD_DOWN)
-        input->dpadDirection = DIR_SOUTH;
-    else if (heldKeys & DPAD_LEFT)
-        input->dpadDirection = DIR_WEST;
-    else if (heldKeys & DPAD_RIGHT)
-        input->dpadDirection = DIR_EAST;
+    SetDirectionFromHeldKeys(heldKeys);
+    input->dpadDirection = sCurrentDirection;
 
     if(DEBUG_OVERWORLD_MENU && !DEBUG_OVERWORLD_IN_MENU)
     {
@@ -159,7 +216,7 @@ void FieldGetPlayerInput(struct FieldInput *input, u16 newKeys, u16 heldKeys)
 int ProcessPlayerFieldInput(struct FieldInput *input)
 {
     struct MapPosition position;
-    u8 playerDirection;
+    u8 playerDirection, nonDiagonalPlayerDirection;
     u16 metatileBehavior;
 
     gSpecialVar_LastTalked = LOCALID_NONE;
@@ -167,6 +224,8 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
 
     gMsgIsSignPost = FALSE;
     playerDirection = GetPlayerFacingDirection();
+    nonDiagonalPlayerDirection = GetNonDiagonalDirection(playerDirection);
+
     GetPlayerPosition(&position);
     metatileBehavior = MapGridGetMetatileBehaviorAt(position.x, position.y);
 
@@ -200,22 +259,22 @@ int ProcessPlayerFieldInput(struct FieldInput *input)
         return TRUE;
     if (input->heldDirection && input->dpadDirection == playerDirection)
     {
-        if (TryArrowWarp(&position, metatileBehavior, playerDirection) == TRUE)
+        if (TryArrowWarp(&position, metatileBehavior, nonDiagonalPlayerDirection) == TRUE)
             return TRUE;
     }
 
-    GetInFrontOfPlayerPosition(&position);
+    GetInFrontOfPlayerPositionNonDiagonal(&position);
     metatileBehavior = MapGridGetMetatileBehaviorAt(position.x, position.y);
 
-    if (input->heldDirection && (input->dpadDirection == playerDirection) && (TrySetUpWalkIntoSignpostScript(&position, metatileBehavior, playerDirection) == TRUE))
+    if (input->heldDirection && (input->dpadDirection == playerDirection) && (TrySetUpWalkIntoSignpostScript(&position, metatileBehavior, nonDiagonalPlayerDirection) == TRUE))
         return TRUE;
 
-    if (input->pressedAButton && TryStartInteractionScript(&position, metatileBehavior, playerDirection) == TRUE)
+    if (input->pressedAButton && TryStartInteractionScript(&position, metatileBehavior, nonDiagonalPlayerDirection) == TRUE)
         return TRUE;
 
     if (input->heldDirection2 && input->dpadDirection == playerDirection)
     {
-        if (TryDoorWarp(&position, metatileBehavior, playerDirection) == TRUE)
+        if (TryDoorWarp(&position, metatileBehavior, nonDiagonalPlayerDirection) == TRUE)
             return TRUE;
     }
     if (input->pressedAButton && TrySetupDiveDownScript() == TRUE)
@@ -265,6 +324,18 @@ static void GetInFrontOfPlayerPosition(struct MapPosition *position)
     s16 x, y;
 
     GetXYCoordsOneStepInFrontOfPlayer(&position->x, &position->y);
+    PlayerGetDestCoords(&x, &y);
+    if (MapGridGetElevationAt(x, y) != 0)
+        position->elevation = PlayerGetElevation();
+    else
+        position->elevation = 0;
+}
+
+static void GetInFrontOfPlayerPositionNonDiagonal(struct MapPosition *position)
+{
+    s16 x, y;
+
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&position->x, &position->y);
     PlayerGetDestCoords(&x, &y);
     if (MapGridGetElevationAt(x, y) != 0)
         position->elevation = PlayerGetElevation();
@@ -945,6 +1016,14 @@ static bool8 IsArrowWarpMetatileBehavior(u16 metatileBehavior, u8 direction)
         return MetatileBehavior_IsWestArrowWarp(metatileBehavior);
     case DIR_EAST:
         return MetatileBehavior_IsEastArrowWarp(metatileBehavior);
+    case DIR_NORTHWEST:
+        return MetatileBehavior_IsNorthwestArrowWarp(metatileBehavior);
+    case DIR_NORTHEAST:
+        return MetatileBehavior_IsNortheastArrowWarp(metatileBehavior);
+    case DIR_SOUTHWEST:
+        return MetatileBehavior_IsSouthwestArrowWarp(metatileBehavior);
+    case DIR_SOUTHEAST:
+        return MetatileBehavior_IsSoutheastArrowWarp(metatileBehavior);
     }
     return FALSE;
 }
@@ -1167,7 +1246,7 @@ const u8 *GetObjectEventScriptPointerPlayerFacing(void)
     struct MapPosition position;
 
     direction = GetPlayerMovementDirection();
-    GetInFrontOfPlayerPosition(&position);
+    GetInFrontOfPlayerPositionNonDiagonal(&position);
     return GetInteractedObjectEventScript(&position, MapGridGetMetatileBehaviorAt(position.x, position.y), direction);
 }
 

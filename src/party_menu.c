@@ -4223,7 +4223,7 @@ static bool8 SetUpFieldMove_Waterfall(void)
     if (!CheckFollowerNPCFlag(FOLLOWER_NPC_FLAG_CAN_WATERFALL))
         return FALSE;
 
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
     if (MetatileBehavior_IsWaterfall(MapGridGetMetatileBehaviorAt(x, y)) == TRUE && IsPlayerSurfingNorth() == TRUE)
     {
         gFieldCallback2 = FieldCallback_PrepareFadeInFromMenu;

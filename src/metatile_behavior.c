@@ -180,6 +180,26 @@ bool8 MetatileBehavior_IsJumpSouth(u8 metatileBehavior)
         return FALSE;
 }
 
+bool8 MetatileBehavior_IsJumpSouthwest(u8 metatileBehavior)
+{
+    return metatileBehavior == MB_JUMP_SOUTHWEST;
+}
+
+bool8 MetatileBehavior_IsJumpSoutheast(u8 metatileBehavior)
+{
+    return metatileBehavior == MB_JUMP_SOUTHEAST;
+}
+
+bool8 MetatileBehavior_IsJumpNorthwest(u8 metatileBehavior)
+{
+    return metatileBehavior == MB_JUMP_NORTHWEST;
+}
+
+bool8 MetatileBehavior_IsJumpNortheast(u8 metatileBehavior)
+{
+    return metatileBehavior == MB_JUMP_NORTHEAST;
+}
+
 bool8 MetatileBehavior_IsPokeGrass(u8 metatileBehavior)
 {
     if (metatileBehavior == MB_TALL_GRASS || metatileBehavior == MB_LONG_GRASS)
@@ -328,6 +348,26 @@ bool8 MetatileBehavior_IsSouthArrowWarp(u8 metatileBehavior)
         return FALSE;
 }
 
+bool8 MetatileBehavior_IsNortheastArrowWarp(u8 metatileBehavior)
+{
+    return (MetatileBehavior_IsNorthArrowWarp(metatileBehavior) && MetatileBehavior_IsEastArrowWarp(metatileBehavior));
+}
+
+bool8 MetatileBehavior_IsNorthwestArrowWarp(u8 metatileBehavior)
+{
+    return (MetatileBehavior_IsNorthArrowWarp(metatileBehavior) && MetatileBehavior_IsWestArrowWarp(metatileBehavior));
+}
+
+bool8 MetatileBehavior_IsSoutheastArrowWarp(u8 metatileBehavior)
+{
+    return (MetatileBehavior_IsSouthArrowWarp(metatileBehavior) && MetatileBehavior_IsEastArrowWarp(metatileBehavior));
+}
+
+bool8 MetatileBehavior_IsSouthwestArrowWarp(u8 metatileBehavior)
+{
+    return (MetatileBehavior_IsSouthArrowWarp(metatileBehavior) && MetatileBehavior_IsWestArrowWarp(metatileBehavior));
+}
+
 bool8 UNUSED Unref_MetatileBehavior_IsArrowWarp(u8 metatileBehavior)
 {
     u8 isArrowWarp = FALSE;
@@ -335,7 +375,12 @@ bool8 UNUSED Unref_MetatileBehavior_IsArrowWarp(u8 metatileBehavior)
     if (MetatileBehavior_IsEastArrowWarp(metatileBehavior)
      || MetatileBehavior_IsWestArrowWarp(metatileBehavior)
      || MetatileBehavior_IsNorthArrowWarp(metatileBehavior)
-     || MetatileBehavior_IsSouthArrowWarp(metatileBehavior))
+     || MetatileBehavior_IsSouthArrowWarp(metatileBehavior)
+     || MetatileBehavior_IsSouthArrowWarp(metatileBehavior)
+     || MetatileBehavior_IsNortheastArrowWarp(metatileBehavior)
+     || MetatileBehavior_IsNorthwestArrowWarp(metatileBehavior)
+     || MetatileBehavior_IsSoutheastArrowWarp(metatileBehavior)
+     || MetatileBehavior_IsSouthwestArrowWarp(metatileBehavior))
     {
         isArrowWarp = TRUE;
     }
@@ -982,6 +1027,26 @@ bool8 MetatileBehavior_IsSouthBlocked(u8 metatileBehavior)
         return TRUE;
     else
         return FALSE;
+}
+
+bool8 MetatileBehavior_IsNortheastBlocked(u8 metatileBehavior)
+{
+    return (MetatileBehavior_IsNorthBlocked(metatileBehavior) && MetatileBehavior_IsEastBlocked(metatileBehavior));
+}
+
+bool8 MetatileBehavior_IsNorthwestBlocked(u8 metatileBehavior)
+{
+    return (MetatileBehavior_IsNorthBlocked(metatileBehavior) && MetatileBehavior_IsWestBlocked(metatileBehavior));
+}
+
+bool8 MetatileBehavior_IsSoutheastBlocked(u8 metatileBehavior)
+{
+    return (MetatileBehavior_IsSouthBlocked(metatileBehavior) && MetatileBehavior_IsEastBlocked(metatileBehavior));
+}
+
+bool8 MetatileBehavior_IsSouthwestBlocked(u8 metatileBehavior)
+{
+    return (MetatileBehavior_IsSouthBlocked(metatileBehavior) && MetatileBehavior_IsWestBlocked(metatileBehavior));
 }
 
 bool8 MetatileBehavior_IsShortGrass(u8 metatileBehavior)

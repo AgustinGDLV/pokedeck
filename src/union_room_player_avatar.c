@@ -557,7 +557,7 @@ bool32 TryInteractWithUnionRoomMember(struct RfuPlayerList *list, s16 *memberIdP
     if (!IsPlayerStandingStill())
         return FALSE;
 
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
     for (i = 0, leaders = list->players; i < MAX_UNION_ROOM_LEADERS; i++)
     {
         for (memberId = 0; memberId < MAX_RFU_PLAYERS; memberId++)

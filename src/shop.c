@@ -799,7 +799,7 @@ static void BuyMenuDrawMapBg(void)
     u8 metatileLayerType;
 
     mapLayout = gMapHeader.mapLayout;
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
     x -= 4;
     y -= 4;
 
@@ -860,7 +860,7 @@ static void BuyMenuCollectObjectEventData(void)
     u8 x;
     u8 numObjects = 0;
 
-    GetXYCoordsOneStepInFrontOfPlayer(&facingX, &facingY);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&facingX, &facingY);
 
     for (y = 0; y < OBJECT_EVENTS_COUNT; y++)
         sShopData->viewportObjects[y][OBJ_EVENT_ID] = OBJECT_EVENTS_COUNT;

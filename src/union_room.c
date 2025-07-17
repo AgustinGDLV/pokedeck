@@ -4009,7 +4009,7 @@ static void PrintGroupCandidateOnWindow(u8 windowId, u8 x, u8 y, struct RfuPlaye
 static bool32 IsPlayerFacingTradingBoard(void)
 {
     s16 x, y;
-    GetXYCoordsOneStepInFrontOfPlayer(&x, &y);
+    GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(&x, &y);
 
     if (x != 2 + MAP_OFFSET)
         return FALSE;

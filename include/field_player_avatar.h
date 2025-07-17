@@ -72,5 +72,7 @@ u8 GetLeftSideStairsDirection(u8 direction);
 void UpdateSpinData(void);
 void ResetSpinTimer(void);
 bool32 CanTriggerSpinEvolution();
+u8 GetPlayerFacingDirectionNonDiagonal(void);
+void GetXYCoordsOneStepInFrontOfPlayerNonDiagonal(s16 *xPtr, s16 *yPtr);
 
 #endif // GUARD_FIELD_PLAYER_AVATAR_H
