@@ -10,6 +10,7 @@
 #include "m4a.h"
 #include "main.h"
 #include "main_menu.h"
+#include "main_menu_custom.h"
 #include "palette.h"
 #include "reset_rtc_screen.h"
 #include "berry_fix_program.h"
@@ -782,7 +783,7 @@ static void Task_TitleScreenPhase3(u8 taskId)
     if (JOY_NEW(A_BUTTON) || JOY_NEW(START_BUTTON))
     {
         FadeOutBGM(4);
-        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_WHITEALPHA);
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
         SetMainCallback2(CB2_GoToMainMenu);
     }
     else if (JOY_HELD(CLEAR_SAVE_BUTTON_COMBO) == CLEAR_SAVE_BUTTON_COMBO)
@@ -824,7 +825,7 @@ static void Task_TitleScreenPhase3(u8 taskId)
 static void CB2_GoToMainMenu(void)
 {
     if (!UpdatePaletteFade())
-        SetMainCallback2(CB2_InitMainMenu);
+        SetMainCallback2(CB2_OpenMainMenuCustom);
 }
 
 static void CB2_GoToCopyrightScreen(void)

@@ -312,9 +312,9 @@ void LoadBattleBoxesAndBackground(void)
     LoadPalette(sDeckBattleInterfacePalette, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
 
     // TODO: Support more backgrounds.
-    LZDecompressVram(sGrassBackgroundTiles, (void *)(BG_CHAR_ADDR(2)));
-    LZDecompressVram(sGrassBackgroundTilemap, (void *)(BG_SCREEN_ADDR(26)));
-    LoadPalette(sGrassBackgroundPalette, BG_PLTT_ID(1), PLTT_SIZE_4BPP);
+    LZDecompressVram(gGrassBackgroundTiles, (void *)(BG_CHAR_ADDR(2)));
+    LZDecompressVram(gGrassBackgroundTilemap, (void *)(BG_SCREEN_ADDR(26)));
+    LoadPalette(gGrassBackgroundPalette, BG_PLTT_ID(1), PLTT_SIZE_4BPP);
 
     CopyBgTilemapBufferToVram(0);
     CopyBgTilemapBufferToVram(3);

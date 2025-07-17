@@ -615,6 +615,7 @@ gSongTable::
 
 gGBSSongTable::
 	song_gbs MUS_VS_WILD, gbs_Music_CipherPeonBattle, 0, 0
+	song_gbs MUS_RG_PALLET, gbs_Music_HumilauCity, 0, 0
 	.4byte 0xFFFFFFFF
 
 	.align 2

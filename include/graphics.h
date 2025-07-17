@@ -3393,4 +3393,8 @@ extern const u32 gBattleIcons_Gfx2[];
 extern const u16 gBattleIcons_Pal1[];
 extern const u16 gBattleIcons_Pal2[];
 
+extern const u16 gGrassBackgroundPalette[];
+extern const u32 gGrassBackgroundTiles[];
+extern const u32 gGrassBackgroundTilemap[];
+
 #endif //GUARD_GRAPHICS_H
