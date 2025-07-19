@@ -4414,12 +4414,22 @@
     {
       "id": "LAYOUT_STARTING_TOWN",
       "name": "StartingTown_Layout",
-      "width": 20,
-      "height": 20,
+      "width": 48,
+      "height": 21,
       "primary_tileset": "gTileset_Overworld",
       "secondary_tileset": "gTileset_Unused2",
       "border_filepath": "data/layouts/StartingTown/border.bin",
       "blockdata_filepath": "data/layouts/StartingTown/map.bin"
+    },
+    {
+      "id": "LAYOUT_ROUTE1",
+      "name": "Route1_Layout",
+      "width": 34,
+      "height": 48,
+      "primary_tileset": "gTileset_Overworld",
+      "secondary_tileset": "gTileset_Unused1",
+      "border_filepath": "data/layouts/Route1/border.bin",
+      "blockdata_filepath": "data/layouts/Route1/map.bin"
     }
   ]
 }

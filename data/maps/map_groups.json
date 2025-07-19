@@ -40,7 +40,9 @@
   "gMapGroup_Towns": [
     "StartingTown"
   ],
-  "gMapGroup_Routes": [],
+  "gMapGroup_Routes": [
+    "Route1"
+  ],
   "gMapGroup_TownsAndRoutes": [
     "PetalburgCity",
     "SlateportCity",
