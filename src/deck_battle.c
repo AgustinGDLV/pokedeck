@@ -29,7 +29,6 @@
 // forward declarations
 static void MainCB2_DeckBattle(void);
 static void VBlankCB2_DeckBattle(void);
-static void Task_DoBattleIntro(u8 taskId);
 static void Task_OpenDeckBattle(u8 taskId);
 static void Task_CloseDeckBattle(u8 taskId);
 static void Task_PlayerSelectAction(u8 taskId);
@@ -250,10 +249,41 @@ static void Task_PlayerSelectAction(u8 taskId)
     }
     if (gMain.newKeys & B_BUTTON)
     {
-        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
-        PlayBGM(MUS_OLDALE);
-        gTasks[taskId].func = Task_CloseDeckBattle;
-        PlaySE(SE_SELECT);
+        if (gDeckStruct.actionsCount == 0)
+        {
+            BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
+            FadeOutMapMusic(5);
+            gTasks[taskId].func = Task_CloseDeckBattle;
+            PlaySE(SE_SELECT);
+        }
+        else
+        {
+            struct BattleAction *action = &gDeckStruct.queuedActions[gDeckStruct.actionsCount - 1];
+            if (action->type == ACTION_SWAP)
+            {
+                DebugPrintf("reversing swap: %S, %S", GetSpeciesName(gDeckMons[action->attacker].species), GetSpeciesName(gDeckMons[action->target].species));
+                SwapBattlerPositions(action->attacker, action->target);
+                GetBattlerSprite(action->attacker)->oam.objMode = ST_OAM_OBJ_NORMAL;
+                GetBattlerSprite(action->target)->oam.objMode = ST_OAM_OBJ_NORMAL;
+                gDeckMons[action->attacker].hasSwapped = FALSE;
+                gDeckMons[action->target].hasSwapped = FALSE;
+
+                if (gDeckMons[action->attacker].pos == gDeckStruct.selectedPos || gDeckMons[action->target].pos == gDeckStruct.selectedPos)
+                {
+                    UpdateBattlerSelection(action->attacker, FALSE);
+                    UpdateBattlerSelection(action->target, FALSE);
+                    UpdateBattlerSelection(GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos), TRUE);
+                    DisplayActionSelectionInfo(GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos));
+                }
+                --gDeckStruct.actionsCount;
+            }
+            else
+            {
+                SetBattlerGrayscale(action->attacker, FALSE);
+                gDeckMons[action->attacker].hasMoved = FALSE;
+                --gDeckStruct.actionsCount;
+            }
+        }
     }
 }
 
@@ -907,10 +937,10 @@ static void SwapBattlerPositions(u32 battler1, u32 battler2)
 {
     u32 temp;
     SWAP(gDeckMons[battler1].pos, gDeckMons[battler2].pos, temp);
-    GetBattlerSprite(gBattlerAttacker)->x = GetBattlerXCoord(gBattlerAttacker);
-    GetBattlerSprite(gBattlerTarget)->x = GetBattlerXCoord(gBattlerTarget);
-    gDeckMons[gBattlerAttacker].hasSwapped = TRUE;
-    gDeckMons[gBattlerTarget].hasSwapped = TRUE;
+    GetBattlerSprite(battler1)->x = GetBattlerXCoord(battler1);
+    GetBattlerSprite(battler2)->x = GetBattlerXCoord(battler2);
+    gDeckMons[battler1].hasSwapped = TRUE;
+    gDeckMons[battler2].hasSwapped = TRUE;
 }
 
 static void ResetTurnValues(void)
