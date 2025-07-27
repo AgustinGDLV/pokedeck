@@ -36,7 +36,7 @@ enum BattlePosition GetLeftmostOccupiedPosition(u32 side)
     for (enum BattlePosition pos = POSITION_0; pos < POSITIONS_COUNT; ++pos)
     {
         battler = GetDeckBattlerAtPos(side, pos);
-        if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+        if (IsDeckBattlerAlive(battler))
             return pos;
     }
     return POSITION_0; // no luck
@@ -48,7 +48,7 @@ enum BattlePosition GetLeftmostPositionToMove(u32 side)
     for (enum BattlePosition pos = POSITION_0; pos < POSITIONS_COUNT; ++pos)
     {
         battler = GetDeckBattlerAtPos(side, pos);
-        if (!gDeckMons[battler].hasMoved && gDeckMons[battler].hp != 0)
+        if (!gDeckMons[battler].hasMoved && IsDeckBattlerAlive(battler))
             return pos;
     }
     return POSITIONS_COUNT; // no luck
@@ -63,7 +63,7 @@ enum BattlePosition GetOccupiedOnLeft(u32 side, enum BattlePosition position)
     for (enum BattlePosition pos = position - 1; pos >= POSITION_0 && pos != (-1); --pos)
     {
         battler = GetDeckBattlerAtPos(side, pos);
-        if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+        if (IsDeckBattlerAlive(battler))
             return pos;
     }
 
@@ -79,7 +79,7 @@ enum BattlePosition GetNonAttackerOnLeft(u32 side, enum BattlePosition position)
     for (enum BattlePosition pos = position - 1; pos >= POSITION_0 && pos != (-1); --pos)
     {
         battler = GetDeckBattlerAtPos(side, pos);
-        if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0 && battler != gBattlerAttacker)
+        if (IsDeckBattlerAlive(battler) && battler != gBattlerAttacker)
             return pos;
     }
 
@@ -95,7 +95,7 @@ enum BattlePosition GetToMoveOnLeft(u32 side, enum BattlePosition position)
     for (enum BattlePosition pos = position - 1; pos >= POSITION_0 && pos != (-1); --pos)
     {
         battler = GetDeckBattlerAtPos(side, pos);
-        if (!gDeckMons[battler].hasMoved && gDeckMons[battler].hp != 0)
+        if (!gDeckMons[battler].hasMoved && IsDeckBattlerAlive(battler))
             return pos;
     }
 
@@ -108,7 +108,7 @@ enum BattlePosition GetOccupiedOnRight(u32 side, enum BattlePosition position)
     for (enum BattlePosition pos = position + 1; pos < POSITIONS_COUNT; ++pos)
     {
         battler = GetDeckBattlerAtPos(side, pos);
-        if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+        if (IsDeckBattlerAlive(battler))
             return pos;
     }
     return POSITIONS_COUNT;
@@ -120,7 +120,7 @@ enum BattlePosition GetNonAttackerOnRight(u32 side, enum BattlePosition position
     for (enum BattlePosition pos = position + 1; pos < POSITIONS_COUNT; ++pos)
     {
         battler = GetDeckBattlerAtPos(side, pos);
-        if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0 && battler != gBattlerAttacker)
+        if (IsDeckBattlerAlive(battler) && battler != gBattlerAttacker)
             return pos;
     }
     return POSITIONS_COUNT;
@@ -155,4 +155,9 @@ enum BattleId GetRandomBattlerOnSide(u32 side)
     }
 
     return ids[Random() % occupiedCount];
+}
+
+bool32 IsDeckBattlerAlive(enum BattleId battler)
+{
+    return (battler != MAX_DECK_BATTLERS_COUNT && gDeckMons[battler].hp != 0 && gDeckMons[battler].species != SPECIES_NONE);
 }

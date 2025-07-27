@@ -951,6 +951,9 @@ static void InitBattleMonData(void)
         case 4:
             gDeckMons[i].species = SPECIES_SWABLU;
             break;
+        case 5:
+            gDeckMons[i].species = SPECIES_NONE;
+            break;
         default:
             gDeckMons[i].species = SPECIES_SLOWPOKE;
             break;

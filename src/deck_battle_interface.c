@@ -466,20 +466,27 @@ void SetBattlerPortraitVisibility(bool32 visible)
 void LoadBattlerObjectSprite(enum BattleId battler)
 {
     u32 *dst, *src, index;
-    
-    FreeSpritePaletteByTag(TAG_BATTLER_OBJ + battler); // just in case?
-    index = LoadSpritePaletteWithTag(gDeckSpeciesInfo[gDeckMons[battler].species].objectPalette, TAG_BATTLER_OBJ + battler);
 
-    dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + battler)));
-    if (GetDeckBattlerSide(battler) == B_SIDE_PLAYER)
-        src = (u32 *)gDeckSpeciesInfo[gDeckMons[battler].species].playerIdle;
+    if (IsDeckBattlerAlive(battler))
+    {
+        FreeSpritePaletteByTag(TAG_BATTLER_OBJ + battler); // just in case?
+        index = LoadSpritePaletteWithTag(gDeckSpeciesInfo[gDeckMons[battler].species].objectPalette, TAG_BATTLER_OBJ + battler);
+
+        dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + battler)));
+        if (GetDeckBattlerSide(battler) == B_SIDE_PLAYER)
+            src = (u32 *)gDeckSpeciesInfo[gDeckMons[battler].species].playerIdle;
+        else
+            src = (u32 *)gDeckSpeciesInfo[gDeckMons[battler].species].opponentIdle;
+        for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
+            dst[i] = src[i];
+
+        gSprites[gDeckGraphics.battlerSpriteIds[battler]].oam.paletteNum = index;
+        gSprites[gDeckGraphics.battlerSpriteIds[battler]].y = GetBattlerYCoord(battler);
+    }
     else
-        src = (u32 *)gDeckSpeciesInfo[gDeckMons[battler].species].opponentIdle;
-    for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
-        dst[i] = src[i];
-
-    gSprites[gDeckGraphics.battlerSpriteIds[battler]].oam.paletteNum = index;
-    gSprites[gDeckGraphics.battlerSpriteIds[battler]].y = GetBattlerYCoord(battler);
+    {
+        gSprites[gDeckGraphics.battlerSpriteIds[battler]].invisible = TRUE;
+    }
 }
 
 void InitDeckBattleGfx(void)
