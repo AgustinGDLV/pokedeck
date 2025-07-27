@@ -746,17 +746,7 @@ static void Task_ExecuteHit(u8 taskId)
         break;
     case 3: // Wait for hurt animation.
         if (++gTasks[taskId].tTimer >= 60)
-        {
-            GetBattlerSprite(gBattlerTarget)->invisible = FALSE;
             ++gTasks[taskId].tState;
-        }
-        else if (gTasks[taskId].tTimer < 32)
-        {
-            if (gTasks[taskId].tTimer % 4 < 2) // *TODO - move to hurt callback
-                GetBattlerSprite(gBattlerTarget)->invisible = TRUE;
-            else
-                GetBattlerSprite(gBattlerTarget)->invisible = FALSE;
-        }
         break;
     case 4:
         gTasks[taskId].tTimer = 0;
@@ -802,27 +792,7 @@ static void Task_ExecuteHitAll(u8 taskId)
         break;
     case 3: // Wait for hurt animation.
         if (++gTasks[taskId].tTimer >= 60)
-        {
-            for (enum BattleId battler = battlerStart; battler < battlerEnd; ++battler)
-                if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
-                    GetBattlerSprite(battler)->invisible = FALSE;
             ++gTasks[taskId].tState;
-        }
-        else if (gTasks[taskId].tTimer < 32)
-        {
-            if (gTasks[taskId].tTimer % 4 < 2) // *TODO - move to hurt callback
-            {
-                for (enum BattleId battler = battlerStart; battler < battlerEnd; ++battler)
-                    if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
-                        GetBattlerSprite(battler)->invisible = TRUE;
-            }
-            else
-            {
-                for (enum BattleId battler = battlerStart; battler < battlerEnd; ++battler)
-                    if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
-                        GetBattlerSprite(battler)->invisible = FALSE;
-            }
-        }
         break;
     case 4:
         gTasks[taskId].tTimer = 0;

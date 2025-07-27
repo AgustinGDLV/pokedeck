@@ -663,7 +663,17 @@ static void SpriteCB_BattlerHurt(struct Sprite *sprite)
         break;
     case 1: // Wait for hurt anim to finish.
         if (sprite->animEnded)
+        {
+            sprite->invisible = FALSE;
             ++sprite->sAnimState;
+        }
+        else
+        {
+            if (++sprite->sTimer % 4 < 2) // *TODO - move to hurt callback
+                sprite->invisible = TRUE;
+            else
+                sprite->invisible = FALSE;
+        }
         break;
     case 2:
         dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
@@ -675,6 +685,7 @@ static void SpriteCB_BattlerHurt(struct Sprite *sprite)
             dst[i] = src[i];
 
         sprite->sAnimState = 0;
+        sprite->sTimer = 0;
         StartSpriteAnim(sprite, ANIM_PAUSED);
         sprite->callback = SpriteCallbackDummy;
         break;
