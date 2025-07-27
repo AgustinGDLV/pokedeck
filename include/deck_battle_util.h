@@ -14,4 +14,6 @@ enum BattlePosition GetOccupiedOnRight(u32 side, enum BattlePosition position);
 enum BattlePosition GetNonAttackerOnRight(u32 side, enum BattlePosition position);
 enum BattlePosition GetToMoveOnRight(u32 side, enum BattlePosition position);
 
+enum BattleId GetRandomBattlerOnSide(u32 side);
+
 #endif

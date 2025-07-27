@@ -88,6 +88,7 @@ enum MoveTarget
 enum DeckMoveEffect
 {
     DECK_EFFECT_HIT,
+    DECK_EFFECT_HIT_ALL,
     DECK_EFFECT_POWER_UP,
     DECK_EFFECT_COUNT,
 };
@@ -106,6 +107,7 @@ struct DeckBattleStruct
     struct BattleAction queuedActions[MAX_ACTIONS];
     u8 actionsCount;
     u8 executedCount;
+    u8 actingSide;
 };
 
 void CB2_OpenDeckBattleCustom(void);

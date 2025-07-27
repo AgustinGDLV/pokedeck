@@ -36,9 +36,13 @@ static void Task_PlayerSelectAllyToSwap(u8 taskId);
 static void Task_PlayerSelectLeftAlly(u8 taskId);
 static void Task_PlayerSelectSingleOpponent(u8 taskId);
 static void Task_PlayerSelectAllOpponents(u8 taskId);
+static void Task_OpponentSelectLeftAlly(u8 taskId);
+static void Task_OpponentSelectSingleOpponent(u8 taskId);
+static void Task_OpponentSelectAllOpponents(u8 taskId);
 static void Task_PrepareForActionPhase(u8 taskId);
 static void Task_ExecuteQueuedActionOrEnd(u8 taskId);
 static void Task_ExecuteHit(u8 taskId);
+static void Task_ExecuteHitAll(u8 taskId);
 static void Task_ExecutePowerUp(u8 taskId);
 static void Task_ExecuteSwap(u8 taskId);
 static void InitBattleStructData(void);
@@ -52,16 +56,24 @@ static void SwapBattlerPositions(u32 battler1, u32 battler2);
 static void ResetTurnValues(void);
 
 // constant data
-static void (*const sMoveTargetTasks[MOVE_TARGET_COUNT])(u8 taskId) =
+static void (*const sPlayerMoveTargetTasks[MOVE_TARGET_COUNT])(u8 taskId) =
 {
     [MOVE_TARGET_SINGLE_OPPONENT]   = Task_PlayerSelectSingleOpponent,
     [MOVE_TARGET_ALL_OPPONENTS]     = Task_PlayerSelectAllOpponents,
     [MOVE_TARGET_LEFT_ALLY]         = Task_PlayerSelectLeftAlly,
 };
 
+static void (*const sOpponentMoveTargetTasks[MOVE_TARGET_COUNT])(u8 taskId) =
+{
+    [MOVE_TARGET_SINGLE_OPPONENT]   = Task_OpponentSelectSingleOpponent,
+    [MOVE_TARGET_ALL_OPPONENTS]     = Task_OpponentSelectAllOpponents,
+    [MOVE_TARGET_LEFT_ALLY]         = Task_OpponentSelectLeftAlly,
+};
+
 static void (*const sMoveEffectTasks[DECK_EFFECT_COUNT])(u8 taskId) =
 {
     [DECK_EFFECT_HIT]           = Task_ExecuteHit,
+    [DECK_EFFECT_HIT_ALL]       = Task_ExecuteHitAll,
     [DECK_EFFECT_POWER_UP]      = Task_ExecutePowerUp,
 };
 
@@ -159,6 +171,7 @@ static void Task_OpenDeckBattle(u8 taskId)
         LoadBattlerPortrait(B_PLAYER_0);
         PrintBattlerMoveInfo(B_PLAYER_0);
         // HP bar updated before fade begins
+        gDeckStruct.actingSide = B_SIDE_PLAYER;
         CreateSelectionCursorOverBattler(GetDeckBattlerAtPos(B_SIDE_PLAYER, POSITION_0));
         StartSpriteAnim(&gSprites[gDeckGraphics.battlerSpriteIds[GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos)]], ANIM_IDLE);
         gTasks[taskId].tState += 1;
@@ -212,7 +225,7 @@ static void Task_PlayerSelectAction(u8 taskId)
         SetBattlerPortraitVisibility(FALSE);
         SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
         SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
-        gTasks[taskId].func = sMoveTargetTasks[gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].target];
+        gTasks[taskId].func = sPlayerMoveTargetTasks[gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].target];
     }
     if (gMain.newKeys & START_BUTTON) // Choose target to swap.
     {
@@ -261,7 +274,6 @@ static void Task_PlayerSelectAction(u8 taskId)
             struct BattleAction *action = &gDeckStruct.queuedActions[gDeckStruct.actionsCount - 1];
             if (action->type == ACTION_SWAP)
             {
-                DebugPrintf("reversing swap: %S, %S", GetSpeciesName(gDeckMons[action->attacker].species), GetSpeciesName(gDeckMons[action->target].species));
                 SwapBattlerPositions(action->attacker, action->target);
                 GetBattlerSprite(action->attacker)->oam.objMode = ST_OAM_OBJ_NORMAL;
                 GetBattlerSprite(action->target)->oam.objMode = ST_OAM_OBJ_NORMAL;
@@ -607,6 +619,43 @@ static void Task_PlayerSelectAllOpponents(u8 taskId)
     }
 }
 
+static void Task_OpponentSelectAction(u8 taskId)
+{
+    gDeckStruct.selectedPos = GetLeftmostPositionToMove(B_SIDE_OPPONENT);
+    if (gDeckStruct.selectedPos != POSITIONS_COUNT)
+    {
+        gBattlerAttacker = GetDeckBattlerAtPos(B_SIDE_OPPONENT, gDeckStruct.selectedPos);
+        gTasks[taskId].func = sOpponentMoveTargetTasks[gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].target];
+    }
+    else
+    {
+        gTasks[taskId].func = Task_PrepareForActionPhase;
+    } 
+}
+
+static void Task_OpponentSelectLeftAlly(u8 taskId)
+{
+    gBattlerTarget = GetDeckBattlerAtPos(B_SIDE_OPPONENT, GetOccupiedOnLeft(B_SIDE_OPPONENT, gDeckMons[gBattlerAttacker].pos));
+    QueueAction(ACTION_ATTACK, gBattlerAttacker, gBattlerTarget, gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move);
+    gDeckMons[gBattlerAttacker].hasMoved = TRUE;
+    gTasks[taskId].func = Task_OpponentSelectAction;
+}
+
+static void Task_OpponentSelectSingleOpponent(u8 taskId)
+{
+    gBattlerTarget = GetRandomBattlerOnSide(B_SIDE_PLAYER);
+    QueueAction(ACTION_ATTACK, gBattlerAttacker, gBattlerTarget, gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move);
+    gDeckMons[gBattlerAttacker].hasMoved = TRUE;
+    gTasks[taskId].func = Task_OpponentSelectAction;
+}
+
+static void Task_OpponentSelectAllOpponents(u8 taskId)
+{
+    QueueAction(ACTION_ATTACK, gBattlerAttacker, MAX_DECK_BATTLERS_COUNT, gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move);
+    gDeckMons[gBattlerAttacker].hasMoved = TRUE;
+    gTasks[taskId].func = Task_OpponentSelectAction;
+}
+
 static void Task_PrepareForActionPhase(u8 taskId)
 {
     struct Sprite *sprite;
@@ -653,17 +702,25 @@ static void Task_ExecuteQueuedActionOrEnd(u8 taskId)
     else
     {
         ResetTurnValues();
-        gDeckStruct.selectedPos = GetLeftmostPositionToMove(B_SIDE_PLAYER);
-        u32 battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-        UpdateBattlerSelection(battler, TRUE);
-        DisplayActionSelectionInfo(battler);
+        gDeckStruct.actingSide ^= 1; // get opposite side
+        if (gDeckStruct.actingSide == B_SIDE_PLAYER)
+        {
+            gDeckStruct.selectedPos = GetLeftmostPositionToMove(B_SIDE_PLAYER);
+            u32 battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
+            UpdateBattlerSelection(battler, TRUE);
+            DisplayActionSelectionInfo(battler);
 
-        // Set up UI for action selection.
-        SetBattlerBobPause(FALSE);
-        SetBattlerPortraitVisibility(TRUE);
-        SetGpuReg(REG_OFFSET_BG0VOFS, 0);
-        SetGpuReg(REG_OFFSET_BG1VOFS, 0);
-        gTasks[taskId].func = Task_PlayerSelectAction;
+            // Set up UI for action selection.
+            SetBattlerBobPause(FALSE);
+            SetBattlerPortraitVisibility(TRUE);
+            SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+            SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+            gTasks[taskId].func = Task_PlayerSelectAction;
+        }
+        else
+        {
+            gTasks[taskId].func = Task_OpponentSelectAction;
+        }
     }
 }
 
@@ -682,16 +739,7 @@ static void Task_ExecuteHit(u8 taskId)
             ++gTasks[taskId].tState;
         break;
     case 2: // Damage target(s).
-        if (gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_SINGLE_OPPONENT)
-        {
-            StartBattlerAnim(gBattlerTarget, ANIM_HURT);
-        }
-        else if (gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_ALL_OPPONENTS)
-        {
-            for (enum BattleId battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
-                    StartBattlerAnim(battler, ANIM_HURT);
-        }
+        StartBattlerAnim(gBattlerTarget, ANIM_HURT);
         PrintMoveOutcomeString();
         PlaySE(SE_EFFECTIVE);
         ++gTasks[taskId].tState;
@@ -699,45 +747,80 @@ static void Task_ExecuteHit(u8 taskId)
     case 3: // Wait for hurt animation.
         if (++gTasks[taskId].tTimer >= 60)
         {
-            if (gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_SINGLE_OPPONENT)
-            {
+            GetBattlerSprite(gBattlerTarget)->invisible = FALSE;
+            ++gTasks[taskId].tState;
+        }
+        else if (gTasks[taskId].tTimer < 32)
+        {
+            if (gTasks[taskId].tTimer % 4 < 2) // *TODO - move to hurt callback
+                GetBattlerSprite(gBattlerTarget)->invisible = TRUE;
+            else
                 GetBattlerSprite(gBattlerTarget)->invisible = FALSE;
-            }
-            else if (gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_ALL_OPPONENTS)
-            {
-                for (enum BattleId battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                    if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
-                        GetBattlerSprite(battler)->invisible = FALSE;
-            }
+        }
+        break;
+    case 4:
+        gTasks[taskId].tTimer = 0;
+        gTasks[taskId].tState = 0;
+        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
+        break;
+    }
+}
+
+static void Task_ExecuteHitAll(u8 taskId)
+{
+    u32 battlerStart, battlerEnd;
+    // Set up indices for targeting.
+    if (GetDeckBattlerSide(gBattlerAttacker) == B_SIDE_PLAYER)
+    {
+        battlerStart = B_OPPONENT_0;
+        battlerEnd = MAX_DECK_BATTLERS_COUNT;
+    }
+    else
+    {
+        battlerStart = B_PLAYER_0;
+        battlerEnd = B_OPPONENT_0;
+    }
+    switch (gTasks[taskId].tState)
+    {
+    case 0: // Do attack animation.
+        SetBattlerGrayscale(gBattlerAttacker, FALSE);
+        StartBattlerAnim(gBattlerAttacker, ANIM_ATTACK);
+        PrintMoveUseString();
+        ++gTasks[taskId].tState;
+        break;
+    case 1: // Wait for attack animation to execute cry.
+        if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
+            ++gTasks[taskId].tState;
+        break;
+    case 2: // Damage target(s).
+        for (enum BattleId battler = battlerStart; battler < battlerEnd; ++battler)
+            if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+                StartBattlerAnim(battler, ANIM_HURT);
+        PrintMoveOutcomeString();
+        PlaySE(SE_EFFECTIVE);
+        ++gTasks[taskId].tState;
+        break;
+    case 3: // Wait for hurt animation.
+        if (++gTasks[taskId].tTimer >= 60)
+        {
+            for (enum BattleId battler = battlerStart; battler < battlerEnd; ++battler)
+                if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+                    GetBattlerSprite(battler)->invisible = FALSE;
             ++gTasks[taskId].tState;
         }
         else if (gTasks[taskId].tTimer < 32)
         {
             if (gTasks[taskId].tTimer % 4 < 2) // *TODO - move to hurt callback
             {
-                if (gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_SINGLE_OPPONENT)
-                {
-                    GetBattlerSprite(gBattlerTarget)->invisible = TRUE;
-                }
-                else if (gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_ALL_OPPONENTS)
-                {
-                    for (enum BattleId battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                        if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
-                            GetBattlerSprite(battler)->invisible = TRUE;
-                }
+                for (enum BattleId battler = battlerStart; battler < battlerEnd; ++battler)
+                    if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+                        GetBattlerSprite(battler)->invisible = TRUE;
             }
             else
             {
-                if (gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_SINGLE_OPPONENT)
-                {
-                    GetBattlerSprite(gBattlerTarget)->invisible = FALSE;
-                }
-                else if (gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_ALL_OPPONENTS)
-                {
-                    for (enum BattleId battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-                        if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
-                            GetBattlerSprite(battler)->invisible = FALSE;
-                }
+                for (enum BattleId battler = battlerStart; battler < battlerEnd; ++battler)
+                    if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+                        GetBattlerSprite(battler)->invisible = FALSE;
             }
         }
         break;

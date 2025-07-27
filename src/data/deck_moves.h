@@ -29,6 +29,6 @@ const struct DeckMoveInfo gDeckMovesInfo[MOVES_COUNT] =
         .name = COMPOUND_STRING("SURF"),
         .description = COMPOUND_STRING("Damages all opponents."),
         .target = MOVE_TARGET_ALL_OPPONENTS,
-        .effect = DECK_EFFECT_HIT,
+        .effect = DECK_EFFECT_HIT_ALL,
     },
 };

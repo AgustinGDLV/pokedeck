@@ -137,3 +137,22 @@ enum BattlePosition GetToMoveOnRight(u32 side, enum BattlePosition position)
     }
     return POSITIONS_COUNT;
 }
+
+enum BattleId GetRandomBattlerOnSide(u32 side)
+{
+    enum BattleId battler;
+    enum BattleId ids[PARTY_SIZE];
+    u32 occupiedCount = 0;
+
+    for (enum BattlePosition pos = POSITION_0; pos < POSITIONS_COUNT; ++pos)
+    {
+        battler = GetDeckBattlerAtPos(side, pos);
+        if (!gDeckMons[battler].hasMoved && gDeckMons[battler].hp != 0)
+        {
+            ids[occupiedCount] = battler;
+            ++occupiedCount;
+        }
+    }
+
+    return ids[Random() % occupiedCount];
+}
