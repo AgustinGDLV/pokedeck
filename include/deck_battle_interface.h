@@ -12,6 +12,7 @@
 #define ANIM_IDLE   1
 #define ANIM_ATTACK 2
 #define ANIM_HURT   3
+#define ANIM_FAINT  4
 
 #define PORTRAIT_SIZE   (64 * 64 / 2)
 #define OBJECT_SIZE     (32 * 64 / 2)

@@ -694,6 +694,27 @@ static void SpriteCB_BattlerHurt(struct Sprite *sprite)
     }
 }
 
+static void SpriteCB_BattlerFaint(struct Sprite *sprite)
+{
+    if (--sprite->sTimer < 0)
+    {
+        sprite->sTimer = 2;
+        sprite->y += 4; // Move the sprite down.
+        if (--sprite->sAnimState < 0)
+        {
+            sprite->invisible = TRUE;
+            sprite->callback = SpriteCallbackDummy;
+        }
+        else // Erase bottom part of the sprite to create a smooth illusion of mon falling down.
+        {
+            u8 *dst = (u8 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId) + 4*sprite->sAnimState));
+            *dst = 0;
+            for (u32 i = 0; i < 128; i++)
+                *(dst++) = 0;
+        }
+    }
+}
+
 void StartBattlerAnim(enum BattleId battler, u32 animId) // TODO: overwrite sprite tiles?
 {
     switch (animId)
@@ -707,6 +728,10 @@ void StartBattlerAnim(enum BattleId battler, u32 animId) // TODO: overwrite spri
             break;
         case ANIM_HURT:
             gSprites[gDeckGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerHurt;
+            break;
+        case ANIM_FAINT:
+            gSprites[gDeckGraphics.battlerSpriteIds[battler]].sAnimState = 4;
+            gSprites[gDeckGraphics.battlerSpriteIds[battler]].callback = SpriteCB_BattlerFaint;
             break;
     }
 }

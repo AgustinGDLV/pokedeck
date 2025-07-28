@@ -40,6 +40,7 @@ static void Task_OpponentSelectLeftAlly(u8 taskId);
 static void Task_OpponentSelectSingleOpponent(u8 taskId);
 static void Task_OpponentSelectAllOpponents(u8 taskId);
 static void Task_PrepareForActionPhase(u8 taskId);
+static void Task_CheckFaintAndContinue(u8 taskId);
 static void Task_ExecuteQueuedActionOrEnd(u8 taskId);
 static void Task_ExecuteHit(u8 taskId);
 static void Task_ExecuteHitAll(u8 taskId);
@@ -681,6 +682,37 @@ static void Task_PrepareForActionPhase(u8 taskId)
     }
 }
 
+static void Task_WaitForFaintAnim(u8 taskId)
+{
+    if (++gTasks[taskId].tTimer > 48)
+    {
+        gTasks[taskId].tTimer = 0;
+        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
+    }
+}
+
+static void Task_CheckFaintAndContinue(u8 taskId)
+{
+    bool32 fainted = FALSE;
+    for (enum BattleId battler = B_PLAYER_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+    {
+        if (!GetBattlerSprite(battler)->invisible && !IsDeckBattlerAlive(battler))
+        {
+            StartBattlerAnim(battler, ANIM_FAINT);
+            fainted = TRUE;
+        }
+    }
+    if (fainted)
+    {
+        PlaySE(SE_FAINT);
+        gTasks[taskId].func = Task_WaitForFaintAnim;
+    }
+    else
+    {
+        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
+    }
+}
+
 static void Task_ExecuteQueuedActionOrEnd(u8 taskId)
 {
     // Set up data and execute queued action if any remain.
@@ -726,6 +758,7 @@ static void Task_ExecuteQueuedActionOrEnd(u8 taskId)
 
 static void Task_ExecuteHit(u8 taskId)
 {
+    s32 damage;
     switch (gTasks[taskId].tState)
     {
     case 0: // Do attack animation.
@@ -738,28 +771,40 @@ static void Task_ExecuteHit(u8 taskId)
         if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
             ++gTasks[taskId].tState;
         break;
-    case 2: // Damage target(s).
+    case 2: // Check for target change.
+        if (!IsDeckBattlerAlive(gBattlerTarget))
+            gBattlerTarget = GetRandomBattlerOnSide(GetDeckBattlerSide(gBattlerTarget));
+        ++gTasks[taskId].tState;  
+        break;
+    case 3: // Damage target(s).
         StartBattlerAnim(gBattlerTarget, ANIM_HURT);
-        PrintDamageNumbers(gBattlerTarget, gDeckMons[gBattlerAttacker].pwr);
+        damage = gDeckMons[gBattlerAttacker].pwr;
+        if (damage > gDeckMons[gBattlerTarget].hp)
+            gDeckMons[gBattlerTarget].hp = 0;
+        else
+            gDeckMons[gBattlerTarget].hp -= damage;
+        PrintDamageNumbers(gBattlerTarget, damage);
         PrintMoveOutcomeString();
         PlaySE(SE_EFFECTIVE);
         ++gTasks[taskId].tState;
         break;
-    case 3: // Wait for hurt animation.
+    case 4: // Wait for hurt animation.
         if (++gTasks[taskId].tTimer >= 60)
             ++gTasks[taskId].tState;
         break;
-    case 4:
+    case 5:
         gTasks[taskId].tTimer = 0;
         gTasks[taskId].tState = 0;
-        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
+        gTasks[taskId].func = Task_CheckFaintAndContinue;
         break;
     }
 }
 
 static void Task_ExecuteHitAll(u8 taskId)
 {
+    s32 damage;
     u32 battlerStart, battlerEnd;
+
     // Set up indices for targeting.
     if (GetDeckBattlerSide(gBattlerAttacker) == B_SIDE_PLAYER)
     {
@@ -771,6 +816,7 @@ static void Task_ExecuteHitAll(u8 taskId)
         battlerStart = B_PLAYER_0;
         battlerEnd = B_OPPONENT_0;
     }
+
     switch (gTasks[taskId].tState)
     {
     case 0: // Do attack animation.
@@ -789,7 +835,12 @@ static void Task_ExecuteHitAll(u8 taskId)
             if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
             {
                 StartBattlerAnim(battler, ANIM_HURT);
-                PrintDamageNumbers(battler, gDeckMons[gBattlerAttacker].pwr);
+                damage = gDeckMons[gBattlerAttacker].pwr;
+                if (damage > gDeckMons[battler].hp)
+                    gDeckMons[battler].hp = 0;
+                else
+                    gDeckMons[battler].hp -= damage;
+                PrintDamageNumbers(battler, damage);
             }
         }
         PrintMoveOutcomeString();
@@ -803,7 +854,7 @@ static void Task_ExecuteHitAll(u8 taskId)
     case 4:
         gTasks[taskId].tTimer = 0;
         gTasks[taskId].tState = 0;
-        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
+        gTasks[taskId].func = Task_CheckFaintAndContinue;
         break;
     }
 }
