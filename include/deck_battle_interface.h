@@ -5,7 +5,8 @@
 #define TAG_MISC_PAL    2001 // shadow and cursor
 #define TAG_SHADOW      2001
 #define TAG_CURSOR      2002
-#define TAG_BATTLER_OBJ 2003 // 2003-2014
+#define TAG_NUMBER      2003
+#define TAG_BATTLER_OBJ 2004 // 2004-2015
 
 #define ANIM_PAUSED 0
 #define ANIM_IDLE   1
@@ -57,6 +58,7 @@ void PrintSwapTargetPrompt(enum BattleId battler);
 void PrintSwapString(enum BattleId battler1, enum BattleId battler2);
 
 void UpdatePlayerHPBar(enum BattleId battler);
+void PrintDamageNumbers(enum BattleId battler, s32 damage);
 
 extern struct DeckBattleGraphics gDeckGraphics;
 

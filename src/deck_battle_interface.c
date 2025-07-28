@@ -51,6 +51,7 @@
 static void LoadDummySpriteTiles(void);
 static void SpriteCB_Cursor(struct Sprite *sprite);
 static void SpriteCB_Shadow(struct Sprite *sprite);
+static void SpriteCB_DamageNumber(struct Sprite *sprite);
 static void SpriteCB_BattlerAttack(struct Sprite *sprite);
 static void SpriteCB_BattlerHurt(struct Sprite *sprite);
 
@@ -494,6 +495,7 @@ void InitDeckBattleGfx(void)
     LoadSpritePalette(&sMiscGfxSpritePalette);
     LoadSpriteSheet(&sShadowSpriteSheet);
     LoadSpriteSheet(&sCursorSpriteSheet);
+    LoadSpriteSheet(&sNumberSpriteSheet);
 
     LoadDummySpriteTiles();
     gDeckGraphics.portraitSpriteId = CreateSprite(&sPortraitSpriteTemplate, PORTRAIT_X, PORTRAIT_Y, 0);
@@ -734,6 +736,118 @@ u32 GetBattlerYCoord(enum BattleId battler)
 #undef sCursorId
 #undef sAnimState
 #undef sTimer
+
+// Damage numbers by TheSylphIsIn
+#define sDelay data[0] // wait time until sprite appears
+#define sStayTimer data[1] // number of frames sprite stays onscreen
+#define sState data[2] // state tracker for the little bounce the number does when it appears 
+#define sTracker data[3] // timer for the state-based little bounce
+
+static void SpriteCB_DamageNumber(struct Sprite *sprite)
+{
+	sprite->sTracker++;
+
+	switch (sprite->sState)
+	{
+		case 0: // Sprites appear in sequence if there are multiple
+			if (sprite->sDelay == 0)
+			{
+				sprite->invisible = FALSE;
+				sprite->sState++;
+				sprite->sTracker = 0;
+			}
+			else
+				sprite->sDelay--;
+			break;
+		case 1: // Sprite bounces up a teeny bit 
+			sprite->y--;
+			if (sprite->sTracker == 4)
+			{
+				sprite->sTracker = 0;
+				sprite->sState++;
+			}
+			break;
+		case 2:
+			sprite->y++; // Sprite slides back down to a resting position
+			if (sprite->sTracker == 2)
+			{
+				sprite->sTracker = 0;
+				sprite->sState++;
+			}
+			break;
+		case 3: // Sprite slides down again when it's about to disappear
+			if (sprite->sStayTimer < 4)
+				sprite->y++;
+			break;
+		default:
+			sprite->sTracker = 0;
+	}
+
+	if (sprite->invisible == FALSE)
+	{
+		sprite->sStayTimer--;
+		if (sprite->sStayTimer == 0)
+			DestroySprite(sprite);
+	}
+}
+
+static u32 GetDamageDigit(u32 damage, u32 digit) 
+{
+	u32 result = 0;
+	while (damage >= digit)
+	{
+		result++;
+		damage -= digit;
+	}
+
+	return result;
+}
+
+static void CreateDamageNumberSprite(u32 number, u32 numPrinted, enum BattleId battler)
+{
+	u32 spriteId = CreateSprite(&sNumberSpriteTemplate, GetBattlerXCoord(battler) + (7 * numPrinted),
+                                GetBattlerYCoord(battler) - 16, 0);
+	StartSpriteAnim(&gSprites[spriteId], number);
+	gSprites[spriteId].sDelay = 2 * numPrinted;
+	gSprites[spriteId].sStayTimer = 45;
+	gSprites[spriteId].invisible = TRUE;
+}
+
+void PrintDamageNumbers(enum BattleId battler, s32 damage)
+{
+	u32 spriteNumber;
+	u32 numPrinted = 0; // used to avoid printing leading 0s
+
+	if (damage < 0)
+		damage *= -1; // healing is shown as a positive value with a green palette
+
+	// hundreds place
+	spriteNumber = GetDamageDigit(damage, 100);
+	damage -= spriteNumber * 100;
+	if (spriteNumber > 0 || numPrinted != 0)
+	{
+		CreateDamageNumberSprite(spriteNumber, numPrinted, battler);
+		numPrinted++;
+	}
+
+	// tens place
+	spriteNumber = GetDamageDigit(damage, 10);
+	damage -= spriteNumber * 10;
+	if (spriteNumber > 0 || numPrinted != 0)
+	{
+		CreateDamageNumberSprite(spriteNumber, numPrinted, battler);
+		numPrinted++;
+	}
+
+	// ones place
+	spriteNumber = damage;
+	CreateDamageNumberSprite(spriteNumber, numPrinted, battler);
+}
+
+#undef sDelay
+#undef sStayTimer
+#undef sState
+#undef sTracker
 
 static const u8 sTextColorNormal[] = { 0, 1, 2 };
 

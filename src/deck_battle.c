@@ -740,6 +740,7 @@ static void Task_ExecuteHit(u8 taskId)
         break;
     case 2: // Damage target(s).
         StartBattlerAnim(gBattlerTarget, ANIM_HURT);
+        PrintDamageNumbers(gBattlerTarget, gDeckMons[gBattlerAttacker].pwr);
         PrintMoveOutcomeString();
         PlaySE(SE_EFFECTIVE);
         ++gTasks[taskId].tState;
@@ -784,8 +785,13 @@ static void Task_ExecuteHitAll(u8 taskId)
         break;
     case 2: // Damage target(s).
         for (enum BattleId battler = battlerStart; battler < battlerEnd; ++battler)
+        {
             if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+            {
                 StartBattlerAnim(battler, ANIM_HURT);
+                PrintDamageNumbers(battler, gDeckMons[gBattlerAttacker].pwr);
+            }
+        }
         PrintMoveOutcomeString();
         PlaySE(SE_EFFECTIVE);
         ++gTasks[taskId].tState;
