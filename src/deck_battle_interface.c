@@ -956,6 +956,13 @@ void PrintSwapString(enum BattleId battler1, enum BattleId battler2)
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
+void PrintStringToMessageBox(const u8 *str)
+{
+    FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
+    AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, str);
+    CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
+}
+
 #define POS_TO_SCR_ADDR(x,y) (32*(y) + (x))
 #define SCR_MAP_ENTRY(tile, pal, hflip, vflip) ((tile) | (hflip ? (1<<10) : 0) | (vflip ? (1 << 11) : 0) | (pal << 12))
 

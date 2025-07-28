@@ -161,3 +161,21 @@ bool32 IsDeckBattlerAlive(enum BattleId battler)
 {
     return (battler != MAX_DECK_BATTLERS_COUNT && gDeckMons[battler].hp != 0 && gDeckMons[battler].species != SPECIES_NONE);
 }
+
+bool32 IsBattlerAliveOnSide(u32 side)
+{
+    bool32 result = FALSE;
+    if (side == B_SIDE_PLAYER)
+    {
+        for (enum BattleId battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
+            if (IsDeckBattlerAlive(battler))
+                result = TRUE;
+    }
+    else
+    {
+        for (enum BattleId battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+            if (IsDeckBattlerAlive(battler))
+                result = TRUE;
+    }
+    return result;
+}

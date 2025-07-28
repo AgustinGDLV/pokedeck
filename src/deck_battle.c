@@ -41,6 +41,9 @@ static void Task_OpponentSelectSingleOpponent(u8 taskId);
 static void Task_OpponentSelectAllOpponents(u8 taskId);
 static void Task_PrepareForActionPhase(u8 taskId);
 static void Task_CheckFaintAndContinue(u8 taskId);
+static void Task_WaitForFaintAnim(u8 taskId);
+static void Task_CheckForBattleEnd(u8 taskId);
+static void Task_HandleBattleEnd(u8 taskId);
 static void Task_ExecuteQueuedActionOrEnd(u8 taskId);
 static void Task_ExecuteHit(u8 taskId);
 static void Task_ExecuteHitAll(u8 taskId);
@@ -169,12 +172,13 @@ static void Task_OpenDeckBattle(u8 taskId)
 {
     if (gTasks[taskId].tState == 0)
     {
-        LoadBattlerPortrait(B_PLAYER_0);
-        PrintBattlerMoveInfo(B_PLAYER_0);
+        enum BattleId battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
+        LoadBattlerPortrait(battler);
+        PrintBattlerMoveInfo(battler);
         // HP bar updated before fade begins
         gDeckStruct.actingSide = B_SIDE_PLAYER;
-        CreateSelectionCursorOverBattler(GetDeckBattlerAtPos(B_SIDE_PLAYER, POSITION_0));
-        StartSpriteAnim(&gSprites[gDeckGraphics.battlerSpriteIds[GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos)]], ANIM_IDLE);
+        CreateSelectionCursorOverBattler(battler);
+        StartBattlerAnim(battler, ANIM_IDLE);
         gTasks[taskId].tState += 1;
     }
     else if (!gPaletteFade.active)
@@ -266,7 +270,6 @@ static void Task_PlayerSelectAction(u8 taskId)
         if (gDeckStruct.actionsCount == 0)
         {
             BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
-            FadeOutMapMusic(5);
             gTasks[taskId].func = Task_CloseDeckBattle;
             PlaySE(SE_SELECT);
         }
@@ -682,15 +685,6 @@ static void Task_PrepareForActionPhase(u8 taskId)
     }
 }
 
-static void Task_WaitForFaintAnim(u8 taskId)
-{
-    if (++gTasks[taskId].tTimer > 48)
-    {
-        gTasks[taskId].tTimer = 0;
-        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
-    }
-}
-
 static void Task_CheckFaintAndContinue(u8 taskId)
 {
     bool32 fainted = FALSE;
@@ -710,6 +704,45 @@ static void Task_CheckFaintAndContinue(u8 taskId)
     else
     {
         gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
+    }
+}
+
+static void Task_WaitForFaintAnim(u8 taskId)
+{
+    if (++gTasks[taskId].tTimer > 48)
+    {
+        gTasks[taskId].tTimer = 0;
+        gTasks[taskId].func = Task_CheckForBattleEnd;
+    }
+}
+
+static void Task_CheckForBattleEnd(u8 taskId)
+{
+    if (!IsBattlerAliveOnSide(B_SIDE_PLAYER))
+    {
+        gBattleOutcome = B_OUTCOME_LOST;
+        PrintStringToMessageBox(COMPOUND_STRING("Battle lost…"));
+        gTasks[taskId].func = Task_HandleBattleEnd;
+    }
+    else if (!IsBattlerAliveOnSide(B_SIDE_OPPONENT))
+    {
+        gBattleOutcome = B_OUTCOME_WON;
+        PrintStringToMessageBox(COMPOUND_STRING("Battle won!"));
+        gTasks[taskId].func = Task_HandleBattleEnd;
+    }
+    else
+    {
+        gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
+    }
+}
+
+static void Task_HandleBattleEnd(u8 taskId)
+{
+    if (++gTasks[taskId].tTimer > 60)
+    {
+        gTasks[taskId].tTimer = 0;
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
+        gTasks[taskId].func = Task_CloseDeckBattle;
     }
 }
 
@@ -948,6 +981,7 @@ static void Task_CloseDeckBattle(u8 taskId)
     DestroyTask(taskId);
 
     // Return to overworld.
+    FadeOutMapMusic(5);
     SetMainCallback2(CB2_ReturnToField);
 }
 
@@ -956,6 +990,7 @@ static void Task_CloseDeckBattle(u8 taskId)
 
 static void InitBattleStructData(void)
 {
+    ResetTurnValues();
     gDeckStruct.selectedPos = GetLeftmostOccupiedPosition(B_SIDE_PLAYER);
 }
 
@@ -979,13 +1014,16 @@ static void InitBattleMonData(void)
             gDeckMons[i].species = SPECIES_SWABLU;
             break;
         case 5:
-            gDeckMons[i].species = SPECIES_NONE;
+            if (i == 5)
+                gDeckMons[i].species = SPECIES_SLOWPOKE;
+            else
+                gDeckMons[i].species = SPECIES_NONE;
             break;
         default:
             gDeckMons[i].species = SPECIES_SLOWPOKE;
             break;
         }
-        gDeckMons[i].hp = 100 - i*15; // gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
+        gDeckMons[i].hp = 40; // gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
         gDeckMons[i].maxHP = gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
         gDeckMons[i].pwr = gDeckSpeciesInfo[gDeckMons[i].species].basePWR;
         gDeckMons[i].pos = i % 6;

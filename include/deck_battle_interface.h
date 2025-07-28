@@ -57,6 +57,7 @@ void PrintMoveUseString(void);
 void PrintMoveOutcomeString(void);
 void PrintSwapTargetPrompt(enum BattleId battler);
 void PrintSwapString(enum BattleId battler1, enum BattleId battler2);
+void PrintStringToMessageBox(const u8 *str);
 
 void UpdatePlayerHPBar(enum BattleId battler);
 void PrintDamageNumbers(enum BattleId battler, s32 damage);
