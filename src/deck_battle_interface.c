@@ -2,8 +2,11 @@
 #include "battle_anim.h"
 #include "bg.h"
 #include "deck_battle.h"
+#include "deck_battle_effects.h"
 #include "deck_battle_interface.h"
 #include "deck_battle_util.h"
+#include "deck_battle_controller.h"
+#include "deck_battle_ai.h"
 #include "decompress.h"
 #include "event_object_movement.h"
 #include "gpu_regs.h"
@@ -1034,3 +1037,40 @@ void UpdatePlayerHPBar(enum BattleId battler)
 
     CopyBgTilemapBufferToVram(0);
 }
+
+// Update graphics for selecting and deselecting a battler.
+void UpdateBattlerSelection(enum BattleId battler, bool32 selected)
+{
+    if (selected)
+    {
+        CreateSelectionCursorOverBattler(battler);
+        StartBattlerAnim(battler, ANIM_IDLE);
+    }
+    else
+    {
+        RemoveSelectionCursorOverBattler(battler);
+        StartBattlerAnim(battler, ANIM_PAUSED);
+    }
+}
+
+// Update graphics for action selection.
+void DisplayActionSelectionInfo(enum BattleId battler)
+{
+    LoadBattlerPortrait(battler);
+    PrintBattlerMoveInfo(battler);
+    UpdatePlayerHPBar(battler);
+}
+
+// Update graphics for swap selection.
+void DisplaySwapSelectionInfo(enum BattleId battler)
+{
+    PrintSwapTargetPrompt(battler);
+    UpdatePlayerHPBar(battler);
+}
+
+// Update graphics for target selection.
+void DisplayTargetSelectionInfo(enum BattleId battler)
+{
+    PrintTargetBattlerPrompt(battler);
+}
+

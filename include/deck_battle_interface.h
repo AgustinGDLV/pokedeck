@@ -60,6 +60,11 @@ void PrintSwapString(enum BattleId battler1, enum BattleId battler2);
 void PrintStringToMessageBox(const u8 *str);
 
 void UpdatePlayerHPBar(enum BattleId battler);
+void UpdateBattlerSelection(enum BattleId battler, bool32 selected);
+void DisplayActionSelectionInfo(enum BattleId battler);
+void DisplaySwapSelectionInfo(enum BattleId battler);
+void DisplayTargetSelectionInfo(enum BattleId battler);
+
 void PrintDamageNumbers(enum BattleId battler, s32 damage);
 
 extern struct DeckBattleGraphics gDeckGraphics;

@@ -85,14 +85,6 @@ enum MoveTarget
     MOVE_TARGET_COUNT,
 };
 
-enum DeckMoveEffect
-{
-    DECK_EFFECT_HIT,
-    DECK_EFFECT_HIT_ALL,
-    DECK_EFFECT_POWER_UP,
-    DECK_EFFECT_COUNT,
-};
-
 struct DeckMoveInfo
 {
     const u8* name;
@@ -111,6 +103,15 @@ struct DeckBattleStruct
 };
 
 void CB2_OpenDeckBattleCustom(void);
+void Task_PrepareForActionPhase(u8 taskId);
+void Task_CheckFaintAndContinue(u8 taskId);
+void Task_WaitForFaintAnim(u8 taskId);
+void Task_CheckForBattleEnd(u8 taskId);
+void Task_HandleBattleEnd(u8 taskId);
+void Task_CloseDeckBattle(u8 taskId);
+void Task_ExecuteQueuedActionOrEnd(u8 taskId);
+void QueueAction(u32 type, u32 battlerAtk, u32 battlerDef, u32 move);
+void SwapBattlerPositions(u32 battler1, u32 battler2);
 
 extern struct DeckBattleStruct gDeckStruct;
 extern struct DeckBattlePokemon gDeckMons[MAX_DECK_BATTLERS_COUNT];

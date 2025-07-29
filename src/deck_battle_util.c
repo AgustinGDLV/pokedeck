@@ -1,9 +1,20 @@
 #include "global.h"
 #include "battle.h"
 #include "deck_battle.h"
+#include "deck_battle_effects.h"
 #include "deck_battle_interface.h"
 #include "deck_battle_util.h"
+#include "deck_battle_controller.h"
+#include "deck_battle_ai.h"
 #include "constants/species.h"
+
+/* deck_battle_interface.c
+ *
+ * This file holds several utility functions used across
+ * all the deck battle engine files. Splashable functions
+ * should be kept here.
+ * 
+*/
 
 u32 GetDeckBattlerSide(enum BattleId battler)
 {
