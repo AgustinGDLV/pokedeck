@@ -9,9 +9,11 @@ enum BattlePosition GetLeftmostPositionToMove(u32 side);
 
 enum BattlePosition GetOccupiedOnLeft(u32 side, enum BattlePosition position);
 enum BattlePosition GetNonAttackerOnLeft(u32 side, enum BattlePosition position);
+enum BattlePosition GetAnyNonAttackerOnLeft(u32 side, enum BattlePosition position);
 enum BattlePosition GetToMoveOnLeft(u32 side, enum BattlePosition position);
 enum BattlePosition GetOccupiedOnRight(u32 side, enum BattlePosition position);
 enum BattlePosition GetNonAttackerOnRight(u32 side, enum BattlePosition position);
+enum BattlePosition GetAnyNonAttackerOnRight(u32 side, enum BattlePosition position);
 enum BattlePosition GetToMoveOnRight(u32 side, enum BattlePosition position);
 
 enum BattleId GetRandomBattlerOnSide(u32 side);

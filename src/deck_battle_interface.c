@@ -303,6 +303,7 @@ void ClearDeckBattleGraphicsStruct(void)
         gDeckGraphics.battlerSpriteIds[B_SIDE_PLAYER] = SPRITE_NONE;
         gDeckGraphics.battlerSpriteIds[B_SIDE_OPPONENT] = SPRITE_NONE;
     }
+    gDeckGraphics.swapCursorSpriteId = SPRITE_NONE;
     gDeckGraphics.portraitSpriteId = SPRITE_NONE;
 }
 
@@ -540,6 +541,17 @@ void RemoveSelectionCursorOverBattler(enum BattleId battler)
 {
     DestroySprite(&gSprites[gSprites[gDeckGraphics.battlerSpriteIds[battler]].sCursorId]);
     gSprites[gDeckGraphics.battlerSpriteIds[battler]].sCursorId = SPRITE_NONE;
+}
+
+void CreateSelectionCursorOverPosition(enum BattlePosition position)
+{
+    gDeckGraphics.swapCursorSpriteId = CreateSprite(&sCursorSpriteTemplate, PLAYER_OBJ_X + OBJ_OFFSET * position, PLAYER_OBJ_Y - 16, 0);
+}
+
+void RemoveSwapSelectionCursor(void)
+{
+    DestroySprite(&gSprites[gDeckGraphics.swapCursorSpriteId]);
+    gDeckGraphics.swapCursorSpriteId = SPRITE_NONE;
 }
 
 void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale)
@@ -942,10 +954,18 @@ void PrintMoveOutcomeString(void)
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
-void PrintSwapTargetPrompt(enum BattleId battler)
+void PrintSwapTargetPrompt(enum BattlePosition position)
 {
-    StringCopy(gStringVar2, GetSpeciesName(gDeckMons[battler].species));
-    StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Swap with {STR_VAR_2}?"));
+    enum BattleId battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, position);
+    if (battler != MAX_DECK_BATTLERS_COUNT && IsDeckBattlerAlive(battler))
+    {
+        StringCopy(gStringVar2, GetSpeciesName(gDeckMons[battler].species));
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Swap with {STR_VAR_2}?"));
+    }
+    else
+    {
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Swap to empty space?"));
+    }
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
     AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);

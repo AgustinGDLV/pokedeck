@@ -29,13 +29,13 @@ u32 GetDeckBattlerAtPos(u32 side, enum BattlePosition position)
     if (side == B_SIDE_PLAYER)
     {
         for (enum BattleId battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
-            if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].pos == position)
+            if (IsDeckBattlerAlive(battler) && gDeckMons[battler].pos == position)
                 return battler;
     }
     else
     {
         for (enum BattleId battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
-            if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].pos == position)
+            if (IsDeckBattlerAlive(battler) != SPECIES_NONE && gDeckMons[battler].pos == position)
                 return battler;
     }
     return MAX_DECK_BATTLERS_COUNT; // no luck
@@ -97,6 +97,20 @@ enum BattlePosition GetNonAttackerOnLeft(u32 side, enum BattlePosition position)
     return POSITIONS_COUNT;
 }
 
+enum BattlePosition GetAnyNonAttackerOnLeft(u32 side, enum BattlePosition position)
+{
+    if (position == POSITION_0)
+        return POSITIONS_COUNT;
+
+    for (enum BattlePosition pos = position - 1; pos >= POSITION_0 && pos != (-1); --pos)
+    {
+        if (GetDeckBattlerAtPos(side, pos) != gBattlerAttacker)
+            return pos;
+    }
+
+    return POSITIONS_COUNT;
+}
+
 enum BattlePosition GetToMoveOnLeft(u32 side, enum BattlePosition position)
 {
     enum BattleId battler;
@@ -132,6 +146,16 @@ enum BattlePosition GetNonAttackerOnRight(u32 side, enum BattlePosition position
     {
         battler = GetDeckBattlerAtPos(side, pos);
         if (IsDeckBattlerAlive(battler) && battler != gBattlerAttacker)
+            return pos;
+    }
+    return POSITIONS_COUNT;
+}
+
+enum BattlePosition GetAnyNonAttackerOnRight(u32 side, enum BattlePosition position)
+{
+    for (enum BattlePosition pos = position + 1; pos < POSITIONS_COUNT; ++pos)
+    {
+        if (GetDeckBattlerAtPos(side, pos) != gBattlerAttacker)
             return pos;
     }
     return POSITIONS_COUNT;
