@@ -519,6 +519,10 @@ void InitDeckBattleGfx(void)
     SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_TGT2_ALL | BLDCNT_EFFECT_BLEND);
     SetGpuReg(REG_OFFSET_BLDALPHA, BLDALPHA_BLEND(8, 6));
 
+    u32 battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
+    UpdatePlayerHPBar(battler);
+    LoadBattlerPortrait(battler);
+
     CreateTask(Task_DoBattlerBobEffect, 1);
 }
 
@@ -974,7 +978,6 @@ static void SetHPBarColor(enum BattleId battler)
 {
     u16 palette;
     u32 pct = ((gDeckMons[battler].hp * 100) / gDeckMons[battler].maxHP);
-    DebugPrintf("pct: %d", pct);
     if (pct > 50)
         palette = RGB(0, 27, 0);
     else if (pct > 20)

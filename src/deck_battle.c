@@ -22,6 +22,7 @@
 #include "constants/abilities.h"
 #include "constants/battle.h"
 #include "constants/moves.h"
+#include "constants/pokemon.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/species.h"
@@ -144,19 +145,20 @@ void CB2_OpenDeckBattleCustom(void)
             gMain.state++;
             break;
         case 4:
+            InitBattleMonData();
+            InitBattleStructData();
+            gMain.state++;
+            break;
+        case 5:
             InitDeckBattleGfx();
             gMain.state++;
-        case 5:
-            InitBattleStructData();
-            InitBattleMonData();
-            gMain.state++;
+            break;
         case 6:
             for (enum BattleId battler = 0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
                 LoadBattlerObjectSprite(battler);
             gMain.state++;
             break;
         case 7:
-            UpdatePlayerHPBar(B_PLAYER_0);
             BeginNormalPaletteFade(PALETTES_ALL, 4, 16, 0, RGB_BLACK);
             SetVBlankCallback(VBlankCB2_DeckBattle);
             CreateTask(Task_OpenDeckBattle, 0);
@@ -173,7 +175,6 @@ static void Task_OpenDeckBattle(u8 taskId)
     if (gTasks[taskId].tState == 0)
     {
         enum BattleId battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-        LoadBattlerPortrait(battler);
         PrintBattlerMoveInfo(battler);
         // HP bar updated before fade begins
         gDeckStruct.actingSide = B_SIDE_PLAYER;
@@ -994,40 +995,30 @@ static void InitBattleStructData(void)
     gDeckStruct.selectedPos = GetLeftmostOccupiedPosition(B_SIDE_PLAYER);
 }
 
-// Placeholder until party data is used.
+static void LoadDummyEnemyParty(void)
+{
+    CreateMon(&gEnemyParty[0], SPECIES_SLOWPOKE, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[1], SPECIES_BELLSPROUT, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[2], SPECIES_SWABLU, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[3], SPECIES_SLOWBRO, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[4], SPECIES_MAREEP, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[5], SPECIES_SLOWPOKE, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+}
+
 static void InitBattleMonData(void)
 {
+    LoadDummyEnemyParty();
     for (u32 i = 0; i < MAX_DECK_BATTLERS_COUNT; ++i)
     {
-        switch (i % 6)
-        {
-        case 1:
-            gDeckMons[i].species = SPECIES_BELLSPROUT;
-            break;
-        case 2:
-            gDeckMons[i].species = SPECIES_MAREEP;
-            break;
-        case 3:
-            gDeckMons[i].species = SPECIES_SLOWBRO;
-            break;
-        case 4:
-            gDeckMons[i].species = SPECIES_SWABLU;
-            break;
-        case 5:
-            if (i == 5)
-                gDeckMons[i].species = SPECIES_SLOWPOKE;
-            else
-                gDeckMons[i].species = SPECIES_NONE;
-            break;
-        default:
-            gDeckMons[i].species = SPECIES_SLOWPOKE;
-            break;
-        }
-        gDeckMons[i].hp = 40; // gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
+        if (GetDeckBattlerSide(i) == B_SIDE_PLAYER)
+            gDeckMons[i].species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
+        else
+            gDeckMons[i].species = GetMonData(&gEnemyParty[i - POSITIONS_COUNT], MON_DATA_SPECIES);
+        gDeckMons[i].hp = gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
         gDeckMons[i].maxHP = gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
         gDeckMons[i].pwr = gDeckSpeciesInfo[gDeckMons[i].species].basePWR;
-        gDeckMons[i].pos = i % 6;
-        gDeckMons[i].initialPos = i % 6;
+        gDeckMons[i].pos = i % POSITIONS_COUNT;
+        gDeckMons[i].initialPos = i % POSITIONS_COUNT;
     }
 }
 
