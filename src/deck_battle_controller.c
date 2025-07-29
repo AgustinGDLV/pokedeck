@@ -100,10 +100,6 @@ void Task_PlayerSelectAction(u8 taskId)
         gBattlerAttacker = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
         if (!gDeckMons[gBattlerAttacker].hasSwapped)
         {
-            // Remove cursor but keep idle anim while selecting target.
-            RemoveSelectionCursorOverBattler(gBattlerAttacker);
-            GetBattlerSprite(gBattlerAttacker)->oam.objMode = ST_OAM_OBJ_BLEND;
-
             // Try to select first possible target.
             pos = gDeckStruct.selectedPos;
             gDeckStruct.selectedPos = GetLeftmostOccupiedPosition(B_SIDE_PLAYER);
@@ -111,6 +107,10 @@ void Task_PlayerSelectAction(u8 taskId)
                 gDeckStruct.selectedPos = GetNonAttackerOnRight(B_SIDE_PLAYER, gDeckStruct.selectedPos);
             if (gDeckStruct.selectedPos != POSITIONS_COUNT)
             {
+                // Remove cursor but keep idle anim while selecting target.
+                RemoveSelectionCursorOverBattler(gBattlerAttacker);
+                GetBattlerSprite(gBattlerAttacker)->oam.objMode = ST_OAM_OBJ_BLEND;
+
                 // Mark target as selected.
                 PlaySE(SE_SELECT);
                 battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
@@ -123,6 +123,10 @@ void Task_PlayerSelectAction(u8 taskId)
                 SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
                 gTasks[taskId].func = Task_PlayerSelectAllyToSwap;
                 return;
+            }
+            else
+            {
+                gDeckStruct.selectedPos = pos;
             }
         }
         // Swap not possible.
