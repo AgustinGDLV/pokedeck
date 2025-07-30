@@ -46,8 +46,6 @@ static void Task_Scene1_End(u8);
 // Scene 1 supplemental functions
 static void IntroResetGpuRegs(void);
 static u8 CreateGameFreakLogoSprites(s16, s16, s16);
-static void Task_BlendLogoIn(u8);
-static void Task_BlendLogoOut(u8);
 static void Task_CreateSparkles(u8);
 static u8 CreateWaterDrop(s16, s16, u16, u16, u16, u8);
 static void SpriteCB_WaterDrop(struct Sprite *sprite);
@@ -1053,8 +1051,7 @@ void MainCB2_Intro(void)
 
 static void MainCB2_EndIntro(void)
 {
-    if (!UpdatePaletteFade())
-        SetMainCallback2(CB2_InitTitleScreen);
+    SetMainCallback2(CB2_InitTitleScreen);
 }
 
 static void LoadCopyrightGraphics(u16 tilesetAddress, u16 tilemapAddress, u16 paletteOffset)
@@ -1122,13 +1119,14 @@ static u8 SetUpCopyrightScreen(void)
     case COPYRIGHT_START_INTRO:
         if (UpdatePaletteFade())
             break;
-#if EXPANSION_INTRO == TRUE
-        SetMainCallback2(CB2_ExpansionIntro);
-        CreateTask(Task_HandleExpansionIntro, 0);
-#else
-        CreateTask(Task_Scene1_Load, 0);
-        SetMainCallback2(MainCB2_Intro);
-#endif
+// #if EXPANSION_INTRO == TRUE
+//         SetMainCallback2(CB2_ExpansionIntro);
+//         CreateTask(Task_HandleExpansionIntro, 0);
+// #else
+//         CreateTask(Task_Scene1_Load, 0);
+//         SetMainCallback2(MainCB2_Intro);
+// #endif
+        SetMainCallback2(MainCB2_EndIntro);
         if (gMultibootProgramStruct.gcmb_field_2 != 0)
         {
             if (gMultibootProgramStruct.gcmb_field_2 == 2)
@@ -1239,14 +1237,8 @@ static void Task_Scene1_WaterDrops(u8 taskId)
     if (gIntroFrameCounter == TIMER_BIG_DROP_START)
         gSprites[gTasks[taskId].sBigDropSpriteId].sState = 1;
 
-    if (gIntroFrameCounter == TIMER_LOGO_APPEAR)
-        CreateTask(Task_BlendLogoIn, 0);
-
     if (gIntroFrameCounter == TIMER_BIG_DROP_FALLS)
         gSprites[gTasks[taskId].sBigDropSpriteId].sState = 2;
-
-    if (gIntroFrameCounter == TIMER_LOGO_BLEND_OUT)
-        CreateTask(Task_BlendLogoOut, 0);
 
     if (gIntroFrameCounter == TIMER_SMALL_DROP_1)
         CreateWaterDrop(48, 0, 0x400, 5, 0x70, TRUE);
@@ -2721,99 +2713,6 @@ static void IntroResetGpuRegs(void)
     SetGpuReg(REG_OFFSET_BLDCNT, 0);
     SetGpuReg(REG_OFFSET_BLDALPHA, 0);
     SetGpuReg(REG_OFFSET_BLDY, 0);
-}
-
-static void Task_BlendLogoIn(u8 taskId)
-{
-    switch (gTasks[taskId].tState)
-    {
-    case 0:
-    default:
-        SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_EFFECT_BLEND
-                                   | BLDCNT_TGT2_BG0
-                                   | BLDCNT_TGT2_BG1
-                                   | BLDCNT_TGT2_BG2
-                                   | BLDCNT_TGT2_BG3
-                                   | BLDCNT_TGT2_OBJ
-                                   | BLDCNT_TGT2_BD);
-        SetGpuReg(REG_OFFSET_BLDALPHA, gTitleScreenAlphaBlend[31]);
-        SetGpuReg(REG_OFFSET_BLDY, 0);
-        gTasks[taskId].data[1] = ARRAY_COUNT(gTitleScreenAlphaBlend);
-        gTasks[taskId].tState++;
-        break;
-    case 1:
-        if (gTasks[taskId].data[1] != 0)
-        {
-            u8 tmp;
-
-            gTasks[taskId].data[1]--;
-            tmp = gTasks[taskId].data[1] / 2;
-            SetGpuReg(REG_OFFSET_BLDALPHA, gTitleScreenAlphaBlend[tmp]);
-        }
-        else
-        {
-            SetGpuReg(REG_OFFSET_BLDALPHA, gTitleScreenAlphaBlend[0]);
-            gTasks[taskId].data[1] = ARRAY_COUNT(gTitleScreenAlphaBlend) / 4;
-            gTasks[taskId].tState++;
-        }
-        break;
-    case 2:
-        SetGpuReg(REG_OFFSET_BLDCNT, 0);
-        SetGpuReg(REG_OFFSET_BLDALPHA, 0);
-        SetGpuReg(REG_OFFSET_BLDY, 0);
-        DestroyTask(taskId);
-        break;
-    }
-}
-
-static void Task_BlendLogoOut(u8 taskId)
-{
-    switch (gTasks[taskId].tState)
-    {
-    case 0:
-    default:
-        SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_EFFECT_BLEND
-                                   | BLDCNT_TGT2_BG0
-                                   | BLDCNT_TGT2_BG1
-                                   | BLDCNT_TGT2_BG2
-                                   | BLDCNT_TGT2_BG3
-                                   | BLDCNT_TGT2_OBJ
-                                   | BLDCNT_TGT2_BD);
-        SetGpuReg(REG_OFFSET_BLDALPHA, gTitleScreenAlphaBlend[0]);
-        SetGpuReg(REG_OFFSET_BLDY, 0);
-        gTasks[taskId].data[1] = 0;
-        gTasks[taskId].tState++;
-        break;
-    case 1:
-        if (gTasks[taskId].data[1] < (int)ARRAY_COUNT(gTitleScreenAlphaBlend) - 2)
-        {
-            u8 tmp;
-
-            gTasks[taskId].data[1]++;
-            tmp = gTasks[taskId].data[1] / 2;
-            SetGpuReg(REG_OFFSET_BLDALPHA, gTitleScreenAlphaBlend[tmp]);
-        }
-        else
-        {
-            SetGpuReg(REG_OFFSET_BLDALPHA, gTitleScreenAlphaBlend[31]);
-            gTasks[taskId].data[1] = ARRAY_COUNT(gTitleScreenAlphaBlend) / 4;
-            gTasks[taskId].tState++;
-        }
-        break;
-    case 2:
-        if (gTasks[taskId].data[1] != 0)
-        {
-            gTasks[taskId].data[1]--;
-        }
-        else
-        {
-            SetGpuReg(REG_OFFSET_BLDCNT, 0);
-            SetGpuReg(REG_OFFSET_BLDALPHA, 0);
-            SetGpuReg(REG_OFFSET_BLDY, 0);
-            DestroyTask(taskId);
-        }
-        break;
-    }
 }
 
 void PanFadeAndZoomScreen(u16 screenX, u16 screenY, u16 zoom, u16 alpha)

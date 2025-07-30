@@ -308,8 +308,7 @@ static void Task_MainMenuWaitForKeypress(u8 taskId)
     // Exit is universal for all options.
     if (gMain.newKeys & B_BUTTON)
     {
-        BeginNormalPaletteFade(PALETTES_ALL & ~(1 << 1), 0, 0, 16, RGB_BLACK);
-        BeginNormalPaletteFade(1 << 1, 0, 12, 16, RGB_BLACK);
+        FadeScreen(FADE_TO_BLACK, 0);
         sMainMenuExitCallback = CB2_InitTitleScreen;
         gTasks[taskId].func = Task_CloseMainMenu;
         PlaySE(SE_SELECT);
