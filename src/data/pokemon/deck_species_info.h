@@ -104,4 +104,25 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .portrait = gSwabluPortraitGfx,
         .portraitPalette = gSwabluPortraitPal,
     },
+
+    [SPECIES_APPLIN] =
+    {
+        .baseHP = 90,
+        .basePWR = 12,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gApplinPlayerIdleGfx,
+        .opponentIdle = gApplinOpponentIdleGfx,
+        .playerAttack = gApplinPlayerAttackGfx,
+        .opponentAttack = gApplinOpponentAttackGfx,
+        .playerHurt = gApplinPlayerHurtGfx,
+        .opponentHurt = gApplinOpponentHurtGfx,
+        .objectPalette = gApplinObjectPal,
+        .playerYOffset = 0,
+        .opponentYOffset = 0,
+
+        .portrait = gApplinPortraitGfx,
+        .portraitPalette = gApplinPortraitPal,
+    },
 };

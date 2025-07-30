@@ -57,3 +57,15 @@ const u16 gSwabluObjectPal[] = INCBIN_U16("graphics/deck_pokemon/swablu/player_i
 
 const u8 gSwabluPortraitGfx[] = INCBIN_U8("graphics/deck_pokemon/swablu/portrait_normal.4bpp");
 const u16 gSwabluPortraitPal[] = INCBIN_U16("graphics/deck_pokemon/swablu/portrait_normal.gbapal");
+
+// Applin
+const u8 gApplinPlayerIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/applin/player_idle.4bpp");
+const u8 gApplinOpponentIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/applin/opponent_idle.4bpp");
+const u8 gApplinPlayerAttackGfx[] = INCBIN_U8("graphics/deck_pokemon/applin/player_attack.4bpp");
+const u8 gApplinOpponentAttackGfx[] = INCBIN_U8("graphics/deck_pokemon/applin/opponent_attack.4bpp");
+const u8 gApplinPlayerHurtGfx[] = INCBIN_U8("graphics/deck_pokemon/applin/player_hurt.4bpp");
+const u8 gApplinOpponentHurtGfx[] = INCBIN_U8("graphics/deck_pokemon/applin/opponent_hurt.4bpp");
+const u16 gApplinObjectPal[] = INCBIN_U16("graphics/deck_pokemon/applin/player_idle.gbapal");
+
+const u8 gApplinPortraitGfx[] = INCBIN_U8("graphics/deck_pokemon/applin/portrait_normal.4bpp");
+const u16 gApplinPortraitPal[] = INCBIN_U16("graphics/deck_pokemon/applin/portrait_normal.gbapal");
