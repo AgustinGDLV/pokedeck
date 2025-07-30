@@ -4415,21 +4415,31 @@
       "id": "LAYOUT_STARTING_TOWN",
       "name": "StartingTown_Layout",
       "width": 48,
-      "height": 21,
+      "height": 22,
       "primary_tileset": "gTileset_Overworld",
-      "secondary_tileset": "gTileset_Unused2",
+      "secondary_tileset": "gTileset_Unused1",
       "border_filepath": "data/layouts/StartingTown/border.bin",
       "blockdata_filepath": "data/layouts/StartingTown/map.bin"
     },
     {
       "id": "LAYOUT_ROUTE1",
       "name": "Route1_Layout",
-      "width": 34,
-      "height": 48,
+      "width": 60,
+      "height": 54,
       "primary_tileset": "gTileset_Overworld",
       "secondary_tileset": "gTileset_Unused1",
       "border_filepath": "data/layouts/Route1/border.bin",
       "blockdata_filepath": "data/layouts/Route1/map.bin"
+    },
+    {
+      "id": "LAYOUT_ROUTE2",
+      "name": "Route2_Layout",
+      "width": 20,
+      "height": 20,
+      "primary_tileset": "gTileset_Overworld",
+      "secondary_tileset": "gTileset_Unused1",
+      "border_filepath": "data/layouts/Route2/border.bin",
+      "blockdata_filepath": "data/layouts/Route2/map.bin"
     }
   ]
 }

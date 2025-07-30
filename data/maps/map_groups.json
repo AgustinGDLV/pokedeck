@@ -41,7 +41,8 @@
     "StartingTown"
   ],
   "gMapGroup_Routes": [
-    "Route1"
+    "Route1",
+    "Route2"
   ],
   "gMapGroup_TownsAndRoutes": [
     "PetalburgCity",

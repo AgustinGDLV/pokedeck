@@ -1186,3 +1186,36 @@ static void BlendAnimPalette_BattleDome_FloorLightsNoBlend(u16 timer)
             sSecondaryTilesetAnimCallback = NULL;
     }
 }
+
+// custom tileset anims
+const u16 gTilesetAnims_Overworld_Water_Frame0[] = INCBIN_U16("data/tilesets/primary/overworld/anim/water/00.4bpp");
+const u16 gTilesetAnims_Overworld_Water_Frame1[] = INCBIN_U16("data/tilesets/primary/overworld/anim/water/01.4bpp");
+const u16 gTilesetAnims_Overworld_Water_Frame2[] = INCBIN_U16("data/tilesets/primary/overworld/anim/water/02.4bpp");
+const u16 gTilesetAnims_Overworld_Water_Frame3[] = INCBIN_U16("data/tilesets/primary/overworld/anim/water/03.4bpp");
+
+const u16 *const gTilesetAnims_Overworld_Water[] = {
+    gTilesetAnims_Overworld_Water_Frame0,
+    gTilesetAnims_Overworld_Water_Frame1,
+    gTilesetAnims_Overworld_Water_Frame2,
+    gTilesetAnims_Overworld_Water_Frame3
+};
+
+static void QueueAnimTiles_Overworld_Water(u16 timer)
+{
+    u16 i = timer % ARRAY_COUNT(gTilesetAnims_Overworld_Water);
+    AppendTilesetAnimToBuffer(gTilesetAnims_Overworld_Water[i], (u16 *)(BG_VRAM + TILE_OFFSET_4BPP(1)), TILE_SIZE_4BPP);
+}
+
+static void TilesetAnim_Overworld(u16 timer)
+{
+    if (timer % 16 == 0) {
+        QueueAnimTiles_Overworld_Water(timer / 16);
+    }
+}
+
+void InitTilesetAnim_Overworld(void)
+{
+    sPrimaryTilesetAnimCounter = 0;
+    sPrimaryTilesetAnimCounterMax = 256;
+    sPrimaryTilesetAnimCallback = TilesetAnim_Overworld;
+}

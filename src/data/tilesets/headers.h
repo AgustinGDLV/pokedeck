@@ -839,5 +839,5 @@ const struct Tileset gTileset_Overworld =
     .palettes = gTilesetPalettes_Overworld,
     .metatiles = gMetatiles_Overworld,
     .metatileAttributes = gMetatileAttributes_Overworld,
-    .callback = NULL,
+    .callback = InitTilesetAnim_Overworld,
 };
