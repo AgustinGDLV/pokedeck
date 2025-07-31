@@ -263,7 +263,6 @@ static void PrintMonInfo(vu32 index);
 static void PrintMoveInfo(u32 index);
 static void DrawBattlerSprites(void);
 static void MoveCursorOverPosition(u32 position);
-static void CheckEmptyAndReloadTilemap(u32 species);
 static void InitPartyDataStruct(void);
 static void CopyPartyDataToMonData(void);
 
@@ -362,7 +361,6 @@ static void Task_OpenPartyMenu(u8 taskId)
 
 static void UpdateDisplayedMonInfo(u32 index)
 {
-    CheckEmptyAndReloadTilemap(sPartyMenuData.mons[index].species);
     if (sPartyMenuData.mons[index].species != SPECIES_NONE)
     {
         PrintMonInfo(index);
@@ -438,6 +436,7 @@ static void Task_PartyMenuHandleDefaultInput(u8 taskId)
             sPartyMenuData.swapPosition = POSITION_1;
         else
             sPartyMenuData.swapPosition = POSITION_0;
+        DebugPrintf("selected pos: %d, swap pos %d", sPartyMenuData.selectedPosition, sPartyMenuData.swapPosition);
         gSprites[sPartyMenuData.battlerSpriteIds[GetPartyIndexAtPosition(sPartyMenuData.selectedPosition)]].oam.objMode = ST_OAM_OBJ_BLEND;
         MoveCursorOverPosition(sPartyMenuData.swapPosition);
         gTasks[taskId].func = Task_PartyMenuHandleSwapInput;
@@ -465,7 +464,7 @@ static void Task_PartyMenuHandleSwapInput(u8 taskId)
         PlaySE(SE_SELECT);
         MoveCursorOverPosition(sPartyMenuData.swapPosition);
     }
-    if (gMain.newKeys & DPAD_LEFT && sPartyMenuData.swapPosition > POSITION_0 + 1)
+    if (gMain.newKeys & DPAD_LEFT && sPartyMenuData.swapPosition > POSITION_0)
     {
         if (sPartyMenuData.swapPosition - 1 != sPartyMenuData.selectedPosition)
             sPartyMenuData.swapPosition -= 1;
@@ -565,7 +564,8 @@ static void LoadPartyMenuGfx(void)
     // Load cursor.
     LoadSpriteSheet(&gCursorSpriteSheet);
     sPartyMenuData.cursorSpriteId = CreateSprite(&gCursorSpriteTemplate, 40, 48-16, 0);
-    MoveCursorOverPosition(position);    
+    MoveCursorOverPosition(position);
+    sPartyMenuData.selectedPosition = position;
 }
 
 static void CreatePartyMenuWindows(void)
@@ -668,15 +668,6 @@ static void MoveCursorOverPosition(u32 position)
     gSprites[sPartyMenuData.cursorSpriteId].x = 40 + OBJ_OFFSET*position;
 }
 
-static void CheckEmptyAndReloadTilemap(u32 species)
-{
-    if (species == SPECIES_NONE)
-        LZDecompressWram(sPartyMenuEmptyTilemap, sPartyMenuTilemapPtr);
-    else
-        LZDecompressWram(sPartyMenuTilemap, sPartyMenuTilemapPtr);
-    CopyBgTilemapBufferToVram(2);
-}
-
 static void InitPartyDataStruct(void)
 {
     sPartyMenuData.selectedPosition = 0;
@@ -709,7 +700,6 @@ static void CopyPartyDataToMonData(void)
         if (sPartyMenuData.mons[i].species != SPECIES_NONE || gDeckSpeciesInfo[sPartyMenuData.mons[i].species].baseHP == 0)
         {
             SetMonData(&gPlayerParty[i], MON_DATA_POSITION, &sPartyMenuData.mons[i].position);
-            DebugPrintf("%d's position is %d", i, sPartyMenuData.mons[i].position);
             SetMonData(&gPlayerParty[i], MON_DATA_HP, &sPartyMenuData.mons[i].hp);
             SetMonData(&gPlayerParty[i], MON_DATA_LEVEL, &sPartyMenuData.mons[i].lvl);
         }
