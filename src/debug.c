@@ -3769,6 +3769,8 @@ static void DebugAction_Give_Pokemon_ComplexCreateMon(u8 taskId) //https://githu
     else
     {
         sentToPc = MON_GIVEN_TO_PARTY;
+        u32 position = GetPlayerLeftmostUnoccupiedPosition();
+        SetMonData(&mon, MON_DATA_POSITION, &position);
         CopyMon(&gPlayerParty[i], &mon, sizeof(mon));
         gPlayerPartyCount = i + 1;
     }

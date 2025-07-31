@@ -44,9 +44,9 @@ const u8 sCursorGfx[] = INCBIN_U8("graphics/deck_battle_interface/cursor.4bpp");
 const u8 sNumberGfx[] = INCBIN_U8("graphics/deck_battle_interface/number.4bpp");
 const u16 sMiscGfxPal[] = INCBIN_U16("graphics/deck_battle_interface/shadow.gbapal");
 
-static const struct SpriteSheet sShadowSpriteSheet = { sShadowGfx, sizeof(sShadowGfx), TAG_SHADOW };
-static const struct SpritePalette sMiscGfxSpritePalette = { sMiscGfxPal, TAG_MISC_PAL };
-static const struct SpriteTemplate sShadowSpriteTemplate =
+const struct SpriteSheet gShadowSpriteSheet = { sShadowGfx, sizeof(sShadowGfx), TAG_SHADOW };
+const struct SpritePalette gMiscGfxSpritePalette = { sMiscGfxPal, TAG_MISC_PAL };
+const struct SpriteTemplate gShadowSpriteTemplate =
 {
 	.tileTag = TAG_SHADOW,
 	.paletteTag = TAG_MISC_PAL,
@@ -57,8 +57,8 @@ static const struct SpriteTemplate sShadowSpriteTemplate =
 	.callback = SpriteCB_Shadow,
 };
 
-static const struct SpriteSheet sCursorSpriteSheet = { sCursorGfx, sizeof(sCursorGfx), TAG_CURSOR };
-static const struct SpriteTemplate sCursorSpriteTemplate =
+const struct SpriteSheet gCursorSpriteSheet = { sCursorGfx, sizeof(sCursorGfx), TAG_CURSOR };
+const struct SpriteTemplate gCursorSpriteTemplate =
 {
 	.tileTag = TAG_CURSOR,
 	.paletteTag = TAG_MISC_PAL,

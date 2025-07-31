@@ -119,6 +119,7 @@ enum {
     MON_DATA_GIGANTAMAX_FACTOR,
     MON_DATA_TERA_TYPE,
     MON_DATA_EVOLUTION_TRACKER,
+    MON_DATA_POSITION,
 };
 
 struct PokemonSubstruct0
@@ -280,6 +281,7 @@ struct Pokemon
     u16 speed;
     u16 spAttack;
     u16 spDefense;
+    u8 position;
 };
 
 struct MonSpritesGfxManager
@@ -830,5 +832,6 @@ uq4_12_t GetDynamaxLevelHPMultiplier(u32 dynamaxLevel, bool32 inverseMultiplier)
 u32 GetRegionalFormByRegion(u32 species, u32 region);
 bool32 IsSpeciesForeignRegionalForm(u32 species, u32 currentRegion);
 u32 GetTeraTypeFromPersonality(struct Pokemon *mon);
+u32 GetPlayerLeftmostUnoccupiedPosition(void);
 
 #endif // GUARD_POKEMON_H

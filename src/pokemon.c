@@ -12,6 +12,7 @@
 #include "battle_tower.h"
 #include "battle_z_move.h"
 #include "data.h"
+#include "deck_battle.h"
 #include "dexnav.h"
 #include "event_data.h"
 #include "event_object_movement.h"
@@ -2397,6 +2398,9 @@ u32 GetMonData3(struct Pokemon *mon, s32 field, u8 *data)
     case MON_DATA_MAIL:
         ret = mon->mail;
         break;
+    case MON_DATA_POSITION:
+        ret = mon->position;
+        break;
     default:
         ret = GetBoxMonData(&mon->box, field, data);
         break;
@@ -2960,6 +2964,9 @@ void SetMonData(struct Pokemon *mon, s32 field, const void *dataArg)
         break;
     case MON_DATA_SPECIES_OR_EGG:
         break;
+    case MON_DATA_POSITION:
+        SET8(mon->position);
+        break;
     default:
         SetBoxMonData(&mon->box, field, data);
         break;
@@ -3348,6 +3355,8 @@ u8 GiveMonToPlayer(struct Pokemon *mon)
     if (i >= PARTY_SIZE)
         return CopyMonToPC(mon);
 
+    u32 position = GetPlayerLeftmostUnoccupiedPosition();
+    SetMonData(mon, MON_DATA_POSITION, &position);
     CopyMon(&gPlayerParty[i], mon, sizeof(*mon));
     gPlayerPartyCount = i + 1;
     return MON_GIVEN_TO_PARTY;
@@ -7167,4 +7176,28 @@ u32 GetTeraTypeFromPersonality(struct Pokemon *mon)
 {
     const u8 *types = gSpeciesInfo[GetMonData(mon, MON_DATA_SPECIES)].types;
     return (GetMonData(mon, MON_DATA_PERSONALITY) & 0x1) == 0 ? types[0] : types[1];
+}
+
+static u32 GetPlayerPartyIndexAtPosition(u32 position)
+{
+    struct Pokemon *mon;
+    for (u32 i = 0; i < PARTY_SIZE; ++i)
+    {
+        mon = &gPlayerParty[i];
+        if (GetMonData(mon, MON_DATA_SPECIES) != SPECIES_NONE && GetMonData(mon, MON_DATA_POSITION) == position)
+            return i;
+    }
+    return PARTY_SIZE;
+}
+
+u32 GetPlayerLeftmostUnoccupiedPosition(void)
+{
+    u32 index;
+    for (u32 i = 0; i < POSITIONS_COUNT; ++i)
+    {
+        index = GetPlayerPartyIndexAtPosition(i);
+        if (index == PARTY_SIZE)
+            return i;
+    }
+    return POSITIONS_COUNT;
 }

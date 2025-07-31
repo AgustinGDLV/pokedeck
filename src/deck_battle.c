@@ -335,23 +335,33 @@ static void LoadDummyEnemyParty(void)
     CreateMon(&gEnemyParty[3], SPECIES_SLOWBRO, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
     CreateMon(&gEnemyParty[4], SPECIES_MAREEP, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
     CreateMon(&gEnemyParty[5], SPECIES_SLOWPOKE, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+
+    u32 pos = 0;
+    SetMonData(&gEnemyParty[0], MON_DATA_POSITION, &pos); pos++;
+    SetMonData(&gEnemyParty[1], MON_DATA_POSITION, &pos); pos++;
+    SetMonData(&gEnemyParty[2], MON_DATA_POSITION, &pos); pos++;
+    SetMonData(&gEnemyParty[3], MON_DATA_POSITION, &pos); pos++;
+    SetMonData(&gEnemyParty[4], MON_DATA_POSITION, &pos); pos++;
+    SetMonData(&gEnemyParty[5], MON_DATA_POSITION, &pos);
 }
 
 // Load party data into gDeckMons struct.
 static void InitBattleMonData(void)
 {
+    struct Pokemon *mon;
     LoadDummyEnemyParty();
     for (u32 i = 0; i < MAX_DECK_BATTLERS_COUNT; ++i)
     {
         if (GetDeckBattlerSide(i) == B_SIDE_PLAYER)
-            gDeckMons[i].species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
+            mon = &gPlayerParty[i];
         else
-            gDeckMons[i].species = GetMonData(&gEnemyParty[i - POSITIONS_COUNT], MON_DATA_SPECIES);
-        gDeckMons[i].hp = gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
-        gDeckMons[i].maxHP = gDeckSpeciesInfo[gDeckMons[i].species].baseHP;
+            mon = &gEnemyParty[i - POSITIONS_COUNT];
+        gDeckMons[i].species = GetMonData(mon, MON_DATA_SPECIES);
+        gDeckMons[i].hp = GetMonData(mon, MON_DATA_HP);
+        gDeckMons[i].maxHP = GetMonData(mon, MON_DATA_MAX_HP);
         gDeckMons[i].pwr = gDeckSpeciesInfo[gDeckMons[i].species].basePWR;
-        gDeckMons[i].pos = i % POSITIONS_COUNT;
-        gDeckMons[i].initialPos = i % POSITIONS_COUNT;
+        gDeckMons[i].pos = GetMonData(mon, MON_DATA_POSITION);
+        gDeckMons[i].initialPos = gDeckMons[i].pos;
     }
 }
 

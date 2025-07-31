@@ -486,6 +486,7 @@ void LoadBattlerObjectSprite(enum BattleId battler)
             dst[i] = src[i];
 
         gSprites[gDeckGraphics.battlerSpriteIds[battler]].oam.paletteNum = index;
+        gSprites[gDeckGraphics.battlerSpriteIds[battler]].x = GetBattlerXCoord(battler);
         gSprites[gDeckGraphics.battlerSpriteIds[battler]].y = GetBattlerYCoord(battler);
     }
     else
@@ -496,9 +497,9 @@ void LoadBattlerObjectSprite(enum BattleId battler)
 
 void InitDeckBattleGfx(void)
 {
-    LoadSpritePalette(&sMiscGfxSpritePalette);
-    LoadSpriteSheet(&sShadowSpriteSheet);
-    LoadSpriteSheet(&sCursorSpriteSheet);
+    LoadSpritePalette(&gMiscGfxSpritePalette);
+    LoadSpriteSheet(&gShadowSpriteSheet);
+    LoadSpriteSheet(&gCursorSpriteSheet);
     LoadSpriteSheet(&sNumberSpriteSheet);
 
     LoadDummySpriteTiles();
@@ -508,12 +509,12 @@ void InitDeckBattleGfx(void)
         if (GetDeckBattlerSide(i) == B_SIDE_PLAYER)
         {
             gDeckGraphics.battlerSpriteIds[i] = CreateSprite(&sBattlerSpriteTemplates[i], PLAYER_OBJ_X + OBJ_OFFSET*i, PLAYER_OBJ_Y, 0);
-            gDeckGraphics.shadowSpriteIds[i] = CreateSprite(&sShadowSpriteTemplate, PLAYER_OBJ_X + OBJ_OFFSET*i, PLAYER_OBJ_Y, 64);
+            gDeckGraphics.shadowSpriteIds[i] = CreateSprite(&gShadowSpriteTemplate, PLAYER_OBJ_X + OBJ_OFFSET*i, PLAYER_OBJ_Y, 64);
         }
         else
         {
             gDeckGraphics.battlerSpriteIds[i] = CreateSprite(&sBattlerSpriteTemplates[i], OPPONENT_OBJ_X + OBJ_OFFSET*(i-B_OPPONENT_0), OPPONENT_OBJ_Y, 0);
-            gDeckGraphics.shadowSpriteIds[i] = CreateSprite(&sShadowSpriteTemplate, OPPONENT_OBJ_X + OBJ_OFFSET*(i-B_OPPONENT_0), OPPONENT_OBJ_Y, 64);
+            gDeckGraphics.shadowSpriteIds[i] = CreateSprite(&gShadowSpriteTemplate, OPPONENT_OBJ_X + OBJ_OFFSET*(i-B_OPPONENT_0), OPPONENT_OBJ_Y, 64);
         }
         gSprites[gDeckGraphics.battlerSpriteIds[i]].sBattlerId = i;
         gSprites[gDeckGraphics.shadowSpriteIds[i]].sBattlerId = i;
@@ -533,7 +534,7 @@ void InitDeckBattleGfx(void)
 void CreateSelectionCursorOverBattler(enum BattleId battler)
 {
     struct Sprite *sprite = &gSprites[gDeckGraphics.battlerSpriteIds[battler]];
-    sprite->sCursorId = CreateSprite(&sCursorSpriteTemplate, sprite->x, sprite->y - 16, 0);
+    sprite->sCursorId = CreateSprite(&gCursorSpriteTemplate, sprite->x, sprite->y - 16, 0);
     gSprites[sprite->sCursorId].sBattlerId = battler;
 }
 
@@ -545,7 +546,7 @@ void RemoveSelectionCursorOverBattler(enum BattleId battler)
 
 void CreateSelectionCursorOverPosition(enum BattlePosition position)
 {
-    gDeckGraphics.swapCursorSpriteId = CreateSprite(&sCursorSpriteTemplate, PLAYER_OBJ_X + OBJ_OFFSET * position, PLAYER_OBJ_Y - 16, 0);
+    gDeckGraphics.swapCursorSpriteId = CreateSprite(&gCursorSpriteTemplate, PLAYER_OBJ_X + OBJ_OFFSET * position, PLAYER_OBJ_Y - 16, 0);
 }
 
 void RemoveSwapSelectionCursor(void)

@@ -121,13 +121,13 @@ static const u32 sMainMenuOptionsTilemap[] = INCBIN_U32("graphics/main_menu_cust
 #define SELECTED_OPTIONS    2
 
 // ewram data
-EWRAM_DATA MainCallback sMainMenuExitCallback = NULL;
+EWRAM_DATA static MainCallback sMainMenuExitCallback = NULL;
 EWRAM_DATA static u32 *sMainMenuTilemapPtr = NULL;
 EWRAM_DATA static u32 *sEnvironmentTilemapPtr = NULL;
 EWRAM_DATA static u8 sMainMenuSelectedOption = 0;
 EWRAM_DATA static u8 sMainMenuLastSelectedOption = 0;
-EWRAM_DATA u32 sPlayerSpriteId = 0;
-EWRAM_DATA u32 sPartySpriteIds[PARTY_SIZE] = {0};
+EWRAM_DATA static u32 sPlayerSpriteId = 0;
+EWRAM_DATA static u32 sPartySpriteIds[PARTY_SIZE] = {0};
 
 // forward declarations
 static void MainCB2_MainMenu(void);
@@ -193,7 +193,7 @@ void CB2_OpenMainMenuCustom(void)
             LoadMainMenuTilemap(sMainMenuSelectedOption);
             LoadPalette(sMainMenuPalette, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
             Menu_LoadStdPalAt(BG_PLTT_ID(15));
-            
+
             DecompressAndCopyTileDataToVram(3, gGrassBackgroundTiles, 0, 0, 0);
             LZDecompressVram(gGrassBackgroundTilemap, sEnvironmentTilemapPtr);
             LoadPalette(gGrassBackgroundPalette, BG_PLTT_ID(1), PLTT_SIZE_4BPP);

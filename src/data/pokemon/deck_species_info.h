@@ -15,7 +15,7 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .opponentHurt = gBellsproutOpponentHurtGfx,
         .objectPalette = gBellsproutObjectPal,
         .playerYOffset = 0,
-        .opponentYOffset = 0,
+        .opponentYOffset = 1,
 
         .portrait = gBellsproutPortraitGfx,
         .portraitPalette = gBellsproutPortraitPal,
@@ -120,7 +120,7 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .opponentHurt = gApplinOpponentHurtGfx,
         .objectPalette = gApplinObjectPal,
         .playerYOffset = 0,
-        .opponentYOffset = 0,
+        .opponentYOffset = -1,
 
         .portrait = gApplinPortraitGfx,
         .portraitPalette = gApplinPortraitPal,

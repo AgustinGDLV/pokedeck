@@ -72,4 +72,10 @@ void PrintDamageNumbers(enum BattleId battler, s32 damage);
 
 extern struct DeckBattleGraphics gDeckGraphics;
 
+extern const struct SpriteSheet gShadowSpriteSheet;
+extern const struct SpritePalette gMiscGfxSpritePalette;
+extern const struct SpriteTemplate gShadowSpriteTemplate;
+extern const struct SpriteSheet gCursorSpriteSheet;
+extern const struct SpriteTemplate gCursorSpriteTemplate;
+
 #endif
