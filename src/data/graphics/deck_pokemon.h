@@ -34,6 +34,18 @@ const u16 gSlowbroObjectPal[] = INCBIN_U16("graphics/deck_pokemon/slowbro/player
 const u8 gSlowbroPortraitGfx[] = INCBIN_U8("graphics/deck_pokemon/slowbro/portrait_normal.4bpp");
 const u16 gSlowbroPortraitPal[] = INCBIN_U16("graphics/deck_pokemon/slowbro/portrait_normal.gbapal");
 
+// Swinub
+const u8 gSwinubPlayerIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/player_idle.4bpp");
+const u8 gSwinubOpponentIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/opponent_idle.4bpp");
+const u8 gSwinubPlayerAttackGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/player_attack.4bpp");
+const u8 gSwinubOpponentAttackGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/opponent_attack.4bpp");
+const u8 gSwinubPlayerHurtGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/player_hurt.4bpp");
+const u8 gSwinubOpponentHurtGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/opponent_hurt.4bpp");
+const u16 gSwinubObjectPal[] = INCBIN_U16("graphics/deck_pokemon/swinub/player_idle.gbapal");
+
+const u8 gSwinubPortraitGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/portrait_normal.4bpp");
+const u16 gSwinubPortraitPal[] = INCBIN_U16("graphics/deck_pokemon/swinub/portrait_normal.gbapal");
+
 // Mareep
 const u8 gMareepPlayerIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/mareep/player_idle.4bpp");
 const u8 gMareepOpponentIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/mareep/opponent_idle.4bpp");

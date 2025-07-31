@@ -88,6 +88,28 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .portraitPalette = gMareepPortraitPal,
     },
 
+    [SPECIES_SWINUB] =
+    {
+        .baseHP = 50,
+        .basePower = 40,
+        .baseDef = 40,
+        .move = MOVE_POWDER_SNOW,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gSwinubPlayerIdleGfx,
+        .opponentIdle = gSwinubOpponentIdleGfx,
+        .playerAttack = gSwinubPlayerAttackGfx,
+        .opponentAttack = gSwinubOpponentAttackGfx,
+        .playerHurt = gSwinubPlayerHurtGfx,
+        .opponentHurt = gSwinubOpponentHurtGfx,
+        .objectPalette = gSwinubObjectPal,
+        .playerYOffset = 0,
+        .opponentYOffset = -1,
+
+        .portrait = gSwinubPortraitGfx,
+        .portraitPalette = gSwinubPortraitPal,
+    },
+
     [SPECIES_SWABLU] =
     {
         .baseHP = 45,

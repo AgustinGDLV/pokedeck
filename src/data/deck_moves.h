@@ -35,4 +35,13 @@ const struct DeckMoveInfo gDeckMovesInfo[MOVES_COUNT] =
         .target = MOVE_TARGET_ALL_OPPONENTS,
         .effect = DECK_EFFECT_HIT_ALL,
     },
+
+    [MOVE_POWDER_SNOW] =
+    {
+        .name = COMPOUND_STRING("POWDER SNOW"),
+        .description = COMPOUND_STRING("Damages all opponents."),
+        .power = 60,
+        .target = MOVE_TARGET_ALL_OPPONENTS,
+        .effect = DECK_EFFECT_HIT_ALL,
+    },
 };
