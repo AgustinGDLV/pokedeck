@@ -57,7 +57,7 @@ u32 GetBattlerYCoord(enum BattleId battler);
 void PrintBattlerMoveInfo(enum BattleId battler);
 void PrintTargetBattlerPrompt(enum BattleId battler);
 void PrintMoveUseString(void);
-void PrintMoveOutcomeString(void);
+void PrintMoveOutcomeString(s32 damage);
 void PrintSwapTargetPrompt(enum BattlePosition position);
 void PrintSwapString(enum BattleId battler1, enum BattleId battler2);
 void PrintStringToMessageBox(const u8 *str);

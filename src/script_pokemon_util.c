@@ -453,7 +453,9 @@ static u32 ScriptGiveMonParameterized(u8 side, u8 slot, u16 species, u8 level, u
         else
         {
             sentToPc = MON_GIVEN_TO_PARTY;
-            u32 position = GetPlayerLeftmostUnoccupiedPosition();
+            u32 position = 0xFF; // avoid reading current position as 0
+            SetMonData(&mon, MON_DATA_POSITION, &position);
+            position = GetPlayerLeftmostUnoccupiedPosition();
             SetMonData(&mon, MON_DATA_POSITION, &position);
             CopyMon(&gPlayerParty[i], &mon, sizeof(mon));
             gPlayerPartyCount = i + 1;

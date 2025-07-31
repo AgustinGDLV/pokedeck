@@ -2,8 +2,9 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 {
     [SPECIES_BELLSPROUT] =
     {
-        .baseHP = 80,
-        .basePWR = 12,
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
         .move = MOVE_VINE_WHIP,
         .ability = ABILITY_NONE,
 
@@ -23,8 +24,9 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 
     [SPECIES_SLOWPOKE] =
     {
-        .baseHP = 100,
-        .basePWR = 10,
+        .baseHP = 90,
+        .basePower = 55,
+        .baseDef = 55,
         .move = MOVE_TACKLE,
         .ability = ABILITY_NONE,
 
@@ -44,8 +46,9 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 
     [SPECIES_SLOWBRO] =
     {
-        .baseHP = 120,
-        .basePWR = 15,
+        .baseHP = 95,
+        .basePower = 90,
+        .baseDef = 95,
         .move = MOVE_SURF,
         .ability = ABILITY_NONE,
 
@@ -65,8 +68,9 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 
     [SPECIES_MAREEP] =
     {
-        .baseHP = 90,
-        .basePWR = 10,
+        .baseHP = 55,
+        .basePower = 55,
+        .baseDef = 45,
         .move = MOVE_HELPING_HAND,
         .ability = ABILITY_NONE,
 
@@ -86,8 +90,9 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 
     [SPECIES_SWABLU] =
     {
-        .baseHP = 90,
-        .basePWR = 10,
+        .baseHP = 45,
+        .basePower = 40,
+        .baseDef = 70,
         .move = MOVE_HELPING_HAND,
         .ability = ABILITY_NONE,
 
@@ -107,8 +112,9 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 
     [SPECIES_APPLIN] =
     {
-        .baseHP = 90,
-        .basePWR = 12,
+        .baseHP = 40,
+        .basePower = 40,
+        .baseDef = 60,
         .move = MOVE_TACKLE,
         .ability = ABILITY_NONE,
 

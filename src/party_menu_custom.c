@@ -42,6 +42,7 @@
 #include "window.h"
 #include "constants/event_objects.h"
 #include "constants/pokedex.h"
+#include "constants/pokemon.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/species.h"
@@ -57,7 +58,7 @@ struct PartyMonData
     u8 name[POKEMON_NAME_LENGTH];
     u16 hp;
     u16 maxHP;
-    u16 pwr;
+    u16 power;
     u16 def;
     u16 lvl;
     u16 exp;
@@ -597,6 +598,11 @@ static void PrintMonInfo(u32 index)
     for (u32 i = sPartyMenuData.mons[index].hp; i > 0; i /= 10)
         ++digits;
     strPtr = &gStringVar1[digits];
+    if (sPartyMenuData.mons[index].hp == 0)
+    {
+        *strPtr = CHAR_0;
+        ++strPtr;
+    }
     *strPtr = CHAR_SLASH;
     ++strPtr;
     ConvertIntToDecimalStringN(strPtr, sPartyMenuData.mons[index].maxHP, STR_CONV_MODE_LEFT_ALIGN, 3);
@@ -606,18 +612,23 @@ static void PrintMonInfo(u32 index)
     ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].lvl, STR_CONV_MODE_LEFT_ALIGN, 3);
     AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 3*8+4, 11, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
 
-    ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].exp, STR_CONV_MODE_LEFT_ALIGN, 4);
+    ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].exp, STR_CONV_MODE_LEFT_ALIGN, 5);
     digits = 0;
     for (u32 i = sPartyMenuData.mons[index].exp; i > 0; i /= 10)
         ++digits;
     strPtr = &gStringVar1[digits];
+    if (sPartyMenuData.mons[index].exp == 0)
+    {
+        *strPtr = CHAR_0;
+        ++strPtr;
+    }
     *strPtr = CHAR_SLASH;
     ++strPtr;
-    ConvertIntToDecimalStringN(strPtr, sPartyMenuData.mons[index].expToNextLvl, STR_CONV_MODE_LEFT_ALIGN, 4);
+    ConvertIntToDecimalStringN(strPtr, sPartyMenuData.mons[index].expToNextLvl, STR_CONV_MODE_LEFT_ALIGN, 5);
     AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 3*8+4, 20, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
 
     // Print PWR and DEF.
-    ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].pwr, STR_CONV_MODE_LEFT_ALIGN, 3);
+    ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].power, STR_CONV_MODE_LEFT_ALIGN, 3);
     AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 16*8+4, 11, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
     ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].def, STR_CONV_MODE_LEFT_ALIGN, 3);
     AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 16*8+4, 20, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
@@ -670,25 +681,32 @@ static void MoveCursorOverPosition(u32 position)
 
 static void InitPartyDataStruct(void)
 {
+    struct PartyMonData *data;
     sPartyMenuData.selectedPosition = 0;
     sPartyMenuData.swapPosition = 0;
     sPartyMenuData.cursorSpriteId = SPRITE_NONE;
 
     for (u32 i = 0; i < PARTY_SIZE; ++i)
     {
+        data = &sPartyMenuData.mons[i];
         sPartyMenuData.battlerSpriteIds[i] = SPRITE_NONE;
-        sPartyMenuData.mons[i].species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
-        if (sPartyMenuData.mons[i].species != SPECIES_NONE || gDeckSpeciesInfo[sPartyMenuData.mons[i].species].baseHP == 0)
+        data->species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES);
+        if (data->species != SPECIES_NONE || gDeckSpeciesInfo[data->species].baseHP == 0)
         {
-            GetMonNickname(&gPlayerParty[i], sPartyMenuData.mons[i].name);
-            sPartyMenuData.mons[i].hp = GetMonData(&gPlayerParty[i], MON_DATA_HP);
-            sPartyMenuData.mons[i].maxHP = GetMonData(&gPlayerParty[i], MON_DATA_MAX_HP);
-            sPartyMenuData.mons[i].pwr = 100;
-            sPartyMenuData.mons[i].def = 100;
-            sPartyMenuData.mons[i].lvl = GetMonData(&gPlayerParty[i], MON_DATA_LEVEL);
-            sPartyMenuData.mons[i].exp = 100;
-            sPartyMenuData.mons[i].expToNextLvl = 100;
-            sPartyMenuData.mons[i].position = GetMonData(&gPlayerParty[i], MON_DATA_POSITION);
+            CalculateMonStats(&gPlayerParty[i]);
+            GetMonNickname(&gPlayerParty[i], data->name);
+            data->hp = GetMonData(&gPlayerParty[i], MON_DATA_HP);
+            data->maxHP = GetMonData(&gPlayerParty[i], MON_DATA_MAX_HP);
+            data->power = GetMonData(&gPlayerParty[i], MON_DATA_ATK);
+            data->def = GetMonData(&gPlayerParty[i], MON_DATA_DEF);
+            data->lvl = GetMonData(&gPlayerParty[i], MON_DATA_LEVEL);
+            data->exp = GetMonData(&gPlayerParty[i], MON_DATA_EXP);
+            if (data->lvl < MAX_LEVEL)
+                data->expToNextLvl = gExperienceTables[gSpeciesInfo[data->species].growthRate][data->lvl + 1] - data->exp;
+            else
+                data->expToNextLvl = 0;
+            data->exp -= gExperienceTables[gSpeciesInfo[data->species].growthRate][data->lvl];
+            data->position = GetMonData(&gPlayerParty[i], MON_DATA_POSITION);
         }
     }
 }
@@ -701,6 +719,8 @@ static void CopyPartyDataToMonData(void)
         {
             SetMonData(&gPlayerParty[i], MON_DATA_POSITION, &sPartyMenuData.mons[i].position);
             SetMonData(&gPlayerParty[i], MON_DATA_HP, &sPartyMenuData.mons[i].hp);
+            SetMonData(&gPlayerParty[i], MON_DATA_ATK, &sPartyMenuData.mons[i].power);
+            SetMonData(&gPlayerParty[i], MON_DATA_DEF, &sPartyMenuData.mons[i].def);
             SetMonData(&gPlayerParty[i], MON_DATA_LEVEL, &sPartyMenuData.mons[i].lvl);
         }
     }

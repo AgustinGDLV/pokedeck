@@ -929,19 +929,19 @@ void PrintMoveUseString(void)
     CopyWindowToVram(WINDOW_MESSAGE, COPYWIN_FULL);
 }
 
-void PrintMoveOutcomeString(void)
+void PrintMoveOutcomeString(s32 damage)
 {
     // *TODO - move strings
     if (gDeckMovesInfo[gCurrentMove].effect == DECK_EFFECT_HIT && gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_SINGLE_OPPONENT)
     {
         StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gBattlerTarget].species));
-        ConvertIntToDecimalStringN(gStringVar3, gDeckMons[gBattlerAttacker].pwr, STR_CONV_MODE_LEFT_ALIGN, 2);
+        ConvertIntToDecimalStringN(gStringVar3, damage, STR_CONV_MODE_LEFT_ALIGN, 2);
         StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} took {STR_VAR_3} damage!"));
     }
     else if (gDeckMovesInfo[gCurrentMove].effect == DECK_EFFECT_HIT && gDeckMovesInfo[gCurrentMove].target == MOVE_TARGET_ALL_OPPONENTS)
     {
-        ConvertIntToDecimalStringN(gStringVar3, gDeckMons[gBattlerAttacker].pwr, STR_CONV_MODE_LEFT_ALIGN, 2);
-        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Opponents took {STR_VAR_3} damage!"));
+        ConvertIntToDecimalStringN(gStringVar3, gDeckMons[gBattlerAttacker].power, STR_CONV_MODE_LEFT_ALIGN, 2);
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Opponents took damage!"));
     }
     else if (gDeckMovesInfo[gCurrentMove].effect == DECK_EFFECT_POWER_UP)
     {

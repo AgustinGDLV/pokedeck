@@ -72,13 +72,9 @@ static void Task_ExecuteHit(u8 taskId)
         break;
     case 3: // Damage target(s).
         StartBattlerAnim(gBattlerTarget, ANIM_HURT);
-        damage = gDeckMons[gBattlerAttacker].pwr;
-        if (damage > gDeckMons[gBattlerTarget].hp)
-            gDeckMons[gBattlerTarget].hp = 0;
-        else
-            gDeckMons[gBattlerTarget].hp -= damage;
-        PrintDamageNumbers(gBattlerTarget, damage);
-        PrintMoveOutcomeString();
+        damage = CalculateDamage(gBattlerAttacker, gBattlerTarget, gCurrentMove);
+        UpdateBattlerHP(gBattlerTarget, damage);
+        PrintMoveOutcomeString(damage);
         PlaySE(SE_EFFECTIVE);
         ++gTasks[taskId].tState;
         break;
@@ -129,15 +125,11 @@ static void Task_ExecuteHitAll(u8 taskId)
             if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
             {
                 StartBattlerAnim(battler, ANIM_HURT);
-                damage = gDeckMons[gBattlerAttacker].pwr;
-                if (damage > gDeckMons[battler].hp)
-                    gDeckMons[battler].hp = 0;
-                else
-                    gDeckMons[battler].hp -= damage;
-                PrintDamageNumbers(battler, damage);
+                damage = CalculateDamage(gBattlerAttacker, battler, gCurrentMove);
+                UpdateBattlerHP(battler, damage);
             }
         }
-        PrintMoveOutcomeString();
+        PrintMoveOutcomeString(0);
         PlaySE(SE_EFFECTIVE);
         ++gTasks[taskId].tState;
         break;
@@ -168,7 +160,7 @@ static void Task_ExecutePowerUp(u8 taskId)
             ++gTasks[taskId].tState;
         break;
     case 2: // Play sound and print string.
-        PrintMoveOutcomeString();
+        PrintMoveOutcomeString(0);
         PlaySE(SE_M_STAT_INCREASE);
         ++gTasks[taskId].tState;
         break;

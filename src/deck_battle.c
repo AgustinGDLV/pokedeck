@@ -357,9 +357,11 @@ static void InitBattleMonData(void)
         else
             mon = &gEnemyParty[i - POSITIONS_COUNT];
         gDeckMons[i].species = GetMonData(mon, MON_DATA_SPECIES);
+        gDeckMons[i].lvl = GetMonData(mon, MON_DATA_LEVEL);
         gDeckMons[i].hp = GetMonData(mon, MON_DATA_HP);
         gDeckMons[i].maxHP = GetMonData(mon, MON_DATA_MAX_HP);
-        gDeckMons[i].pwr = gDeckSpeciesInfo[gDeckMons[i].species].basePWR;
+        gDeckMons[i].power = GetMonData(mon, MON_DATA_ATK);
+        gDeckMons[i].def = GetMonData(mon, MON_DATA_DEF);
         gDeckMons[i].pos = GetMonData(mon, MON_DATA_POSITION);
         gDeckMons[i].initialPos = gDeckMons[i].pos;
     }
@@ -391,4 +393,30 @@ void SwapBattlerPositions(u32 battler1, u32 battler2)
     GetBattlerSprite(battler2)->x = GetBattlerXCoord(battler2);
     gDeckMons[battler1].hasSwapped = TRUE;
     gDeckMons[battler2].hasSwapped = TRUE;
+}
+
+s32 CalculateDamage(u32 battlerAtk, u32 battlerDef, u32 move)
+{
+    u32 movePower = gDeckMovesInfo[move].power;
+    u32 level = gDeckMons[battlerAtk].lvl;
+    u32 power = gDeckMons[battlerAtk].power;
+    u32 defense = gDeckMons[battlerDef].def;
+
+    s32 dmg = movePower * power * (2 * level / 5 + 2) / defense / 50 + 2;
+    dmg *= DMG_ROLL_PERCENT_HI - RandomUniform(RNG_DAMAGE_MODIFIER, 0, DMG_ROLL_PERCENT_HI - DMG_ROLL_PERCENT_LO);
+    dmg /= 100;
+
+    if (dmg != 0)
+        return dmg;
+    else
+        return 1;
+}
+
+void UpdateBattlerHP(u32 battler, s32 damage)
+{
+    if (damage > gDeckMons[battler].hp)
+        gDeckMons[battler].hp = 0;
+    else
+        gDeckMons[battler].hp -= damage;
+    PrintDamageNumbers(battler, damage);
 }

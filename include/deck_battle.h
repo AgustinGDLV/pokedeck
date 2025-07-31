@@ -32,7 +32,8 @@ enum BattlePosition // left to right for each side
 struct DeckSpeciesInfo
 {
     u16 baseHP;
-    u16 basePWR;
+    u16 basePower;
+    u16 baseDef;
     u16 move;
     u16 ability;
 
@@ -53,9 +54,11 @@ struct DeckSpeciesInfo
 struct DeckBattlePokemon
 {
     u16 species;
+    u16 lvl;
     u16 hp;
     u16 maxHP;
-    u16 pwr;
+    u16 power;
+    u16 def;
     enum BattlePosition pos;
     enum BattlePosition initialPos;
     bool8 hasMoved;
@@ -89,6 +92,7 @@ struct DeckMoveInfo
 {
     const u8* name;
     const u8* description;
+    u8 power;
     u8 target;
     u8 effect;
 };
@@ -112,6 +116,8 @@ void Task_CloseDeckBattle(u8 taskId);
 void Task_ExecuteQueuedActionOrEnd(u8 taskId);
 void QueueAction(u32 type, u32 battlerAtk, u32 battlerDef, u32 move);
 void SwapBattlerPositions(u32 battler1, u32 battler2);
+s32 CalculateDamage(u32 battlerAtk, u32 battlerDef, u32 move);
+void UpdateBattlerHP(u32 battler, s32 damage);
 
 extern struct DeckBattleStruct gDeckStruct;
 extern struct DeckBattlePokemon gDeckMons[MAX_DECK_BATTLERS_COUNT];

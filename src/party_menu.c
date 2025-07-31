@@ -6249,7 +6249,9 @@ static void RestoreFusionMon(struct Pokemon *mon)
     }
     else
     {
-        u32 position = GetPlayerLeftmostUnoccupiedPosition();
+        u32 position = 0xFF; // avoid reading current position as 0
+        SetMonData(mon, MON_DATA_POSITION, &position);
+        position = GetPlayerLeftmostUnoccupiedPosition();
         SetMonData(mon, MON_DATA_POSITION, &position);
         CopyMon(&gPlayerParty[i], mon, sizeof(*mon));
         gPlayerPartyCount = i + 1;
