@@ -911,7 +911,12 @@ void PrintBattlerMoveInfo(enum BattleId battler)
 void PrintTargetBattlerPrompt(enum BattleId battler)
 {
     StringCopy(gStringVar2, GetSpeciesName(gDeckMons[battler].species));
-    StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Attack {STR_VAR_2}?"));
+    if (gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].effect == DECK_EFFECT_POWER_UP)
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Boost {STR_VAR_2}?"));
+    else if (gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].effect == DECK_EFFECT_HIT_ALL_OPPONENTS)
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Attack all opponents?"));
+    else
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Attack {STR_VAR_2}?"));
 
     FillWindowPixelBuffer(WINDOW_MESSAGE, PIXEL_FILL(0));
     AddTextPrinterParameterized3(WINDOW_MESSAGE, FONT_NORMAL, 4, 1, sTextColorNormal, TEXT_SKIP_DRAW, gStringVar1);

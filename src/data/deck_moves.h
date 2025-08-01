@@ -33,7 +33,7 @@ const struct DeckMoveInfo gDeckMovesInfo[MOVES_COUNT] =
         .description = COMPOUND_STRING("Damages all opponents."),
         .power = 60,
         .target = MOVE_TARGET_ALL_OPPONENTS,
-        .effect = DECK_EFFECT_HIT_ALL,
+        .effect = DECK_EFFECT_HIT_ALL_OPPONENTS,
     },
 
     [MOVE_POWDER_SNOW] =
@@ -42,6 +42,6 @@ const struct DeckMoveInfo gDeckMovesInfo[MOVES_COUNT] =
         .description = COMPOUND_STRING("Damages all opponents."),
         .power = 60,
         .target = MOVE_TARGET_ALL_OPPONENTS,
-        .effect = DECK_EFFECT_HIT_ALL,
+        .effect = DECK_EFFECT_HIT_ALL_OPPONENTS,
     },
 };

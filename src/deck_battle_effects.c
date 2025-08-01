@@ -43,7 +43,7 @@ static void Task_ExecutePowerUp(u8 taskId);
 void (*const gMoveEffectTasks[DECK_EFFECT_COUNT])(u8 taskId) =
 {
     [DECK_EFFECT_HIT]           = Task_ExecuteHit,
-    [DECK_EFFECT_HIT_ALL]       = Task_ExecuteHitAll,
+    [DECK_EFFECT_HIT_ALL_OPPONENTS]       = Task_ExecuteHitAll,
     [DECK_EFFECT_POWER_UP]      = Task_ExecutePowerUp,
 };
 
@@ -159,12 +159,24 @@ static void Task_ExecutePowerUp(u8 taskId)
         if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
             ++gTasks[taskId].tState;
         break;
-    case 2: // Play sound and print string.
+    case 2:
+        if (!IsDeckBattlerAlive(gBattlerTarget))
+        {
+            PrintStringToMessageBox(COMPOUND_STRING("But it failed…"));
+            gTasks[taskId].tState = 6;
+        }
+        else
+        {
+            ++gTasks[taskId].tState;
+        }
+        break;
+    case 3: // Play sound and print string.
         PrintMoveOutcomeString(0);
         PlaySE(SE_M_STAT_INCREASE);
+        gDeckMons[gBattlerTarget].powerBoost += gDeckMons[gBattlerAttacker].power / 2;
         ++gTasks[taskId].tState;
         break;
-    case 3: // Blend target.
+    case 4: // Blend target.
         if (++gTasks[taskId].tTimer >= 60)
         {
             BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerTarget)->oam.paletteNum), 0, RGB_WHITE);
@@ -178,10 +190,14 @@ static void Task_ExecutePowerUp(u8 taskId)
                 BlendPalettes(1 << (16 + GetBattlerSprite(gBattlerTarget)->oam.paletteNum), 0, RGB_WHITE);
         }
         break;
-    case 4:
+    case 5:
         gTasks[taskId].tTimer = 0;
         gTasks[taskId].tState = 0;
         gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
+        break;
+    case 6:
+        if (++gTasks[taskId].tTimer >= 30)
+            gTasks[taskId].tState = 5;
         break;
     }
 }

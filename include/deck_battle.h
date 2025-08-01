@@ -63,6 +63,8 @@ struct DeckBattlePokemon
     enum BattlePosition initialPos;
     bool8 hasMoved;
     bool8 hasSwapped;
+
+    u16 powerBoost; // flat power boost
 };
 
 // action constants

@@ -321,6 +321,7 @@ static void ResetTurnValues(void)
         gDeckMons[battler].hasMoved = FALSE;
         gDeckMons[battler].hasSwapped = FALSE;
         gDeckMons[battler].initialPos = gDeckMons[battler].pos;
+        gDeckMons[battler].powerBoost = 0;
     }
     gDeckStruct.actionsCount = 0;
     gDeckStruct.executedCount = 0;
@@ -399,7 +400,7 @@ s32 CalculateDamage(u32 battlerAtk, u32 battlerDef, u32 move)
 {
     u32 movePower = gDeckMovesInfo[move].power;
     u32 level = gDeckMons[battlerAtk].lvl;
-    u32 power = gDeckMons[battlerAtk].power;
+    u32 power = gDeckMons[battlerAtk].power + gDeckMons[battlerAtk].powerBoost;
     u32 defense = gDeckMons[battlerDef].def;
 
     s32 dmg = movePower * power * (2 * level / 5 + 2) / defense / 50 + 2;
