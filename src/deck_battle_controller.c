@@ -259,7 +259,8 @@ static void Task_PlayerSelectAllyToSwap(u8 taskId)
         {
             // Deselect battler and mark as swapped with transparency.
             PlaySE(SE_SELECT);
-            UpdateBattlerSelection(gBattlerTarget, FALSE);
+            StartBattlerAnim(gBattlerAttacker, ANIM_PAUSED);
+            RemoveSwapSelectionCursor();
             GetBattlerSprite(gBattlerTarget)->oam.objMode = ST_OAM_OBJ_BLEND;
 
             // Queue swap action.
