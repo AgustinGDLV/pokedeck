@@ -40,12 +40,14 @@ static void Task_PlayerSelectAllyToSwap(u8 taskId);
 static void Task_PlayerSelectLeftAlly(u8 taskId);
 static void Task_PlayerSelectSingleOpponent(u8 taskId);
 static void Task_PlayerSelectAllOpponents(u8 taskId);
+static void Task_PlayerSelectAllOpponentsAdjacentAllies(u8 taskId);
 
 static void (*const sPlayerMoveTargetTasks[MOVE_TARGET_COUNT])(u8 taskId) =
 {
-    [MOVE_TARGET_SINGLE_OPPONENT]   = Task_PlayerSelectSingleOpponent,
-    [MOVE_TARGET_ALL_OPPONENTS]     = Task_PlayerSelectAllOpponents,
-    [MOVE_TARGET_LEFT_ALLY]         = Task_PlayerSelectLeftAlly,
+    [MOVE_TARGET_SINGLE_OPPONENT]               = Task_PlayerSelectSingleOpponent,
+    [MOVE_TARGET_ALL_OPPONENTS]                 = Task_PlayerSelectAllOpponents,
+    [MOVE_TARGET_LEFT_ALLY]                     = Task_PlayerSelectLeftAlly,
+    [MOVE_TARGET_ALL_OPPONENTS_ADJACENT_ALLIES] = Task_PlayerSelectAllOpponentsAdjacentAllies,
 };
 
 #define tState  data[0]
@@ -174,14 +176,14 @@ static void Task_PlayerSelectAllyToSwap(u8 taskId)
         // Deselect battler.
         PlaySE(SE_SELECT);
         battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-        if (IsBattlerAlive(battler))
+        if (IsDeckBattlerAlive(battler))
             StartBattlerAnim(battler, ANIM_PAUSED);
         RemoveSwapSelectionCursor();
 
         // Select new battler.
         gDeckStruct.selectedPos = pos;
         battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-        if (IsBattlerAlive(battler))
+        if (IsDeckBattlerAlive(battler))
             StartBattlerAnim(battler, ANIM_IDLE);
         CreateSelectionCursorOverPosition(gDeckStruct.selectedPos);
         DisplaySwapSelectionInfo(gDeckStruct.selectedPos);
@@ -192,14 +194,14 @@ static void Task_PlayerSelectAllyToSwap(u8 taskId)
         // Deselect battler.
         PlaySE(SE_SELECT);
         battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-        if (IsBattlerAlive(battler))
+        if (IsDeckBattlerAlive(battler))
             StartBattlerAnim(battler, ANIM_PAUSED);
         RemoveSwapSelectionCursor();
 
         // Select new battler.
         gDeckStruct.selectedPos = pos;
         battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-        if (IsBattlerAlive(battler))
+        if (IsDeckBattlerAlive(battler))
             StartBattlerAnim(battler, ANIM_IDLE);
         CreateSelectionCursorOverPosition(gDeckStruct.selectedPos);
         DisplaySwapSelectionInfo(gDeckStruct.selectedPos);
@@ -209,7 +211,7 @@ static void Task_PlayerSelectAllyToSwap(u8 taskId)
         // Deselect target battler.
         PlaySE(SE_SELECT);
         battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-        if (IsBattlerAlive(battler))
+        if (IsDeckBattlerAlive(battler))
             StartBattlerAnim(battler, ANIM_PAUSED);
         RemoveSwapSelectionCursor();
 
@@ -456,7 +458,7 @@ static void Task_PlayerSelectAllOpponents(u8 taskId)
     {
         for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
         {
-            if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+            if (IsDeckBattlerAlive(battler))
                 UpdateBattlerSelection(battler, TRUE);
         }
         DisplayTargetSelectionInfo(B_OPPONENT_0);
@@ -468,7 +470,7 @@ static void Task_PlayerSelectAllOpponents(u8 taskId)
         PlaySE(SE_SELECT);
         for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
         {
-            if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+            if (IsDeckBattlerAlive(battler))
                 UpdateBattlerSelection(battler, FALSE);
         }
 
@@ -491,7 +493,117 @@ static void Task_PlayerSelectAllOpponents(u8 taskId)
         PlaySE(SE_SELECT);
         for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
         {
-            if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+            if (IsDeckBattlerAlive(battler))
+                UpdateBattlerSelection(battler, FALSE);
+        }
+
+        // Queue attack action and update data.
+        QueueAction(ACTION_ATTACK, gBattlerAttacker, MAX_DECK_BATTLERS_COUNT, gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move);
+        SetBattlerGrayscale(gBattlerAttacker, TRUE);
+        gDeckMons[gBattlerAttacker].hasMoved = TRUE;
+        StartBattlerAnim(gBattlerAttacker, ANIM_PAUSED);
+
+        // Select next battler for action selection or begin action phase.
+        gDeckStruct.selectedPos = GetLeftmostPositionToMove(B_SIDE_PLAYER);
+        gTasks[taskId].tState = 0;
+        if (gDeckStruct.selectedPos != POSITIONS_COUNT)
+        {
+            battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
+            UpdateBattlerSelection(battler, TRUE);
+            DisplayActionSelectionInfo(battler);
+
+            SetBattlerPortraitVisibility(TRUE);
+            SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+            SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+            gTasks[taskId].func = Task_PlayerSelectAction;
+        }
+        else
+        {
+            gTasks[taskId].func = Task_PrepareForActionPhase; 
+        }
+    }
+}
+
+static void Task_PlayerSelectAllOpponentsAdjacentAllies(u8 taskId)
+{
+    enum BattleId battler;
+    if (gTasks[taskId].tState == 0)
+    {
+        for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+        {
+            if (IsDeckBattlerAlive(battler))
+                UpdateBattlerSelection(battler, TRUE);
+        }
+        if (gDeckMons[gBattlerAttacker].pos != POSITION_0)
+        {
+            battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckMons[gBattlerAttacker].pos-1);
+            if (IsDeckBattlerAlive(battler))
+                UpdateBattlerSelection(battler, TRUE);
+        }
+        if (gDeckMons[gBattlerAttacker].pos != POSITION_5)
+        {
+            battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckMons[gBattlerAttacker].pos+1);
+            if (IsDeckBattlerAlive(battler))
+                UpdateBattlerSelection(battler, TRUE);
+        }
+        
+        DisplayTargetSelectionInfo(B_OPPONENT_0);
+        ++gTasks[taskId].tState;
+    }
+    if (gMain.newKeys & B_BUTTON)
+    {
+        // Deselect target.
+        PlaySE(SE_SELECT);
+        for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+        {
+            if (IsDeckBattlerAlive(battler))
+                UpdateBattlerSelection(battler, FALSE);
+        }
+        if (gDeckMons[gBattlerAttacker].pos != POSITION_0)
+        {
+            battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckMons[gBattlerAttacker].pos-1);
+            if (IsDeckBattlerAlive(battler))
+                UpdateBattlerSelection(battler, FALSE);
+        }
+        if (gDeckMons[gBattlerAttacker].pos != POSITION_5)
+        {
+            battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckMons[gBattlerAttacker].pos+1);
+            if (IsDeckBattlerAlive(battler))
+                UpdateBattlerSelection(battler, FALSE);
+        }
+
+        // Reselect acting battler.
+        UpdateBattlerSelection(gBattlerAttacker, TRUE);
+        DisplayActionSelectionInfo(gBattlerAttacker);
+        SetBattlerGrayscale(gBattlerAttacker, FALSE);
+        gDeckStruct.selectedPos = gDeckMons[gBattlerAttacker].pos;
+
+        // Set up UI for action selection.
+        SetBattlerPortraitVisibility(TRUE);
+        SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+        SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+        gTasks[taskId].func = Task_PlayerSelectAction;
+        gTasks[taskId].tState = 0;
+    }
+    if (gMain.newKeys & A_BUTTON)
+    {
+        // Deselect target.
+        PlaySE(SE_SELECT);
+        for (battler = B_OPPONENT_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
+        {
+            if (IsDeckBattlerAlive(battler))
+                UpdateBattlerSelection(battler, FALSE);
+        }
+        if (gDeckMons[gBattlerAttacker].pos != POSITION_0)
+        {
+            battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckMons[gBattlerAttacker].pos-1);
+            if (IsDeckBattlerAlive(battler))
+                UpdateBattlerSelection(battler, FALSE);
+        }
+        if (gDeckMons[gBattlerAttacker].pos != POSITION_5)
+        {
+            battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckMons[gBattlerAttacker].pos+1);
+            if (IsDeckBattlerAlive(battler))
                 UpdateBattlerSelection(battler, FALSE);
         }
 

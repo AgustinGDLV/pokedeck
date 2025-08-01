@@ -93,7 +93,7 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .baseHP = 50,
         .basePower = 40,
         .baseDef = 40,
-        .move = MOVE_POWDER_SNOW,
+        .move = MOVE_EARTHQUAKE,
         .ability = ABILITY_NONE,
 
         .playerIdle = gSwinubPlayerIdleGfx,

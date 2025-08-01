@@ -37,14 +37,16 @@
 */
 
 static void Task_ExecuteHit(u8 taskId);
-static void Task_ExecuteHitAll(u8 taskId);
+static void Task_ExecuteHitAllOpponents(u8 taskId);
 static void Task_ExecutePowerUp(u8 taskId);
+static void Task_ExecuteHitAllOpponentsAdjacentAllies(u8 taskId);
 
 void (*const gMoveEffectTasks[DECK_EFFECT_COUNT])(u8 taskId) =
 {
-    [DECK_EFFECT_HIT]           = Task_ExecuteHit,
-    [DECK_EFFECT_HIT_ALL_OPPONENTS]       = Task_ExecuteHitAll,
-    [DECK_EFFECT_POWER_UP]      = Task_ExecutePowerUp,
+    [DECK_EFFECT_HIT]                               = Task_ExecuteHit,
+    [DECK_EFFECT_HIT_ALL_OPPONENTS]                 = Task_ExecuteHitAllOpponents,
+    [DECK_EFFECT_POWER_UP]                          = Task_ExecutePowerUp,
+    [DECK_EFFECT_HIT_ALL_OPPONENTS_ADJACENT_ALLIES] = Task_ExecuteHitAllOpponentsAdjacentAllies,
 };
 
 #define tState  data[0]
@@ -90,10 +92,10 @@ static void Task_ExecuteHit(u8 taskId)
     }
 }
 
-static void Task_ExecuteHitAll(u8 taskId)
+static void Task_ExecuteHitAllOpponents(u8 taskId)
 {
     s32 damage;
-    u32 battlerStart, battlerEnd;
+    enum BattleId battlerStart, battlerEnd;
 
     // Set up indices for targeting.
     if (GetDeckBattlerSide(gBattlerAttacker) == B_SIDE_PLAYER)
@@ -122,7 +124,84 @@ static void Task_ExecuteHitAll(u8 taskId)
     case 2: // Damage target(s).
         for (enum BattleId battler = battlerStart; battler < battlerEnd; ++battler)
         {
-            if (gDeckMons[battler].species != SPECIES_NONE && gDeckMons[battler].hp != 0)
+            if (IsDeckBattlerAlive(battler))
+            {
+                StartBattlerAnim(battler, ANIM_HURT);
+                damage = CalculateDamage(gBattlerAttacker, battler, gCurrentMove);
+                UpdateBattlerHP(battler, damage);
+            }
+        }
+        PrintMoveOutcomeString(0);
+        PlaySE(SE_EFFECTIVE);
+        ++gTasks[taskId].tState;
+        break;
+    case 3: // Wait for hurt animation.
+        if (++gTasks[taskId].tTimer >= 60)
+            ++gTasks[taskId].tState;
+        break;
+    case 4:
+        gTasks[taskId].tTimer = 0;
+        gTasks[taskId].tState = 0;
+        gTasks[taskId].func = Task_CheckFaintAndContinue;
+        break;
+    }
+}
+
+static void Task_ExecuteHitAllOpponentsAdjacentAllies(u8 taskId)
+{
+    s32 damage;
+    u32 side;
+    enum BattleId battlerStart, battlerEnd, battler;
+
+    // Set up indices for targeting.
+    side = GetDeckBattlerSide(gBattlerAttacker);
+    if (side == B_SIDE_PLAYER)
+    {
+        battlerStart = B_OPPONENT_0;
+        battlerEnd = MAX_DECK_BATTLERS_COUNT;
+    }
+    else
+    {
+        battlerStart = B_PLAYER_0;
+        battlerEnd = B_OPPONENT_0;
+    }
+
+    switch (gTasks[taskId].tState)
+    {
+    case 0: // Do attack animation.
+        SetBattlerGrayscale(gBattlerAttacker, FALSE);
+        StartBattlerAnim(gBattlerAttacker, ANIM_ATTACK);
+        PrintMoveUseString();
+        ++gTasks[taskId].tState;
+        break;
+    case 1: // Wait for attack animation to execute cry.
+        if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
+            ++gTasks[taskId].tState;
+        break;
+    case 2: // Damage target(s).
+        for (battler = battlerStart; battler < battlerEnd; ++battler)
+        {
+            if (IsDeckBattlerAlive(battler))
+            {
+                StartBattlerAnim(battler, ANIM_HURT);
+                damage = CalculateDamage(gBattlerAttacker, battler, gCurrentMove);
+                UpdateBattlerHP(battler, damage);
+            }
+        }
+        if (gDeckMons[gBattlerAttacker].pos != POSITION_0)
+        {
+            battler = GetDeckBattlerAtPos(side, gDeckMons[gBattlerAttacker].pos-1);
+            if (IsDeckBattlerAlive(battler))
+            {
+                StartBattlerAnim(battler, ANIM_HURT);
+                damage = CalculateDamage(gBattlerAttacker, battler, gCurrentMove);
+                UpdateBattlerHP(battler, damage);
+            }
+        }
+        if (gDeckMons[gBattlerAttacker].pos != POSITION_5)
+        {
+            battler = GetDeckBattlerAtPos(side, gDeckMons[gBattlerAttacker].pos+1);
+            if (IsDeckBattlerAlive(battler))
             {
                 StartBattlerAnim(battler, ANIM_HURT);
                 damage = CalculateDamage(gBattlerAttacker, battler, gCurrentMove);

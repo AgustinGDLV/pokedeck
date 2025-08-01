@@ -36,12 +36,12 @@ const struct DeckMoveInfo gDeckMovesInfo[MOVES_COUNT] =
         .effect = DECK_EFFECT_HIT_ALL_OPPONENTS,
     },
 
-    [MOVE_POWDER_SNOW] =
+    [MOVE_EARTHQUAKE] =
     {
-        .name = COMPOUND_STRING("POWDER SNOW"),
+        .name = COMPOUND_STRING("EARTHQUAKE"),
         .description = COMPOUND_STRING("Damages all opponents."),
         .power = 60,
-        .target = MOVE_TARGET_ALL_OPPONENTS,
-        .effect = DECK_EFFECT_HIT_ALL_OPPONENTS,
+        .target = MOVE_TARGET_ALL_OPPONENTS_ADJACENT_ALLIES,
+        .effect = DECK_EFFECT_HIT_ALL_OPPONENTS_ADJACENT_ALLIES,
     },
 };
