@@ -14,6 +14,7 @@
 #include "main.h"
 #include "malloc.h"
 #include "menu.h"
+#include "menu_helpers.h"
 #include "overworld.h"
 #include "palette.h"
 #include "scanline_effect.h"
@@ -139,18 +140,29 @@ static void Task_OpenDeckBattle(u8 taskId)
 {
     if (gTasks[taskId].tState == 0)
     {
-        enum BattleId battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-        PrintBattlerMoveInfo(battler);
-        // HP bar updated before fade begins
         gDeckStruct.actingSide = B_SIDE_PLAYER;
-        CreateSelectionCursorOverBattler(battler);
-        StartBattlerAnim(battler, ANIM_IDLE);
+        SetBattlerPortraitVisibility(FALSE);
+        SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
+        SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
+        PrintStringToMessageBox(COMPOUND_STRING("Wild Pokémon appeared!\p"));
         gTasks[taskId].tState += 1;
     }
-    else if (!gPaletteFade.active)
+    else if (!gPaletteFade.active && (gMain.newKeys & A_BUTTON)) // *TODO: WINDOW_MESSAGE
     {
-        gTasks[taskId].tState = 0;
+        PlaySE(SE_SELECT);
+        // Start selection phase and update display.
+        enum BattleId battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
+        PrintBattlerMoveInfo(battler);
+        SetBattlerPortraitVisibility(TRUE);
+        // HP bar updated before fade begins
+        CreateSelectionCursorOverBattler(battler);
+        StartBattlerAnim(battler, ANIM_IDLE);
+
+        SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+        SetGpuReg(REG_OFFSET_BG1VOFS, 0);
         gTasks[taskId].func = Task_PlayerSelectAction;
+        gTasks[taskId].tState = 0;
+        gTasks[taskId].tTimer = 0;
     }
 }
 
@@ -216,13 +228,13 @@ void Task_CheckForBattleEnd(u8 taskId)
     if (!IsBattlerAliveOnSide(B_SIDE_PLAYER))
     {
         gBattleOutcome = B_OUTCOME_LOST;
-        PrintStringToMessageBox(COMPOUND_STRING("Battle lost…"));
+        PrintStringToMessageBox(COMPOUND_STRING("You lost…\p"));
         gTasks[taskId].func = Task_HandleBattleEnd;
     }
     else if (!IsBattlerAliveOnSide(B_SIDE_OPPONENT))
     {
         gBattleOutcome = B_OUTCOME_WON;
-        PrintStringToMessageBox(COMPOUND_STRING("Battle won!"));
+        PrintStringToMessageBox(COMPOUND_STRING("You won!\p"));
         gTasks[taskId].func = Task_HandleBattleEnd;
     }
     else
@@ -233,8 +245,9 @@ void Task_CheckForBattleEnd(u8 taskId)
 
 void Task_HandleBattleEnd(u8 taskId)
 {
-    if (++gTasks[taskId].tTimer > 60)
+    if (++gTasks[taskId].tTimer > 10 && (gMain.newKeys & A_BUTTON))
     {
+        PlaySE(SE_SELECT);
         gTasks[taskId].tTimer = 0;
         BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
         gTasks[taskId].func = Task_CloseDeckBattle;
