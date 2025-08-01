@@ -343,11 +343,11 @@ static void ResetTurnValues(void)
 // Populate enemy party with dummy data.
 static void LoadDummyEnemyParty(void)
 {
-    CreateMon(&gEnemyParty[0], SPECIES_SLOWPOKE, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
-    CreateMon(&gEnemyParty[1], SPECIES_BELLSPROUT, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
-    CreateMon(&gEnemyParty[2], SPECIES_SWABLU, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
-    CreateMon(&gEnemyParty[3], SPECIES_SLOWBRO, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
-    CreateMon(&gEnemyParty[4], SPECIES_MAREEP, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[0], SPECIES_BELLSPROUT, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[1], SPECIES_SLOWPOKE, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[2], SPECIES_SLOWBRO, 8, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[3], SPECIES_APPLIN, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
+    CreateMon(&gEnemyParty[4], SPECIES_BELLSPROUT, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
     CreateMon(&gEnemyParty[5], SPECIES_SLOWPOKE, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
 
     u32 pos = 0;

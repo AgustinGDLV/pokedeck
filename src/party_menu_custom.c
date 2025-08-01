@@ -437,7 +437,6 @@ static void Task_PartyMenuHandleDefaultInput(u8 taskId)
             sPartyMenuData.swapPosition = POSITION_1;
         else
             sPartyMenuData.swapPosition = POSITION_0;
-        DebugPrintf("selected pos: %d, swap pos %d", sPartyMenuData.selectedPosition, sPartyMenuData.swapPosition);
         gSprites[sPartyMenuData.battlerSpriteIds[GetPartyIndexAtPosition(sPartyMenuData.selectedPosition)]].oam.objMode = ST_OAM_OBJ_BLEND;
         MoveCursorOverPosition(sPartyMenuData.swapPosition);
         gTasks[taskId].func = Task_PartyMenuHandleSwapInput;
@@ -486,7 +485,7 @@ static void Task_PartyMenuHandleSwapInput(u8 taskId)
         {
             SWAP(sPartyMenuData.mons[index1].position, sPartyMenuData.mons[index2].position, temp);
             gSprites[sPartyMenuData.battlerSpriteIds[index2]].x = 40 + OBJ_OFFSET*sPartyMenuData.mons[index2].position;
-            gSprites[gSprites[sPartyMenuData.battlerSpriteIds[index2]].sShadowSpriteId].x = 40 + OBJ_OFFSET*sPartyMenuData.mons[index1].position;
+            gSprites[gSprites[sPartyMenuData.battlerSpriteIds[index2]].sShadowSpriteId].x = 40 + OBJ_OFFSET*sPartyMenuData.mons[index2].position;
         }
         else
         {
