@@ -22,6 +22,28 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .portraitPalette = gBellsproutPortraitPal,
     },
 
+    [SPECIES_ZUBAT] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gZubatPlayerIdleGfx,
+        .opponentIdle = gZubatOpponentIdleGfx,
+        .playerAttack = gZubatPlayerAttackGfx,
+        .opponentAttack = gZubatOpponentAttackGfx,
+        .playerHurt = gZubatPlayerHurtGfx,
+        .opponentHurt = gZubatOpponentHurtGfx,
+        .objectPalette = gZubatObjectPal,
+        .playerYOffset = -2,
+        .opponentYOffset = -2,
+
+        .portrait = gZubatPortraitGfx,
+        .portraitPalette = gZubatPortraitPal,
+    },
+
     [SPECIES_SLOWPOKE] =
     {
         .baseHP = 90,
@@ -154,6 +176,28 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .portraitPalette = gSwabluPortraitPal,
     },
 
+    [SPECIES_CHINGLING] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_HELPING_HAND,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gChinglingPlayerIdleGfx,
+        .opponentIdle = gChinglingOpponentIdleGfx,
+        .playerAttack = gChinglingPlayerAttackGfx,
+        .opponentAttack = gChinglingOpponentAttackGfx,
+        .playerHurt = gChinglingPlayerHurtGfx,
+        .opponentHurt = gChinglingOpponentHurtGfx,
+        .objectPalette = gChinglingObjectPal,
+        .playerYOffset = 0,
+        .opponentYOffset = 0,
+
+        .portrait = gChinglingPortraitGfx,
+        .portraitPalette = gChinglingPortraitPal,
+    },
+
     [SPECIES_APPLIN] =
     {
         .baseHP = 40,
@@ -174,5 +218,27 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 
         .portrait = gApplinPortraitGfx,
         .portraitPalette = gApplinPortraitPal,
+    },
+
+    [SPECIES_WIGLETT] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gWiglettPlayerIdleGfx,
+        .opponentIdle = gWiglettOpponentIdleGfx,
+        .playerAttack = gWiglettPlayerAttackGfx,
+        .opponentAttack = gWiglettOpponentAttackGfx,
+        .playerHurt = gWiglettPlayerHurtGfx,
+        .opponentHurt = gWiglettOpponentHurtGfx,
+        .objectPalette = gWiglettObjectPal,
+        .playerYOffset = 3,
+        .opponentYOffset = 3,
+
+        .portrait = gWiglettPortraitGfx,
+        .portraitPalette = gWiglettPortraitPal,
     },
 };
