@@ -44,4 +44,13 @@ const struct DeckMoveInfo gDeckMovesInfo[MOVES_COUNT] =
         .target = MOVE_TARGET_ALL_OPPONENTS_ADJACENT_ALLIES,
         .effect = DECK_EFFECT_HIT_ALL_OPPONENTS_ADJACENT_ALLIES,
     },
+
+    [MOVE_CRABHAMMER] =
+    {
+        .name = COMPOUND_STRING("CRABHAMMER"),
+        .description = COMPOUND_STRING("Damages one opponent."),
+        .power = 80,
+        .target = MOVE_TARGET_SINGLE_OPPONENT,
+        .effect = DECK_EFFECT_HIT,
+    },
 };

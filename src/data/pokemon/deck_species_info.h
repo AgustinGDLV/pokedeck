@@ -66,6 +66,28 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .portraitPalette = gSlowbroPortraitPal,
     },
 
+    [SPECIES_KRABBY] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_CRABHAMMER,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gKrabbyPlayerIdleGfx,
+        .opponentIdle = gKrabbyOpponentIdleGfx,
+        .playerAttack = gKrabbyPlayerAttackGfx,
+        .opponentAttack = gKrabbyOpponentAttackGfx,
+        .playerHurt = gKrabbyPlayerHurtGfx,
+        .opponentHurt = gKrabbyOpponentHurtGfx,
+        .objectPalette = gKrabbyObjectPal,
+        .playerYOffset = 1,
+        .opponentYOffset = 1,
+
+        .portrait = gKrabbyPortraitGfx,
+        .portraitPalette = gKrabbyPortraitPal,
+    },
+
     [SPECIES_MAREEP] =
     {
         .baseHP = 55,

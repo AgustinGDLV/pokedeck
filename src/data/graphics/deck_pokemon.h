@@ -34,6 +34,18 @@ const u16 gSlowbroObjectPal[] = INCBIN_U16("graphics/deck_pokemon/slowbro/player
 const u8 gSlowbroPortraitGfx[] = INCBIN_U8("graphics/deck_pokemon/slowbro/portrait_normal.4bpp");
 const u16 gSlowbroPortraitPal[] = INCBIN_U16("graphics/deck_pokemon/slowbro/portrait_normal.gbapal");
 
+// Krabby
+const u8 gKrabbyPlayerIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/krabby/player_idle.4bpp");
+const u8 gKrabbyOpponentIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/krabby/opponent_idle.4bpp");
+const u8 gKrabbyPlayerAttackGfx[] = INCBIN_U8("graphics/deck_pokemon/krabby/player_attack.4bpp");
+const u8 gKrabbyOpponentAttackGfx[] = INCBIN_U8("graphics/deck_pokemon/krabby/opponent_attack.4bpp");
+const u8 gKrabbyPlayerHurtGfx[] = INCBIN_U8("graphics/deck_pokemon/krabby/player_hurt.4bpp");
+const u8 gKrabbyOpponentHurtGfx[] = INCBIN_U8("graphics/deck_pokemon/krabby/opponent_hurt.4bpp");
+const u16 gKrabbyObjectPal[] = INCBIN_U16("graphics/deck_pokemon/krabby/player_idle.gbapal");
+
+const u8 gKrabbyPortraitGfx[] = INCBIN_U8("graphics/deck_pokemon/krabby/portrait_normal.4bpp");
+const u16 gKrabbyPortraitPal[] = INCBIN_U16("graphics/deck_pokemon/krabby/portrait_normal.gbapal");
+
 // Swinub
 const u8 gSwinubPlayerIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/player_idle.4bpp");
 const u8 gSwinubOpponentIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/opponent_idle.4bpp");
