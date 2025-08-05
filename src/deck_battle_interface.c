@@ -913,7 +913,7 @@ void PrintTargetBattlerPrompt(enum BattleId battler)
     StringCopy(gStringVar2, GetSpeciesName(gDeckMons[battler].species));
     if (gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].effect == DECK_EFFECT_POWER_UP)
         StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Boost {STR_VAR_2}?"));
-    else if (gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].effect == DECK_EFFECT_HIT_ALL_OPPONENTS)
+    else if (gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].effect == DECK_EFFECT_HIT_ALL_OPPONENTS || gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].effect == DECK_EFFECT_HIT_ALL_OPPONENTS_ADJACENT_ALLIES)
         StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Attack all opponents?"));
     else
         StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Attack {STR_VAR_2}?"));
