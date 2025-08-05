@@ -841,3 +841,14 @@ const struct Tileset gTileset_Overworld =
     .metatileAttributes = gMetatileAttributes_Overworld,
     .callback = InitTilesetAnim_Overworld,
 };
+
+const struct Tileset gTileset_Ruins =
+{
+    .isCompressed = FALSE,
+    .isSecondary = TRUE,
+    .tiles = gTilesetTiles_Ruins,
+    .palettes = gTilesetPalettes_Ruins,
+    .metatiles = gMetatiles_Ruins,
+    .metatileAttributes = gMetatileAttributes_Ruins,
+    .callback = NULL,
+};

@@ -4424,10 +4424,10 @@
     {
       "id": "LAYOUT_ROUTE1",
       "name": "Route1_Layout",
-      "width": 60,
+      "width": 56,
       "height": 54,
       "primary_tileset": "gTileset_Overworld",
-      "secondary_tileset": "gTileset_Unused1",
+      "secondary_tileset": "gTileset_Ruins",
       "border_filepath": "data/layouts/Route1/border.bin",
       "blockdata_filepath": "data/layouts/Route1/map.bin"
     },
@@ -4440,6 +4440,16 @@
       "secondary_tileset": "gTileset_Unused1",
       "border_filepath": "data/layouts/Route2/border.bin",
       "blockdata_filepath": "data/layouts/Route2/map.bin"
+    },
+    {
+      "id": "LAYOUT_CLIFFSIDE_RUINS",
+      "name": "CliffsideRuins_Layout",
+      "width": 40,
+      "height": 50,
+      "primary_tileset": "gTileset_Overworld",
+      "secondary_tileset": "gTileset_Ruins",
+      "border_filepath": "data/layouts/CliffsideRuins/border.bin",
+      "blockdata_filepath": "data/layouts/CliffsideRuins/map.bin"
     }
   ]
 }
