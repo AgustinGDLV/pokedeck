@@ -413,22 +413,28 @@ static u32 GetOccupiedPositionToRight(u32 position)
 
 static void Task_PartyMenuHandleDefaultInput(u8 taskId)
 {
-    u32 pos;
+    u32 pos, index;
     if ((gMain.newKeys & DPAD_RIGHT) && 
         (pos = GetOccupiedPositionToRight(sPartyMenuData.selectedPosition)) != POSITIONS_COUNT)
     {
         PlaySE(SE_SELECT);
-        sPartyMenuData.selectedPosition = pos;
-        UpdateDisplayedMonInfo(GetPartyIndexAtPosition(pos));
+        index = GetPartyIndexAtPosition(pos);
+        UpdateDisplayedMonInfo(index);
         MoveCursorOverPosition(pos);
+        StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[index]], ANIM_IDLE);
+        StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[GetPartyIndexAtPosition(sPartyMenuData.selectedPosition)]], ANIM_PAUSED);
+        sPartyMenuData.selectedPosition = pos;
     }
     if ((gMain.newKeys & DPAD_LEFT) && 
         (pos = GetOccupiedPositionToLeft(sPartyMenuData.selectedPosition)) != POSITIONS_COUNT)
     {
         PlaySE(SE_SELECT);
-        sPartyMenuData.selectedPosition = pos;
-        UpdateDisplayedMonInfo(GetPartyIndexAtPosition(pos));
+        index = GetPartyIndexAtPosition(pos);
+        UpdateDisplayedMonInfo(index);
         MoveCursorOverPosition(pos);
+        StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[index]], ANIM_IDLE);
+        StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[GetPartyIndexAtPosition(sPartyMenuData.selectedPosition)]], ANIM_PAUSED);
+        sPartyMenuData.selectedPosition = pos;
     }
     if ((gMain.newKeys & A_BUTTON) || (gMain.newKeys & START_BUTTON))
     {
@@ -439,6 +445,7 @@ static void Task_PartyMenuHandleDefaultInput(u8 taskId)
             sPartyMenuData.swapPosition = POSITION_0;
         gSprites[sPartyMenuData.battlerSpriteIds[GetPartyIndexAtPosition(sPartyMenuData.selectedPosition)]].oam.objMode = ST_OAM_OBJ_BLEND;
         MoveCursorOverPosition(sPartyMenuData.swapPosition);
+        StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[GetPartyIndexAtPosition(sPartyMenuData.swapPosition)]], ANIM_IDLE);
         gTasks[taskId].func = Task_PartyMenuHandleSwapInput;
     }
     if (gMain.newKeys & B_BUTTON)
@@ -454,6 +461,7 @@ static void Task_PartyMenuHandleSwapInput(u8 taskId)
     u32 index1, index2, temp;
     if (gMain.newKeys & DPAD_RIGHT && sPartyMenuData.swapPosition < POSITIONS_COUNT - 1)
     {
+        temp = sPartyMenuData.swapPosition;
         if (sPartyMenuData.swapPosition + 1 != sPartyMenuData.selectedPosition)
             sPartyMenuData.swapPosition += 1;
         else if (sPartyMenuData.selectedPosition != POSITION_5)
@@ -463,9 +471,14 @@ static void Task_PartyMenuHandleSwapInput(u8 taskId)
 
         PlaySE(SE_SELECT);
         MoveCursorOverPosition(sPartyMenuData.swapPosition);
+        if ((index1 = GetPartyIndexAtPosition(temp)) != PARTY_SIZE)
+            StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[index1]], ANIM_PAUSED);
+        if ((index1 = GetPartyIndexAtPosition(sPartyMenuData.swapPosition)) != PARTY_SIZE)   
+            StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[index1]], ANIM_IDLE);
     }
     if (gMain.newKeys & DPAD_LEFT && sPartyMenuData.swapPosition > POSITION_0)
     {
+        temp = sPartyMenuData.swapPosition;
         if (sPartyMenuData.swapPosition - 1 != sPartyMenuData.selectedPosition)
             sPartyMenuData.swapPosition -= 1;
         else if (sPartyMenuData.selectedPosition != POSITION_0)
@@ -475,6 +488,10 @@ static void Task_PartyMenuHandleSwapInput(u8 taskId)
 
         PlaySE(SE_SELECT);
         MoveCursorOverPosition(sPartyMenuData.swapPosition);
+        if ((index1 = GetPartyIndexAtPosition(temp)) != PARTY_SIZE)
+            StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[index1]], ANIM_PAUSED);
+        if ((index1 = GetPartyIndexAtPosition(sPartyMenuData.swapPosition)) != PARTY_SIZE)   
+            StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[index1]], ANIM_IDLE);
     }
     if ((gMain.newKeys & A_BUTTON) || (gMain.newKeys & START_BUTTON))
     {
@@ -486,6 +503,7 @@ static void Task_PartyMenuHandleSwapInput(u8 taskId)
             SWAP(sPartyMenuData.mons[index1].position, sPartyMenuData.mons[index2].position, temp);
             gSprites[sPartyMenuData.battlerSpriteIds[index2]].x = 40 + OBJ_OFFSET*sPartyMenuData.mons[index2].position;
             gSprites[gSprites[sPartyMenuData.battlerSpriteIds[index2]].sShadowSpriteId].x = 40 + OBJ_OFFSET*sPartyMenuData.mons[index2].position;
+            StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[index2]], ANIM_PAUSED);
         }
         else
         {
@@ -501,6 +519,8 @@ static void Task_PartyMenuHandleSwapInput(u8 taskId)
     {
         PlaySE(SE_SELECT);
         gSprites[sPartyMenuData.battlerSpriteIds[GetPartyIndexAtPosition(sPartyMenuData.selectedPosition)]].oam.objMode = ST_OAM_OBJ_NORMAL;
+        if ((index1 = GetPartyIndexAtPosition(sPartyMenuData.swapPosition)) != PARTY_SIZE)
+            StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[index1]], ANIM_PAUSED);
         MoveCursorOverPosition(sPartyMenuData.selectedPosition);
         gTasks[taskId].func = Task_PartyMenuHandleDefaultInput;
     }
@@ -560,6 +580,7 @@ static void LoadPartyMenuGfx(void)
     DrawBattlerSprites();
     SetGpuReg(REG_OFFSET_BLDCNT, BLDCNT_TGT2_ALL | BLDCNT_EFFECT_BLEND);
     SetGpuReg(REG_OFFSET_BLDALPHA, BLDALPHA_BLEND(8, 6));
+    StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[index]], ANIM_IDLE);
 
     // Load cursor.
     LoadSpriteSheet(&gCursorSpriteSheet);
