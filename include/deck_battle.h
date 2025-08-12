@@ -59,6 +59,7 @@ struct DeckBattlePokemon
     u16 maxHP;
     u16 power;
     u16 def;
+    u8 partyIndex;
     enum BattlePosition pos;
     enum BattlePosition initialPos;
     bool8 hasMoved;
@@ -107,6 +108,8 @@ struct DeckBattleStruct
     u8 actionsCount;
     u8 executedCount;
     u8 actingSide;
+    u32 exp;
+    enum BattleId battlerExp;
 };
 
 void CB2_OpenDeckBattleCustom(void);
@@ -114,7 +117,6 @@ void Task_PrepareForActionPhase(u8 taskId);
 void Task_CheckFaintAndContinue(u8 taskId);
 void Task_WaitForFaintAnim(u8 taskId);
 void Task_CheckForBattleEnd(u8 taskId);
-void Task_HandleBattleEnd(u8 taskId);
 void Task_CloseDeckBattle(u8 taskId);
 void Task_ExecuteQueuedActionOrEnd(u8 taskId);
 void QueueAction(u32 type, u32 battlerAtk, u32 battlerDef, u32 move);

@@ -15,11 +15,13 @@
 #include "malloc.h"
 #include "menu.h"
 #include "menu_helpers.h"
+#include "money.h"
 #include "overworld.h"
 #include "palette.h"
 #include "scanline_effect.h"
 #include "sound.h"
 #include "sprite.h"
+#include "string_util.h"
 #include "task.h"
 #include "text.h"
 #include "util.h"
@@ -47,6 +49,9 @@ static void InitBattleStructData(void);
 static void InitBattleMonData(void);
 static void ResetTurnValues(void);
 
+static void Task_HandleBattleVictory(u8 taskId);
+static void Task_HandleBattleLoss(u8 taskId);
+
 // ewram data
 EWRAM_DATA struct DeckBattleStruct gDeckStruct = {0};
 EWRAM_DATA struct DeckBattlePokemon gDeckMons[MAX_DECK_BATTLERS_COUNT] = {0};
@@ -63,6 +68,7 @@ static void MainCB2_DeckBattle(void)
     BuildOamBuffer();
     DoScheduledBgTilemapCopiesToVram();
     UpdatePaletteFade();
+    RunTextPrinters();
 }
 
 static void VBlankCB2_DeckBattle(void)
@@ -112,6 +118,8 @@ void CB2_OpenDeckBattleCustom(void)
         case 4:
             InitBattleMonData();
             InitBattleStructData();
+            CalculatePlayerPartyCount();
+            CalculateEnemyPartyCount();
             gMain.state++;
             break;
         case 5:
@@ -144,10 +152,10 @@ static void Task_OpenDeckBattle(u8 taskId)
         SetBattlerPortraitVisibility(FALSE);
         SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
         SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
-        PrintStringToMessageBox(COMPOUND_STRING("Wild Pokémon appeared!\p"));
+        PrintStringToMessageBox(COMPOUND_STRING("Wild Pokémon appeared!"));
         gTasks[taskId].tState += 1;
     }
-    else if (!gPaletteFade.active && (gMain.newKeys & A_BUTTON)) // *TODO: WINDOW_MESSAGE
+    else if (!gPaletteFade.active && (gMain.newKeys & A_BUTTON))
     {
         PlaySE(SE_SELECT);
         // Start selection phase and update display.
@@ -200,6 +208,8 @@ void Task_CheckFaintAndContinue(u8 taskId)
         if (!GetBattlerSprite(battler)->invisible && !IsDeckBattlerAlive(battler))
         {
             StartBattlerAnim(battler, ANIM_FAINT);
+            if (GetDeckBattlerSide(battler) == B_SIDE_OPPONENT)
+                gDeckStruct.exp += gSpeciesInfo[gDeckMons[battler].species].expYield * gDeckMons[battler].lvl;
             fainted = TRUE;
         }
     }
@@ -228,29 +238,16 @@ void Task_CheckForBattleEnd(u8 taskId)
     if (!IsBattlerAliveOnSide(B_SIDE_PLAYER))
     {
         gBattleOutcome = B_OUTCOME_LOST;
-        PrintStringToMessageBox(COMPOUND_STRING("You lost…\p"));
-        gTasks[taskId].func = Task_HandleBattleEnd;
+        gTasks[taskId].func = Task_HandleBattleLoss;
     }
     else if (!IsBattlerAliveOnSide(B_SIDE_OPPONENT))
     {
         gBattleOutcome = B_OUTCOME_WON;
-        PrintStringToMessageBox(COMPOUND_STRING("You won!\p"));
-        gTasks[taskId].func = Task_HandleBattleEnd;
+        gTasks[taskId].func = Task_HandleBattleVictory;
     }
     else
     {
         gTasks[taskId].func = Task_ExecuteQueuedActionOrEnd;
-    }
-}
-
-void Task_HandleBattleEnd(u8 taskId)
-{
-    if (++gTasks[taskId].tTimer > 10 && (gMain.newKeys & A_BUTTON))
-    {
-        PlaySE(SE_SELECT);
-        gTasks[taskId].tTimer = 0;
-        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
-        gTasks[taskId].func = Task_CloseDeckBattle;
     }
 }
 
@@ -298,6 +295,139 @@ void Task_ExecuteQueuedActionOrEnd(u8 taskId)
     }
 }
 
+static void Task_HandleBattleVictory(u8 taskId)
+{
+    switch (gTasks[taskId].tState)
+    {
+    default:
+    case 0:
+    {
+        u32 exp = gDeckStruct.exp / gPlayerPartyCount; // *TODO - variable exp gain per battler
+        ConvertIntToDecimalStringN(gStringVar2, exp, STR_CONV_MODE_LEFT_ALIGN, 5);
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Your party gained an average of {STR_VAR_2} Exp. Points!"));
+        PrintStringToMessageBox(gStringVar1);
+
+        PlayBGM(MUS_VICTORY_WILD);
+        gDeckStruct.battlerExp = B_PLAYER_0;
+        ++gTasks[taskId].tState;
+        break;
+    }
+    case 1:
+        if (++gTasks[taskId].tTimer > 10 && (gMain.newKeys & A_BUTTON))
+        {
+            PlaySE(SE_SELECT);
+            gTasks[taskId].tTimer = 0;
+            ++gTasks[taskId].tState;
+        }
+        break;
+    case 2: // Give experience to the current battler and print message if they level.
+        if (gDeckMons[gDeckStruct.battlerExp].species != SPECIES_NONE)
+        {
+            u32 level = gDeckMons[gDeckStruct.battlerExp].lvl;
+            u32 species = gDeckMons[gDeckStruct.battlerExp].species;
+            u32 currentExp = GetMonData(&gPlayerParty[gDeckMons[gDeckStruct.battlerExp].partyIndex], MON_DATA_EXP);
+            u32 nextLevelExp = gExperienceTables[gSpeciesInfo[species].growthRate][level + 1];
+            u32 gainedExp = gDeckStruct.exp / gPlayerPartyCount;
+            u32 expAfterGain = currentExp + gainedExp;
+
+            SetMonData(&gPlayerParty[gDeckMons[gDeckStruct.battlerExp].partyIndex], MON_DATA_EXP, &expAfterGain);
+            CalculateMonStats(&gPlayerParty[gDeckMons[gDeckStruct.battlerExp].partyIndex]);
+            if (expAfterGain >= nextLevelExp)
+                gTasks[taskId].tState = 3;
+            else
+                gTasks[taskId].tState = 4;
+        }
+        else
+        {
+            gTasks[taskId].tState = 4;
+        }
+        break;
+    case 3: // Print level up message.
+        if (gTasks[taskId].tTimer == 0)
+        {
+            StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gDeckStruct.battlerExp].species));
+            StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} leveled up!"));
+            PrintStringToMessageBox(gStringVar1);
+            PlaySE(MUS_LEVEL_UP);
+            ++gTasks[taskId].tTimer;
+        }
+        else if (++gTasks[taskId].tTimer > 10 && (gMain.newKeys & A_BUTTON))
+        {
+            PlaySE(SE_SELECT);
+            gTasks[taskId].tTimer = 0;
+            ++gTasks[taskId].tState;
+        }
+        break;
+    case 4: // Loop until all player positions have been given exp.
+        if (++gDeckStruct.battlerExp > B_PLAYER_5)
+            gTasks[taskId].tState = 5;
+        else
+            gTasks[taskId].tState = 2;
+        break;
+    case 5:
+        gTasks[taskId].tState = 0;
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
+        gTasks[taskId].func = Task_CloseDeckBattle;
+        break;
+    }
+}
+
+static void Task_HandleBattleLoss(u8 taskId)
+{
+    switch (gTasks[taskId].tState)
+    {
+    default:
+    case 0:
+        PrintStringToMessageBox(COMPOUND_STRING("You have no more Pokémon that can fight!"));
+        ++gTasks[taskId].tState;
+        break;
+    case 1:
+        if (++gTasks[taskId].tTimer > 10 && (gMain.newKeys & A_BUTTON))
+        {
+            PlaySE(SE_SELECT);
+            gTasks[taskId].tTimer = 0;
+            ++gTasks[taskId].tState;
+        }
+        break;
+    case 2: // *TODO: check for scripted loss
+    {
+        u32 partyLevel = 0;
+        for (enum BattleId battler = B_PLAYER_0; battler < B_OPPONENT_0; ++battler)
+            partyLevel += gDeckMons[battler].lvl;
+        RemoveMoney(&gSaveBlock1Ptr->money, 8 * partyLevel);
+        ConvertIntToDecimalStringN(gStringVar2, 8 * partyLevel, STR_CONV_MODE_LEFT_ALIGN, 5);
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("You panicked and dropped ¥{STR_VAR_2}!"));
+        PrintStringToMessageBox(gStringVar1);
+        ++gTasks[taskId].tState;
+        break;
+    }
+    case 3:
+        if (++gTasks[taskId].tTimer > 10 && (gMain.newKeys & A_BUTTON))
+        {
+            PlaySE(SE_SELECT);
+            gTasks[taskId].tTimer = 0;
+            ++gTasks[taskId].tState;
+        }
+        break;
+    case 4:
+        PrintStringToMessageBox(COMPOUND_STRING("You were overwhelmed by your defeat!"));
+        ++gTasks[taskId].tState;
+    case 5:
+        if (++gTasks[taskId].tTimer > 10 && (gMain.newKeys & A_BUTTON))
+        {
+            PlaySE(SE_SELECT);
+            gTasks[taskId].tTimer = 0;
+            ++gTasks[taskId].tState;
+        }
+        break;
+    case 6:
+        gTasks[taskId].tState = 0;
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
+        gTasks[taskId].func = Task_CloseDeckBattle;
+        break;
+    }
+}
+
 // Exits battle UI and sends to overworld.
 void Task_CloseDeckBattle(u8 taskId)
 {
@@ -313,7 +443,10 @@ void Task_CloseDeckBattle(u8 taskId)
 
     // Return to overworld.
     FadeOutMapMusic(5);
-    SetMainCallback2(CB2_ReturnToField);
+    if (gBattleOutcome == B_OUTCOME_LOST)
+        SetMainCallback2(CB2_WhiteOut); // *TODO: fade out looks off
+    else
+        SetMainCallback2(CB2_ReturnToField);
 }
 
 #undef tState
@@ -323,6 +456,7 @@ void Task_CloseDeckBattle(u8 taskId)
 static void InitBattleStructData(void)
 {
     ResetTurnValues();
+    gDeckStruct.exp = 0;
     gDeckStruct.selectedPos = GetLeftmostOccupiedPosition(B_SIDE_PLAYER);
 }
 
@@ -378,6 +512,7 @@ static void InitBattleMonData(void)
         gDeckMons[i].def = GetMonData(mon, MON_DATA_DEF);
         gDeckMons[i].pos = GetMonData(mon, MON_DATA_POSITION);
         gDeckMons[i].initialPos = gDeckMons[i].pos;
+        gDeckMons[i].partyIndex = i;
     }
 }
 
@@ -409,6 +544,7 @@ void SwapBattlerPositions(u32 battler1, u32 battler2)
     gDeckMons[battler2].hasSwapped = TRUE;
 }
 
+// Performs basic damage calc formula using two battler IDs and a move.
 s32 CalculateDamage(u32 battlerAtk, u32 battlerDef, u32 move)
 {
     u32 movePower = gDeckMovesInfo[move].power;
@@ -426,11 +562,18 @@ s32 CalculateDamage(u32 battlerAtk, u32 battlerDef, u32 move)
         return 1;
 }
 
+// Performs the HP change when a battler is hurt or healed.
 void UpdateBattlerHP(u32 battler, s32 damage)
 {
-    if (damage > gDeckMons[battler].hp)
+    if (damage < -999) // cap damage at 3 digits
+        damage = -999;
+
+    if (damage > gDeckMons[battler].hp) // correctly bound HP
         gDeckMons[battler].hp = 0;
+    else if (-damage > gDeckMons[battler].maxHP - gDeckMons[battler].hp)
+        gDeckMons[battler].hp = gDeckMons[battler].maxHP;
     else
         gDeckMons[battler].hp -= damage;
+
     PrintDamageNumbers(battler, damage);
 }

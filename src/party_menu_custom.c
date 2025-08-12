@@ -722,7 +722,7 @@ static void InitPartyDataStruct(void)
             data->lvl = GetMonData(&gPlayerParty[i], MON_DATA_LEVEL);
             data->exp = GetMonData(&gPlayerParty[i], MON_DATA_EXP);
             if (data->lvl < MAX_LEVEL)
-                data->expToNextLvl = gExperienceTables[gSpeciesInfo[data->species].growthRate][data->lvl + 1] - data->exp;
+                data->expToNextLvl = gExperienceTables[gSpeciesInfo[data->species].growthRate][data->lvl + 1];
             else
                 data->expToNextLvl = 0;
             data->exp -= gExperienceTables[gSpeciesInfo[data->species].growthRate][data->lvl];
