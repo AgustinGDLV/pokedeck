@@ -36,7 +36,8 @@
     "gMapGroup_IndoorRoute123",
     "gMapGroup_IndoorRoute119",
     "gMapGroup_IndoorRoute124",
-    "gMapGroup_Specials"
+    "gMapGroup_Specials",
+    "gMapGroup_IndoorStartingTown"
   ],
   "gMapGroup_Towns": [
     "StartingTown"
@@ -633,5 +634,9 @@
   ],
   "gMapGroup_Specials": [
     "CliffsideRuins"
+  ],
+  "gMapGroup_IndoorStartingTown": [
+    "StartingTown_PlayerHouse",
+    "StartingTown_PlayerHouse2"
   ]
 }

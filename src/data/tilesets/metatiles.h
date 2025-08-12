@@ -213,3 +213,7 @@ const u16 gMetatileAttributes_Overworld[] = INCBIN_U16("data/tilesets/primary/ov
 
 const u16 gMetatiles_Ruins[] = INCBIN_U16("data/tilesets/secondary/ruins/metatiles.bin");
 const u16 gMetatileAttributes_Ruins[] = INCBIN_U16("data/tilesets/secondary/ruins/metatile_attributes.bin");
+
+const u16 gMetatiles_Indoor[] = INCBIN_U16("data/tilesets/primary/indoor/metatiles.bin");
+const u16 gMetatileAttributes_Indoor[] = INCBIN_U16("data/tilesets/primary/indoor/metatile_attributes.bin");
+

@@ -1165,3 +1165,7 @@ EventScript_VsSeekerChargingDone::
 	.include "data/maps/Route2/scripts.inc"
 
 	.include "data/maps/CliffsideRuins/scripts.inc"
+
+	.include "data/maps/StartingTown_PlayerHouse/scripts.inc"
+
+	.include "data/maps/StartingTown_PlayerHouse2/scripts.inc"

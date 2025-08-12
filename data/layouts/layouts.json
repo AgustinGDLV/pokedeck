@@ -4450,6 +4450,26 @@
       "secondary_tileset": "gTileset_Ruins",
       "border_filepath": "data/layouts/CliffsideRuins/border.bin",
       "blockdata_filepath": "data/layouts/CliffsideRuins/map.bin"
+    },
+    {
+      "id": "LAYOUT_STARTING_TOWN_PLAYER_HOUSE",
+      "name": "StartingTown_PlayerHouse_Layout",
+      "width": 13,
+      "height": 10,
+      "primary_tileset": "gTileset_Indoor",
+      "secondary_tileset": "gTileset_Unused1",
+      "border_filepath": "data/layouts/StartingTown_PlayerHouse/border.bin",
+      "blockdata_filepath": "data/layouts/StartingTown_PlayerHouse/map.bin"
+    },
+    {
+      "id": "LAYOUT_STARTING_TOWN_PLAYER_HOUSE2",
+      "name": "StartingTown_PlayerHouse2_Layout",
+      "width": 9,
+      "height": 8,
+      "primary_tileset": "gTileset_Indoor",
+      "secondary_tileset": "gTileset_Unused1",
+      "border_filepath": "data/layouts/StartingTown_PlayerHouse2/border.bin",
+      "blockdata_filepath": "data/layouts/StartingTown_PlayerHouse2/map.bin"
     }
   ]
 }
