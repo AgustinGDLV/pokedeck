@@ -1,0 +1,15 @@
+mapscripts StartingTown_MapScripts {
+
+}
+
+script StartingTown_PlayerHouseSign {
+    msgbox("{PLAYER}'s HOUSE")
+    release
+    end
+}
+
+script StartingTown_Sign {
+    msgbox("STARTING TOWN")
+    release
+    end
+}
