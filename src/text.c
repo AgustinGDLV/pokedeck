@@ -150,9 +150,9 @@ static const struct FontInfo sFontInfos[] =
         .maxLetterHeight = 16,
         .letterSpacing = 0,
         .lineSpacing = 0,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
+        .fgColor = 1,
+        .bgColor = 15,
+        .shadowColor = 15,
     },
     [FONT_SHORT] = {
         .fontFunction = FontFunc_Short,

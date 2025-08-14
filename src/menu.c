@@ -180,9 +180,9 @@ u16 AddTextPrinterParameterized2(u8 windowId, u8 fontId, const u8 *str, u8 speed
     printer.windowId = windowId;
     printer.fontId = fontId;
     printer.x = 0;
-    printer.y = 1;
+    printer.y = 0;
     printer.currentX = 0;
-    printer.currentY = 1;
+    printer.currentY = 0;
     printer.letterSpacing = 0;
     printer.lineSpacing = 0;
     printer.unk = 0;
@@ -198,19 +198,19 @@ void AddTextPrinterForMessage(bool8 allowSkippingDelayWithButtonPress)
 {
     void (*callback)(struct TextPrinterTemplate *, u16) = NULL;
     gTextFlags.canABSpeedUpPrint = allowSkippingDelayWithButtonPress;
-    AddTextPrinterParameterized2(0, FONT_NORMAL, gStringVar4, GetPlayerTextSpeedDelay(), callback, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+    AddTextPrinterParameterized2(0, FONT_NORMAL, gStringVar4, GetPlayerTextSpeedDelay(), callback, TEXT_COLOR_WHITE, TEXT_COLOR_BLACK, TEXT_COLOR_BLACK);
 }
 
 void AddTextPrinterForMessage_2(bool8 allowSkippingDelayWithButtonPress)
 {
     gTextFlags.canABSpeedUpPrint = allowSkippingDelayWithButtonPress;
-    AddTextPrinterParameterized2(0, FONT_NORMAL, gStringVar4, GetPlayerTextSpeedDelay(), NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+    AddTextPrinterParameterized2(0, FONT_NORMAL, gStringVar4, GetPlayerTextSpeedDelay(), NULL, TEXT_COLOR_WHITE, TEXT_COLOR_BLACK, TEXT_COLOR_BLACK);
 }
 
 void AddTextPrinterWithCustomSpeedForMessage(bool8 allowSkippingDelayWithButtonPress, u8 speed)
 {
     gTextFlags.canABSpeedUpPrint = allowSkippingDelayWithButtonPress;
-    AddTextPrinterParameterized2(0, FONT_NORMAL, gStringVar4, speed, NULL, TEXT_COLOR_DARK_GRAY, TEXT_COLOR_WHITE, TEXT_COLOR_LIGHT_GRAY);
+    AddTextPrinterParameterized2(0, FONT_NORMAL, gStringVar4, speed, NULL, TEXT_COLOR_WHITE, TEXT_COLOR_BLACK, TEXT_COLOR_BLACK);
 }
 
 void LoadMessageBoxAndBorderGfx(void)
@@ -336,7 +336,7 @@ static inline void *GetWindowFunc_DialogueFrame(void)
 void DrawDialogueFrame(u8 windowId, bool8 copyToVram)
 {
     CallWindowFunction(windowId, GetWindowFunc_DialogueFrame());
-    FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(15));
     PutWindowTilemap(windowId);
     if (copyToVram == TRUE)
         CopyWindowToVram(windowId, COPYWIN_FULL);
@@ -345,7 +345,7 @@ void DrawDialogueFrame(u8 windowId, bool8 copyToVram)
 void DrawStdWindowFrame(u8 windowId, bool8 copyToVram)
 {
     CallWindowFunction(windowId, WindowFunc_DrawStandardFrame);
-    FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(15));
     PutWindowTilemap(windowId);
     if (copyToVram == TRUE)
         CopyWindowToVram(windowId, COPYWIN_FULL);
@@ -354,7 +354,7 @@ void DrawStdWindowFrame(u8 windowId, bool8 copyToVram)
 void ClearDialogWindowAndFrame(u8 windowId, bool8 copyToVram)
 {
     CallWindowFunction(windowId, WindowFunc_ClearDialogWindowAndFrame);
-    FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(15));
     ClearWindowTilemap(windowId);
     if (copyToVram == TRUE)
         CopyWindowToVram(windowId, COPYWIN_FULL);
@@ -363,7 +363,7 @@ void ClearDialogWindowAndFrame(u8 windowId, bool8 copyToVram)
 void ClearStdWindowAndFrame(u8 windowId, bool8 copyToVram)
 {
     CallWindowFunction(windowId, WindowFunc_ClearStdWindowAndFrame);
-    FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(15));
     ClearWindowTilemap(windowId);
     if (copyToVram == TRUE)
         CopyWindowToVram(windowId, COPYWIN_FULL);
@@ -682,7 +682,7 @@ void DrawDialogFrameWithCustomTileAndPalette(u8 windowId, bool8 copyToVram, u16 
     sTileNum = tileNum;
     sPaletteNum = paletteNum;
     CallWindowFunction(windowId, WindowFunc_DrawDialogFrameWithCustomTileAndPalette);
-    FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(15));
     PutWindowTilemap(windowId);
     if (copyToVram == TRUE)
         CopyWindowToVram(windowId, COPYWIN_FULL);
@@ -693,7 +693,7 @@ static void UNUSED DrawDialogFrameWithCustomTile(u8 windowId, bool8 copyToVram, 
     sTileNum = tileNum;
     sPaletteNum = GetWindowAttribute(windowId, WINDOW_PALETTE_NUM);
     CallWindowFunction(windowId, WindowFunc_DrawDialogFrameWithCustomTileAndPalette);
-    FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(15));
     PutWindowTilemap(windowId);
     if (copyToVram == TRUE)
         CopyWindowToVram(windowId, COPYWIN_FULL);
@@ -814,7 +814,7 @@ void DrawStdFrameWithCustomTileAndPalette(u8 windowId, bool8 copyToVram, u16 bas
     sTileNum = baseTileNum;
     sPaletteNum = paletteNum;
     CallWindowFunction(windowId, WindowFunc_DrawStdFrameWithCustomTileAndPalette);
-    FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(15));
     PutWindowTilemap(windowId);
     if (copyToVram == TRUE)
         CopyWindowToVram(windowId, COPYWIN_FULL);
@@ -826,7 +826,7 @@ void DrawStdFrameWithCustomTile(u8 windowId, bool8 copyToVram, u16 baseTileNum)
     sTileNum = baseTileNum;
     sPaletteNum = GetWindowAttribute(windowId, WINDOW_PALETTE_NUM);
     CallWindowFunction(windowId, WindowFunc_DrawStdFrameWithCustomTileAndPalette);
-    FillWindowPixelBuffer(windowId, PIXEL_FILL(1));
+    FillWindowPixelBuffer(windowId, PIXEL_FILL(15));
     PutWindowTilemap(windowId);
     if (copyToVram == TRUE)
         CopyWindowToVram(windowId, COPYWIN_FULL);
@@ -1066,7 +1066,7 @@ void RedrawMenuCursor(u8 oldPos, u8 newPos)
 
     width = GetMenuCursorDimensionByFont(sMenu.fontId, 0);
     height = GetMenuCursorDimensionByFont(sMenu.fontId, 1);
-    FillWindowPixelRect(sMenu.windowId, PIXEL_FILL(1), sMenu.left, sMenu.optionHeight * oldPos + sMenu.top, width, height);
+    FillWindowPixelRect(sMenu.windowId, PIXEL_FILL(15), sMenu.left, sMenu.optionHeight * oldPos + sMenu.top, width, height);
     AddTextPrinterParameterized(sMenu.windowId, sMenu.fontId, gText_SelectorArrow3, sMenu.left, sMenu.optionHeight * newPos + sMenu.top, 0, 0);
 }
 
@@ -1442,7 +1442,7 @@ static void MoveMenuGridCursor(u8 oldCursorPos, u8 newCursorPos)
 
     u8 xPos = (oldCursorPos % sMenu.columns) * sMenu.optionWidth + sMenu.left;
     u8 yPos = (oldCursorPos / sMenu.columns) * sMenu.optionHeight + sMenu.top;
-    FillWindowPixelRect(sMenu.windowId, PIXEL_FILL(1), xPos, yPos, cursorWidth, cursorHeight);
+    FillWindowPixelRect(sMenu.windowId, PIXEL_FILL(15), xPos, yPos, cursorWidth, cursorHeight);
 
     xPos = (newCursorPos % sMenu.columns) * sMenu.optionWidth + sMenu.left;
     yPos = (newCursorPos / sMenu.columns) * sMenu.optionHeight + sMenu.top;

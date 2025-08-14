@@ -1229,9 +1229,9 @@ static void Debug_ShowMenu(void (*HandleInput)(u8), struct ListMenuTemplate LMte
     menuTemplate.item_X = 8;
     menuTemplate.cursor_X = 0;
     menuTemplate.upText_Y = 1;
-    menuTemplate.cursorPal = 2;
-    menuTemplate.fillValue = 1;
-    menuTemplate.cursorShadowPal = 3;
+    menuTemplate.cursorPal = 1;
+    menuTemplate.fillValue = 15;
+    menuTemplate.cursorShadowPal = 15;
     menuTemplate.lettersSpacing = 1;
     menuTemplate.itemVerticalPadding = 0;
     menuTemplate.scrollMultiple = LIST_NO_MULTIPLE_SCROLL;

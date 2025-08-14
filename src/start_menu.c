@@ -1317,7 +1317,7 @@ static void Task_SaveAfterLinkBattle(u8 taskId)
         switch (*state)
         {
         case 0:
-            FillWindowPixelBuffer(0, PIXEL_FILL(1));
+            FillWindowPixelBuffer(0, PIXEL_FILL(15));
             AddTextPrinterParameterized2(0,
                                         FONT_NORMAL,
                                         gText_SavingDontTurnOffPower,
