@@ -1,0 +1,81 @@
+mapscripts StartingTown_PlayerHouse2_MapScripts {
+    MAP_SCRIPT_ON_FRAME_TABLE [
+        VAR_LITTLEROOT_INTRO_STATE, 0: StartingTown_PlayerHouse2_WakeUp
+    ]
+}
+
+script StartingTown_PlayerHouse2_WakeUp {
+    lock
+    addvar(VAR_LITTLEROOT_INTRO_STATE, 1)
+    msgbox("Today's your first day!")
+    release
+    end
+}
+
+script StartingTown_PlayerHouse2_Radio {
+    lock
+    fadenewbgm(MUS_GAME_CORNER)
+    msgbox("It seems like there's a raffle\n"
+            "going on…"
+            "You'll have to enter\n"
+            "another time!")
+    fadedefaultbgm
+    release
+    end
+}
+
+script StartingTown_PlayerHouse2_Bed {
+    lock
+    message("You could use some rest…\n"
+            "Until when will you sleep?")
+    waitmessage
+    multichoice(19, 6, MULTI_MORNING_NIGHT, TRUE)
+    switch (var(VAR_RESULT)) {
+        case 0:
+            callnative(FakeRtc_SkipToMorning)
+            call(Common_EventScript_OutOfCenterPartyHeal)
+            msgbox("Much better!")
+        case 1:
+            callnative(FakeRtc_SkipToNight)
+            call(Common_EventScript_OutOfCenterPartyHeal)
+            msgbox("Much better!")
+        case 2:
+            msgbox("You'll rest later…")
+    }
+    release
+    end
+}
+
+script StartingTown_PlayerHouse2_Console {
+    lock
+    msgbox("Play a game?", MSGBOX_YESNO)
+    switch (var(VAR_RESULT)) {
+        case YES:
+            closemessage
+            applymovement(LOCALID_PLAYER, moves(
+                walk_down,
+                walk_left,
+                face_up
+            ))
+            waitmovement(0)
+            setmetatile(4, 3, 0x5D, TRUE)
+            setmetatile(4, 4, 0x65, TRUE)
+            special(DrawWholeMapView)
+            playbgm(MUS_MEGALOVANIA, FALSE)
+            waitbuttonpress
+            setmetatile(4, 3, 0x4D, TRUE)
+            setmetatile(4, 4, 0x55, TRUE)
+            special(DrawWholeMapView)
+            playbgm(MUS_RG_PALLET, FALSE)
+            applymovement(LOCALID_PLAYER, moves(
+                walk_right,
+                walk_up
+            ))
+            waitmovement(0)
+            msgbox("That was tough!")
+        case NO:
+            msgbox("Another time…")
+    }
+    release
+    end
+}

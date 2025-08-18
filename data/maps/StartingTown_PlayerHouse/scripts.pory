@@ -1,0 +1,38 @@
+mapscripts StartingTown_PlayerHouse_MapScripts {
+    MAP_SCRIPT_ON_FRAME_TABLE [
+        VAR_LITTLEROOT_INTRO_STATE, 1: StartingTown_PlayerHouse_FirstDay
+    ]
+}
+
+script StartingTown_PlayerHouse_FirstDay {
+    lock
+    addvar(VAR_LITTLEROOT_INTRO_STATE, 1)
+    applymovement(LOCALID_PLAYER, moves(
+        walk_down,
+        walk_down
+    ))
+    waitmovement
+    playse(SE_PIN)
+    applymovement(LOCALID_MOM, moves(
+        emote_exclamation_mark,
+        jump_in_place_right
+    ))
+    waitmovement
+    delay(40)
+    message("You're awake!")
+    waitmessage
+    delay(40)
+    closemessage
+    applymovement(LOCALID_PLAYER, moves(
+        walk_down,
+        walk_down,
+        walk_down,
+        walk_left,
+        walk_left
+    ))
+    waitmovement
+    msgbox("I bet the professor is already\n"
+           "waiting, you should hurry over!")
+    release
+    end
+}

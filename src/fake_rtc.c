@@ -138,3 +138,13 @@ void Script_ToggleFakeRtc(void)
 
     FlagToggle(OW_FLAG_PAUSE_TIME);
 }
+
+void FakeRtc_SkipToMorning(void)
+{
+    FakeRtc_ForwardTimeTo(MORNING_HOUR_END - 1, 0, 0);
+}
+
+void FakeRtc_SkipToNight(void)
+{
+    FakeRtc_ForwardTimeTo(EVENING_HOUR_END - 1, 0, 0);
+}

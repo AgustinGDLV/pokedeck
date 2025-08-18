@@ -620,6 +620,9 @@ gGBSSongTable::
 	song_gbs MUS_RG_MT_MOON, gbs_Music_SproutTower, 0, 0
 	song_gbs MUS_TITLE, gbs_Music_LugiasSong, 0, 0
 	song_gbs MUS_VICTORY_WILD, gbs_Music_HoennWildVictory, 0, 0
+	song_gbs MUS_GAME_CORNER, gbs_Music_RSGameCorner, 0, 0
+	song_gbs MUS_HEAL, gbs_Music_HealPokemon, 2, 2
+	song_gbs MUS_MEGALOVANIA, gbs_Music_Megalovania, 0, 0
 	.4byte 0xFFFFFFFF
 
 	.align 2

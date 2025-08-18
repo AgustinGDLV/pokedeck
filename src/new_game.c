@@ -48,11 +48,13 @@
 #include "constants/items.h"
 #include "difficulty.h"
 #include "follower_npc.h"
+#include "fake_rtc.h"
+#include "string_util.h"
 
 extern const u8 EventScript_ResetAllMapFlags[];
 
 static void ClearFrontierRecord(void);
-static void WarpToTruck(void);
+static void WarpToPlayerRoom(void);
 static void ResetMiniGamesRecords(void);
 static void ResetItemFlags(void);
 static void ResetDexNav(void);
@@ -129,9 +131,9 @@ static void ClearFrontierRecord(void)
     gSaveBlock2Ptr->frontier.opponentNames[1][0] = EOS;
 }
 
-static void WarpToTruck(void)
+static void WarpToPlayerRoom(void)
 {
-    SetWarpDestination(MAP_GROUP(MAP_INSIDE_OF_TRUCK), MAP_NUM(MAP_INSIDE_OF_TRUCK), WARP_ID_NONE, -1, -1);
+    SetWarpDestination(MAP_GROUP(MAP_STARTING_TOWN_PLAYER_HOUSE2), MAP_NUM(MAP_STARTING_TOWN_PLAYER_HOUSE2), WARP_ID_NONE, 3, 2);
     WarpIntoMap();
 }
 
@@ -197,7 +199,7 @@ void NewGameInitData(void)
     InitDewfordTrend();
     ResetFanClub();
     ResetLotteryCorner();
-    WarpToTruck();
+    WarpToPlayerRoom();
     RunScriptImmediately(EventScript_ResetAllMapFlags);
     ResetMiniGamesRecords();
     InitUnionRoomChatRegisteredTexts();
@@ -213,6 +215,10 @@ void NewGameInitData(void)
     ResetItemFlags();
     ResetDexNav();
     ClearFollowerNPCData();
+    FlagSet(FLAG_SYS_B_DASH);
+    RtcInitLocalTimeOffset(0, 0);
+    FakeRtc_SkipToMorning();
+    StringCopy(gSaveBlock2Ptr->playerName, COMPOUND_STRING("???"));
 }
 
 static void ResetMiniGamesRecords(void)
