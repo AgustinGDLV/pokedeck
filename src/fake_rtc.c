@@ -141,10 +141,10 @@ void Script_ToggleFakeRtc(void)
 
 void FakeRtc_SkipToMorning(void)
 {
-    FakeRtc_ForwardTimeTo(MORNING_HOUR_END - 1, 0, 0);
+    FakeRtc_ForwardTimeTo(DAY_HOUR_BEGIN, 0, 0);
 }
 
 void FakeRtc_SkipToNight(void)
 {
-    FakeRtc_ForwardTimeTo(EVENING_HOUR_END - 1, 0, 0);
+    FakeRtc_ForwardTimeTo(NIGHT_HOUR_BEGIN, 0, 0);
 }
