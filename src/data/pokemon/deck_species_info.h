@@ -1,5 +1,71 @@
 const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 {
+    [SPECIES_RATTATA] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gRattataPlayerIdleGfx,
+        .opponentIdle = gRattataOpponentIdleGfx,
+        .playerAttack = gRattataPlayerAttackGfx,
+        .opponentAttack = gRattataOpponentAttackGfx,
+        .playerHurt = gRattataPlayerHurtGfx,
+        .opponentHurt = gRattataOpponentHurtGfx,
+        .objectPalette = gRattataObjectPal,
+        .playerYOffset = -2,
+        .opponentYOffset = -2,
+
+        .portrait = gRattataPortraitGfx,
+        .portraitPalette = gRattataPortraitPal,
+    },
+
+    [SPECIES_SPEAROW] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gSpearowPlayerIdleGfx,
+        .opponentIdle = gSpearowOpponentIdleGfx,
+        .playerAttack = gSpearowPlayerAttackGfx,
+        .opponentAttack = gSpearowOpponentAttackGfx,
+        .playerHurt = gSpearowPlayerHurtGfx,
+        .opponentHurt = gSpearowOpponentHurtGfx,
+        .objectPalette = gSpearowObjectPal,
+        .playerYOffset = -2,
+        .opponentYOffset = -2,
+
+        .portrait = gSpearowPortraitGfx,
+        .portraitPalette = gSpearowPortraitPal,
+    },
+
+    [SPECIES_VULPIX] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gVulpixPlayerIdleGfx,
+        .opponentIdle = gVulpixOpponentIdleGfx,
+        .playerAttack = gVulpixPlayerAttackGfx,
+        .opponentAttack = gVulpixOpponentAttackGfx,
+        .playerHurt = gVulpixPlayerHurtGfx,
+        .opponentHurt = gVulpixOpponentHurtGfx,
+        .objectPalette = gVulpixObjectPal,
+        .playerYOffset = -2,
+        .opponentYOffset = -2,
+
+        .portrait = gVulpixPortraitGfx,
+        .portraitPalette = gVulpixPortraitPal,
+    },
+
     [SPECIES_BELLSPROUT] =
     {
         .baseHP = 50,
@@ -176,6 +242,28 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .portraitPalette = gSwinubPortraitPal,
     },
 
+    [SPECIES_POOCHYENA] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gPoochyenaPlayerIdleGfx,
+        .opponentIdle = gPoochyenaOpponentIdleGfx,
+        .playerAttack = gPoochyenaPlayerAttackGfx,
+        .opponentAttack = gPoochyenaOpponentAttackGfx,
+        .playerHurt = gPoochyenaPlayerHurtGfx,
+        .opponentHurt = gPoochyenaOpponentHurtGfx,
+        .objectPalette = gPoochyenaObjectPal,
+        .playerYOffset = -4,
+        .opponentYOffset = -2,
+
+        .portrait = gPoochyenaPortraitGfx,
+        .portraitPalette = gPoochyenaPortraitPal,
+    },
+
     [SPECIES_SWABLU] =
     {
         .baseHP = 45,
@@ -196,6 +284,28 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 
         .portrait = gSwabluPortraitGfx,
         .portraitPalette = gSwabluPortraitPal,
+    },
+
+    [SPECIES_BALTOY] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gBaltoyPlayerIdleGfx,
+        .opponentIdle = gBaltoyOpponentIdleGfx,
+        .playerAttack = gBaltoyPlayerAttackGfx,
+        .opponentAttack = gBaltoyOpponentAttackGfx,
+        .playerHurt = gBaltoyPlayerHurtGfx,
+        .opponentHurt = gBaltoyOpponentHurtGfx,
+        .objectPalette = gBaltoyObjectPal,
+        .playerYOffset = -2,
+        .opponentYOffset = -3,
+
+        .portrait = gBaltoyPortraitGfx,
+        .portraitPalette = gBaltoyPortraitPal,
     },
 
     [SPECIES_CHINGLING] =
