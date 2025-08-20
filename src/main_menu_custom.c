@@ -423,7 +423,7 @@ static void DrawPartyIcons(void)
         {
             LoadMonIconPalette(species);
             sPartySpriteIds[i] = CreateMonIconNoPersonality(GetIconSpeciesNoPersonality(species),
-                                    SpriteCB_MonIcon, 152 + 24*(i%3), 51 + 28*(i/3), 0);
+                                    SpriteCB_MonIcon, 152 + 24*(i%3), 51 + 24*(i/3), 0);
         }
     }
 }
