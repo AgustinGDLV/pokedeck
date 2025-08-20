@@ -58,6 +58,18 @@ const u16 gKrabbyObjectPal[] = INCBIN_U16("graphics/deck_pokemon/krabby/player_i
 const u8 gKrabbyPortraitGfx[] = INCBIN_U8("graphics/deck_pokemon/krabby/portrait_normal.4bpp");
 const u16 gKrabbyPortraitPal[] = INCBIN_U16("graphics/deck_pokemon/krabby/portrait_normal.gbapal");
 
+// Cleffa
+const u8 gCleffaPlayerIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/cleffa/player_idle.4bpp");
+const u8 gCleffaOpponentIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/cleffa/opponent_idle.4bpp");
+const u8 gCleffaPlayerAttackGfx[] = INCBIN_U8("graphics/deck_pokemon/cleffa/player_attack.4bpp");
+const u8 gCleffaOpponentAttackGfx[] = INCBIN_U8("graphics/deck_pokemon/cleffa/opponent_attack.4bpp");
+const u8 gCleffaPlayerHurtGfx[] = INCBIN_U8("graphics/deck_pokemon/cleffa/player_hurt.4bpp");
+const u8 gCleffaOpponentHurtGfx[] = INCBIN_U8("graphics/deck_pokemon/cleffa/opponent_hurt.4bpp");
+const u16 gCleffaObjectPal[] = INCBIN_U16("graphics/deck_pokemon/cleffa/player_idle.gbapal");
+
+const u8 gCleffaPortraitGfx[] = INCBIN_U8("graphics/deck_pokemon/cleffa/portrait_normal.4bpp");
+const u16 gCleffaPortraitPal[] = INCBIN_U16("graphics/deck_pokemon/cleffa/portrait_normal.gbapal");
+
 // Swinub
 const u8 gSwinubPlayerIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/player_idle.4bpp");
 const u8 gSwinubOpponentIdleGfx[] = INCBIN_U8("graphics/deck_pokemon/swinub/opponent_idle.4bpp");

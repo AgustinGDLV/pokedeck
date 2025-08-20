@@ -132,6 +132,28 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .portraitPalette = gMareepPortraitPal,
     },
 
+    [SPECIES_CLEFFA] =
+    {
+        .baseHP = 35,
+        .basePower = 80,
+        .baseDef = 25,
+        .move = MOVE_HELPING_HAND,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gCleffaPlayerIdleGfx,
+        .opponentIdle = gCleffaOpponentIdleGfx,
+        .playerAttack = gCleffaPlayerAttackGfx,
+        .opponentAttack = gCleffaOpponentAttackGfx,
+        .playerHurt = gCleffaPlayerHurtGfx,
+        .opponentHurt = gCleffaOpponentHurtGfx,
+        .objectPalette = gCleffaObjectPal,
+        .playerYOffset = 0,
+        .opponentYOffset = 0,
+
+        .portrait = gCleffaPortraitGfx,
+        .portraitPalette = gCleffaPortraitPal,
+    },
+
     [SPECIES_SWINUB] =
     {
         .baseHP = 50,
