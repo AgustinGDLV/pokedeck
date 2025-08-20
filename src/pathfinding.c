@@ -55,7 +55,10 @@ bool32 IsObjectEventInRangeOfPlayer(struct ObjectEvent* objectEvent)
     struct Coords16* objCoords = &objectEvent->currentCoords;
     struct Coords16* playerCoords = &gObjectEvents[gPlayerAvatar.objectEventId].currentCoords;
 
-    return GetManhattanDistance(objCoords, playerCoords) <= objectEvent->trainerRange_berryTreeId;
+    if (objectEvent->trainerRange_berryTreeId == 0)
+        return GetManhattanDistance(objCoords, playerCoords) <= 6;
+    else
+        return GetManhattanDistance(objCoords, playerCoords) <= objectEvent->trainerRange_berryTreeId;
 }
 
 // Returns whether an object event is cardinally adjacent to the player.
