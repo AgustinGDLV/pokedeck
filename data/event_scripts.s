@@ -588,6 +588,23 @@ gStdScripts_End::
 	.include "data/scripts/config.inc"
 	.include "data/scripts/debug.inc"
 
+EventScript_OverworldEncounterStart::
+    lock
+    playse SE_PIN
+	applymovement VAR_0x8001, Common_Movement_ExclamationMark
+	waitmovement 0
+	applymovement VAR_0x8001, Common_Movement_FacePlayer
+	waitmovement 0
+    playmoncry VAR_0x8000, CRY_MODE_ENCOUNTER
+	delay 40
+	waitmoncry
+	callnative InitEnemyPartyFromEncounter
+	callnative OpenDeckBattle
+	removeobject VAR_0x8001
+	releaseall
+    end
+
+
 EventScript_WhiteOut::
 	call EverGrandeCity_HallOfFame_EventScript_ResetEliteFour
 	goto EventScript_ResetMrBriney

@@ -475,7 +475,7 @@ static void ResetTurnValues(void)
 }
 
 // Populate enemy party with dummy data.
-static void LoadDummyEnemyParty(void)
+void LoadDummyEnemyParty(void)
 {
     CreateMon(&gEnemyParty[0], SPECIES_BELLSPROUT, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
     CreateMon(&gEnemyParty[1], SPECIES_SLOWPOKE, 5, USE_RANDOM_IVS, 0, 0, OT_ID_PLAYER_ID, 0);
@@ -497,7 +497,6 @@ static void LoadDummyEnemyParty(void)
 static void InitBattleMonData(void)
 {
     struct Pokemon *mon;
-    LoadDummyEnemyParty();
     for (u32 i = 0; i < MAX_DECK_BATTLERS_COUNT; ++i)
     {
         if (GetDeckBattlerSide(i) == B_SIDE_PLAYER)

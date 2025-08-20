@@ -49,7 +49,7 @@
 #define OVERWORLD_DATA(picTable, _size, shadow, _tracks, _anims)                                                                     \
 {                                                                                                                                       \
     .tileTag = TAG_NONE,                                                                                                                \
-    .paletteTag = OBJ_EVENT_PAL_TAG_DYNAMIC,                                                                                            \
+    .paletteTag = OBJ_EVENT_PAL_TAG_GBC,                                                                                                \
     .reflectionPaletteTag = OBJ_EVENT_PAL_TAG_NONE,                                                                                     \
     .size = (_size == SIZE_32x32 ? 512 : 2048),                                                                                         \
     .width = (_size == SIZE_32x32 ? 32 : 64),                                                                                           \
