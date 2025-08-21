@@ -158,19 +158,30 @@ static void Task_OpenDeckBattle(u8 taskId)
     else if (!gPaletteFade.active && (gMain.newKeys & A_BUTTON))
     {
         PlaySE(SE_SELECT);
-        // Start selection phase and update display.
-        enum BattleId battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-        PrintBattlerMoveInfo(battler);
-        SetBattlerPortraitVisibility(TRUE);
-        // HP bar updated before fade begins
-        CreateSelectionCursorOverBattler(battler);
-        StartBattlerAnim(battler, ANIM_IDLE);
+        if (gSaveBlock2Ptr->optionsBattleStyle == OPTIONS_BATTLE_STYLE_AUTO)
+        {
+            SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
+            SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
+            gTasks[taskId].func = Task_AutoSelectAction;
+            gTasks[taskId].tState = 0;
+            gTasks[taskId].tTimer = 0;
+        }
+        else
+        {
+            // Start selection phase and update display.
+            enum BattleId battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
+            PrintBattlerMoveInfo(battler);
+            SetBattlerPortraitVisibility(TRUE);
+            // HP bar updated before fade begins
+            CreateSelectionCursorOverBattler(battler);
+            StartBattlerAnim(battler, ANIM_IDLE);
 
-        SetGpuReg(REG_OFFSET_BG0VOFS, 0);
-        SetGpuReg(REG_OFFSET_BG1VOFS, 0);
-        gTasks[taskId].func = Task_PlayerSelectAction;
-        gTasks[taskId].tState = 0;
-        gTasks[taskId].tTimer = 0;
+            SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+            SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+            gTasks[taskId].func = Task_PlayerSelectAction;
+            gTasks[taskId].tState = 0;
+            gTasks[taskId].tTimer = 0;
+        }
     }
 }
 

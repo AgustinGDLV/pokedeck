@@ -353,7 +353,10 @@ static void LoadDummySpriteTiles(void)
 void Task_DoBattlerBobEffect(u8 taskId)
 {
     u32 battler;
-    if ((gTasks[taskId].tPause || gSaveBlock2Ptr->optionsBattleSceneOff) && gTasks[taskId].tTimer == 0)
+    if ((gTasks[taskId].tPause
+        || gSaveBlock2Ptr->optionsBattleSceneOff
+        || gSaveBlock2Ptr->optionsBattleStyle == OPTIONS_BATTLE_STYLE_AUTO)
+        && gTasks[taskId].tTimer == 0)
     {
         gTasks[taskId].tActive = FALSE;
     }

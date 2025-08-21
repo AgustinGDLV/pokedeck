@@ -460,8 +460,8 @@ static void BattleStyle_DrawChoices(u8 selection)
     styles[1] = 0;
     styles[selection] = 1;
 
-    DrawOptionMenuChoice(gText_BattleStyleShift, 104, YPOS_BATTLESTYLE, styles[0]);
-    DrawOptionMenuChoice(gText_BattleStyleSet, GetStringRightAlignXOffset(FONT_NORMAL, gText_BattleStyleSet, 198), YPOS_BATTLESTYLE, styles[1]);
+    DrawOptionMenuChoice(COMPOUND_STRING("{COLOR GREEN}{SHADOW LIGHT_GREEN}MANUAL"), 104, YPOS_BATTLESTYLE, styles[0]);
+    DrawOptionMenuChoice(COMPOUND_STRING("{COLOR GREEN}{SHADOW LIGHT_GREEN}AUTO"), GetStringRightAlignXOffset(FONT_NORMAL, COMPOUND_STRING("{COLOR GREEN}{SHADOW LIGHT_GREEN}AUTO"), 198), YPOS_BATTLESTYLE, styles[1]);
 }
 
 static u8 Sound_ProcessInput(u8 selection)

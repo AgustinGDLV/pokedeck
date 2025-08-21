@@ -42,12 +42,24 @@ static void Task_PlayerSelectSingleOpponent(u8 taskId);
 static void Task_PlayerSelectAllOpponents(u8 taskId);
 static void Task_PlayerSelectAllOpponentsAdjacentAllies(u8 taskId);
 
+static void Task_AutoSelectLeftAlly(u8 taskId);
+static void Task_AutoSelectSingleOpponent(u8 taskId);
+static void Task_AutoSelectAllOpponents(u8 taskId);
+
 static void (*const sPlayerMoveTargetTasks[MOVE_TARGET_COUNT])(u8 taskId) =
 {
     [MOVE_TARGET_SINGLE_OPPONENT]               = Task_PlayerSelectSingleOpponent,
     [MOVE_TARGET_ALL_OPPONENTS]                 = Task_PlayerSelectAllOpponents,
     [MOVE_TARGET_LEFT_ALLY]                     = Task_PlayerSelectLeftAlly,
     [MOVE_TARGET_ALL_OPPONENTS_ADJACENT_ALLIES] = Task_PlayerSelectAllOpponentsAdjacentAllies,
+};
+
+static void (*const sAutoMoveTargetTasks[MOVE_TARGET_COUNT])(u8 taskId) =
+{
+    [MOVE_TARGET_SINGLE_OPPONENT]               = Task_AutoSelectSingleOpponent,
+    [MOVE_TARGET_ALL_OPPONENTS]                 = Task_AutoSelectAllOpponents,
+    [MOVE_TARGET_LEFT_ALLY]                     = Task_AutoSelectLeftAlly,
+    [MOVE_TARGET_ALL_OPPONENTS_ADJACENT_ALLIES] = Task_AutoSelectAllOpponents,
 };
 
 #define tState  data[0]
@@ -633,6 +645,44 @@ static void Task_PlayerSelectAllOpponentsAdjacentAllies(u8 taskId)
             gTasks[taskId].func = Task_PrepareForActionPhase; 
         }
     }
+}
+
+// Auto battle tasks
+void Task_AutoSelectAction(u8 taskId)
+{
+    gDeckStruct.selectedPos = GetLeftmostPositionToMove(B_SIDE_PLAYER);
+    if (gDeckStruct.selectedPos != POSITIONS_COUNT)
+    {
+        gBattlerAttacker = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
+        gTasks[taskId].func = sAutoMoveTargetTasks[gDeckMovesInfo[gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move].target];
+    }
+    else
+    {
+        gTasks[taskId].func = Task_PrepareForActionPhase;
+    } 
+}
+
+static void Task_AutoSelectLeftAlly(u8 taskId)
+{
+    gBattlerTarget = GetDeckBattlerAtPos(B_SIDE_PLAYER, GetOccupiedOnLeft(B_SIDE_PLAYER, gDeckMons[gBattlerAttacker].pos));
+    QueueAction(ACTION_ATTACK, gBattlerAttacker, gBattlerTarget, gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move);
+    gDeckMons[gBattlerAttacker].hasMoved = TRUE;
+    gTasks[taskId].func = Task_AutoSelectAction;
+}
+
+static void Task_AutoSelectSingleOpponent(u8 taskId)
+{
+    gBattlerTarget = GetRandomBattlerOnSide(B_SIDE_OPPONENT);
+    QueueAction(ACTION_ATTACK, gBattlerAttacker, gBattlerTarget, gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move);
+    gDeckMons[gBattlerAttacker].hasMoved = TRUE;
+    gTasks[taskId].func = Task_AutoSelectAction;
+}
+
+static void Task_AutoSelectAllOpponents(u8 taskId)
+{
+    QueueAction(ACTION_ATTACK, gBattlerAttacker, MAX_DECK_BATTLERS_COUNT, gDeckSpeciesInfo[gDeckMons[gBattlerAttacker].species].move);
+    gDeckMons[gBattlerAttacker].hasMoved = TRUE;
+    gTasks[taskId].func = Task_AutoSelectAction;
 }
 
 #undef tState
