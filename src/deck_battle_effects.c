@@ -52,6 +52,11 @@ void (*const gMoveEffectTasks[DECK_EFFECT_COUNT])(u8 taskId) =
 #define tState  data[0]
 #define tTimer  data[1]
 
+static bool32 WaitForAttackAnimation(enum BattleId battler)
+{
+    return GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2;
+}
+
 static void Task_ExecuteHit(u8 taskId)
 {
     s32 damage;
@@ -63,8 +68,8 @@ static void Task_ExecuteHit(u8 taskId)
         PrintMoveUseString();
         ++gTasks[taskId].tState;
         break;
-    case 1: // Wait for attack animation to execute cry.
-        if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
+    case 1: // Wait for attack animation to execute damage.
+        if (WaitForAttackAnimation(gBattlerAttacker)) // right after cry
             ++gTasks[taskId].tState;
         break;
     case 2: // Check for target change.
@@ -117,8 +122,8 @@ static void Task_ExecuteHitAllOpponents(u8 taskId)
         PrintMoveUseString();
         ++gTasks[taskId].tState;
         break;
-    case 1: // Wait for attack animation to execute cry.
-        if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
+    case 1: // Wait for attack animation to execute damage.
+        if (WaitForAttackAnimation(gBattlerAttacker)) // right after cry
             ++gTasks[taskId].tState;
         break;
     case 2: // Damage target(s).
@@ -174,8 +179,8 @@ static void Task_ExecuteHitAllOpponentsAdjacentAllies(u8 taskId)
         PrintMoveUseString();
         ++gTasks[taskId].tState;
         break;
-    case 1: // Wait for attack animation to execute cry.
-        if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
+    case 1: // Wait for attack animation to execute damage.
+        if (WaitForAttackAnimation(gBattlerAttacker)) // right after cry
             ++gTasks[taskId].tState;
         break;
     case 2: // Damage target(s).
@@ -234,8 +239,8 @@ static void Task_ExecutePowerUp(u8 taskId)
         PrintMoveUseString();
         ++gTasks[taskId].tState;
         break;
-    case 1: // Wait for attack animation to execute cry.
-        if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
+    case 1: // Wait for attack animation to execute damage.
+        if (WaitForAttackAnimation(gBattlerAttacker)) // right after cry
             ++gTasks[taskId].tState;
         break;
     case 2:
@@ -291,8 +296,8 @@ void Task_ExecuteSwap(u8 taskId)
         PrintSwapString(gBattlerAttacker, gBattlerTarget);
         ++gTasks[taskId].tState;
         break;
-    case 1: // Wait for attack animation to execute cry.
-        if (GetBattlerSprite(gBattlerAttacker)->animCmdIndex == 2) // right after cry
+    case 1: // Wait for attack animation to execute damage.
+        if (WaitForAttackAnimation(gBattlerAttacker)) // right after cry
             ++gTasks[taskId].tState;
         break;
     case 2: // Swap battler positions.

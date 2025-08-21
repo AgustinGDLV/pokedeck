@@ -353,7 +353,7 @@ static void LoadDummySpriteTiles(void)
 void Task_DoBattlerBobEffect(u8 taskId)
 {
     u32 battler;
-    if (gTasks[taskId].tPause && gTasks[taskId].tTimer == 0)
+    if ((gTasks[taskId].tPause || gSaveBlock2Ptr->optionsBattleSceneOff) && gTasks[taskId].tTimer == 0)
     {
         gTasks[taskId].tActive = FALSE;
     }
@@ -563,35 +563,11 @@ void SetBattlerGrayscale(enum BattleId battler, bool32 grayscale)
 static void SpriteCB_BattlerAttack(struct Sprite *sprite)
 {
     u32 *dst, *src;
-    switch (sprite->sAnimState)
+    if (gSaveBlock2Ptr->optionsBattleSceneOff)
     {
-    case 0: // Wait for bob to finish.
-        if (!IsBattlerBobActive())
+        switch (sprite->sAnimState)
         {
-            StartSpriteAnim(sprite, ANIM_PAUSED);
-            ++sprite->sAnimState;
-        }
-        break;
-    case 1: // Move forward and copy attack sprite tiles.
-        switch (++sprite->sTimer)
-        {
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-            if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
-            {
-                sprite->x2 += 1;
-                sprite->y2 -= 1;
-            }
-            else
-            {
-                sprite->x2 -= 1;
-                sprite->y2 += 1;
-            }
-            break;
-        case 6:
+        case 0:
             dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
             if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
                 src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].playerAttack;
@@ -599,70 +575,130 @@ static void SpriteCB_BattlerAttack(struct Sprite *sprite)
                 src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].opponentAttack;
             for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
                 dst[i] = src[i];
-
             StartSpriteAnim(sprite, ANIM_ATTACK);
-            sprite->sTimer = 0;
             ++sprite->sAnimState;
             break;
-        }
-        break;
-    case 2: // Play cry on frame 2.
-        if (sprite->animCmdIndex == 1)
-        {
-            PlayCry_Normal(gDeckMons[sprite->sBattlerId].species, 0);
-            ++sprite->sAnimState;
-        }
-        break;
-    case 3: // Do shake.
-        if (sprite->animCmdIndex == 1)
-        {
-            sprite->x2 ^= 1;
-            sprite->y2 ^= 1;
-        }
-        else
-        {
-            sprite->x2 ^= 1; // shake happens an odd number of times, needs to be evened out
-            sprite->y2 ^= 1;
-            ++sprite->sAnimState;
-        }
-        break;
-    case 4: // Wait for attack anim to finish.
-        if (sprite->animEnded)
-            ++sprite->sAnimState;
-        break;
-    case 5: // Move back and copy idle sprite tiles.
-        switch (++sprite->sTimer)
-        {
-        case 4:
-            dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
-            if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
-                src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].playerIdle;
-            else
-                src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].opponentIdle;
-            for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
-                dst[i] = src[i];
-            // fall through
-        case 8:
-        case 12:
-        case 16:
-        case 20:
-            if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+        case 1:
+            if (sprite->animEnded)
             {
-                sprite->x2 -= 1;
-                sprite->y2 += 1;
+                dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
+                if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+                    src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].playerIdle;
+                else
+                    src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].opponentIdle;
+                for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
+                    dst[i] = src[i];
+                
+                PlayCry_Normal(gDeckMons[sprite->sBattlerId].species, 0);
+                StartSpriteAnim(sprite, ANIM_PAUSED);
+                sprite->callback = SpriteCallbackDummy;
+            }
+            break;
+        }
+    }
+    else
+    {
+        switch (sprite->sAnimState)
+        {
+        case 0: // Wait for bob to finish.
+            if (!IsBattlerBobActive())
+            {
+                StartSpriteAnim(sprite, ANIM_PAUSED);
+                ++sprite->sAnimState;
+            }
+            break;
+        case 1: // Move forward and copy attack sprite tiles.
+            switch (++sprite->sTimer)
+            {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+                {
+                    sprite->x2 += 1;
+                    sprite->y2 -= 1;
+                }
+                else
+                {
+                    sprite->x2 -= 1;
+                    sprite->y2 += 1;
+                }
+                break;
+            case 6:
+                dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
+                if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+                    src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].playerAttack;
+                else
+                    src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].opponentAttack;
+                for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
+                    dst[i] = src[i];
+
+                StartSpriteAnim(sprite, ANIM_ATTACK);
+                sprite->sTimer = 0;
+                ++sprite->sAnimState;
+                break;
+            }
+            break;
+        case 2: // Play cry on frame 2.
+            if (sprite->animCmdIndex == 1)
+            {
+                PlayCry_Normal(gDeckMons[sprite->sBattlerId].species, 0);
+                ++sprite->sAnimState;
+            }
+            break;
+        case 3: // Do shake.
+            if (sprite->animCmdIndex == 1)
+            {
+                sprite->x2 ^= 1;
+                sprite->y2 ^= 1;
             }
             else
             {
-                sprite->x2 += 1;
-                sprite->y2 -= 1;
+                sprite->x2 ^= 1; // shake happens an odd number of times, needs to be evened out
+                sprite->y2 ^= 1;
+                ++sprite->sAnimState;
             }
             break;
-        case 24:            
-            sprite->sTimer = 0;
-            sprite->sAnimState = 0;
-            StartSpriteAnim(sprite, ANIM_PAUSED);
-            sprite->callback = SpriteCallbackDummy;
+        case 4: // Wait for attack anim to finish.
+            if (sprite->animEnded)
+                ++sprite->sAnimState;
             break;
+        case 5: // Move back and copy idle sprite tiles.
+            switch (++sprite->sTimer)
+            {
+            case 4:
+                dst = (u32 *)(OBJ_VRAM0 + TILE_OFFSET_4BPP(GetSpriteTileStartByTag(TAG_BATTLER_OBJ + sprite->sBattlerId)));
+                if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+                    src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].playerIdle;
+                else
+                    src = (u32 *)gDeckSpeciesInfo[gDeckMons[sprite->sBattlerId].species].opponentIdle;
+                for (u32 i = 0; i < OBJECT_SIZE / 4; ++i)
+                    dst[i] = src[i];
+                // fall through
+            case 8:
+            case 12:
+            case 16:
+            case 20:
+                if (GetDeckBattlerSide(sprite->sBattlerId) == B_SIDE_PLAYER)
+                {
+                    sprite->x2 -= 1;
+                    sprite->y2 += 1;
+                }
+                else
+                {
+                    sprite->x2 += 1;
+                    sprite->y2 -= 1;
+                }
+                break;
+            case 24:            
+                sprite->sTimer = 0;
+                sprite->sAnimState = 0;
+                StartSpriteAnim(sprite, ANIM_PAUSED);
+                sprite->callback = SpriteCallbackDummy;
+                break;
+            }
         }
     }
 }
