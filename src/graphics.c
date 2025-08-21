@@ -2070,12 +2070,12 @@ const u32 gPokenavRibbonsSummaryBg_Tilemap[] = INCBIN_U32("graphics/pokenav/ribb
 
 const u16 gMonIconPalettes[][16] =
 {
-    INCBIN_U16("graphics/pokemon/icon_palettes/pal0.gbapal"),
-    INCBIN_U16("graphics/pokemon/icon_palettes/pal1.gbapal"),
-    INCBIN_U16("graphics/pokemon/icon_palettes/pal2.gbapal"),
-    INCBIN_U16("graphics/pokemon/icon_palettes/pal3.gbapal"),
-    INCBIN_U16("graphics/pokemon/icon_palettes/pal4.gbapal"),
-    INCBIN_U16("graphics/pokemon/icon_palettes/pal5.gbapal"),
+    INCBIN_U16("graphics/object_events/palettes/gbc.gbapal"),
+    INCBIN_U16("graphics/object_events/palettes/gbc.gbapal"),
+    INCBIN_U16("graphics/object_events/palettes/gbc.gbapal"),
+    INCBIN_U16("graphics/object_events/palettes/gbc.gbapal"),
+    INCBIN_U16("graphics/object_events/palettes/gbc.gbapal"),
+    INCBIN_U16("graphics/object_events/palettes/gbc.gbapal"),
 };
 
 const u16 gFrontierPassBg_Pal[][16]                      = INCBIN_U16("graphics/frontier_pass/bg.gbapal"); // 8 x 16
