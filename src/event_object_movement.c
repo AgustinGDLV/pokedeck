@@ -10636,16 +10636,26 @@ static const s16 sStepTimes[] = {
     [MOVE_SPEED_FASTEST] = ARRAY_COUNT(sStep8Funcs),
 };
 
+static const u32 sScaledMoveSpeed[][3] =
+{
+    [MOVE_SPEED_NORMAL] =   {MOVE_SPEED_NORMAL,  MOVE_SPEED_FAST_1,  MOVE_SPEED_FASTER},
+    [MOVE_SPEED_FAST_1] =   {MOVE_SPEED_FAST_1,  MOVE_SPEED_FASTER,  MOVE_SPEED_FASTEST},
+    [MOVE_SPEED_FAST_2] =   {MOVE_SPEED_FAST_2,  MOVE_SPEED_FASTER,  MOVE_SPEED_FASTEST},
+    [MOVE_SPEED_FASTER] =   {MOVE_SPEED_FASTER,  MOVE_SPEED_FASTEST, MOVE_SPEED_FASTEST},
+    [MOVE_SPEED_FASTEST] =  {MOVE_SPEED_FASTEST, MOVE_SPEED_FASTEST, MOVE_SPEED_FASTEST},
+};
+
 static bool8 NpcTakeStep(struct Sprite *sprite)
 {
-    if (sprite->sTimer >= sStepTimes[sprite->sSpeed])
+    u32 speed = sScaledMoveSpeed[sprite->sSpeed][VarGet(VAR_UNUSED_0x4083)];
+    if (sprite->sTimer >= sStepTimes[speed])
         return FALSE;
 
-    sNpcStepFuncTables[sprite->sSpeed][sprite->sTimer](sprite, sprite->sDirection);
+    sNpcStepFuncTables[speed][sprite->sTimer](sprite, sprite->sDirection);
 
     sprite->sTimer++;
 
-    if (sprite->sTimer < sStepTimes[sprite->sSpeed])
+    if (sprite->sTimer < sStepTimes[speed])
         return FALSE;
 
     return TRUE;
