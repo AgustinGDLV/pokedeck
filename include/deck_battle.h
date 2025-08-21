@@ -110,6 +110,7 @@ struct DeckBattleStruct
     u8 actingSide;
     u32 exp;
     enum BattleId battlerExp;
+    bool8 isSelectionPhase;
 };
 
 void CB2_OpenDeckBattleCustom(void);

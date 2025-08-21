@@ -8,6 +8,7 @@
 #include "deck_battle_controller.h"
 #include "deck_battle_ai.h"
 #include "event_object_movement.h"
+#include "event_data.h"
 #include "field_weather.h"
 #include "gpu_regs.h"
 #include "m4a.h"
@@ -32,6 +33,7 @@
 #include "constants/rgb.h"
 #include "constants/songs.h"
 #include "constants/species.h"
+#include "constants/vars.h"
 
 /* deck_battle.c
  *
@@ -52,6 +54,8 @@ static void ResetTurnValues(void);
 static void Task_HandleBattleVictory(u8 taskId);
 static void Task_HandleBattleLoss(u8 taskId);
 
+static u32 GetBattleSpeedScale(void);
+
 // ewram data
 EWRAM_DATA struct DeckBattleStruct gDeckStruct = {0};
 EWRAM_DATA struct DeckBattlePokemon gDeckMons[MAX_DECK_BATTLERS_COUNT] = {0};
@@ -61,14 +65,64 @@ EWRAM_DATA struct DeckBattlePokemon gDeckMons[MAX_DECK_BATTLERS_COUNT] = {0};
 #include "data/pokemon/deck_species_info.h"
 #include "data/deck_moves.h"
 
-static void MainCB2_DeckBattle(void)
+static void MainCB2_DeckBattle(void) // battle speed up ported from Pokeabbie by Alex/Rain
 {
-    RunTasks();
-    AnimateSprites();
-    BuildOamBuffer();
-    DoScheduledBgTilemapCopiesToVram();
-    UpdatePaletteFade();
-    RunTextPrinters();
+    u32 speedScale = GetBattleSpeedScale();
+    if (PrevPaletteFadeResult() == PALETTE_FADE_STATUS_LOADING)
+        speedScale = 1;
+
+    if (speedScale <= 1)
+    {
+        RunTasks();
+        AnimateSprites();
+        BuildOamBuffer();
+        DoScheduledBgTilemapCopiesToVram();
+        UpdatePaletteFade();
+        RunTextPrinters();
+    }
+    else
+    {
+        u32 s;
+        u32 fadeResult;
+
+        // Update select entries at higher speed
+        // disable speed up during palette fades otherwise we run into issues with blending
+        // (e.g. moves that change background like Psychic can get stuck or have their colours overflow)
+        for(s = 1; s < speedScale; ++s)
+        {
+            AnimateSprites();
+            RunTextPrinters();
+            fadeResult = UpdatePaletteFade();
+
+            if (fadeResult == PALETTE_FADE_STATUS_LOADING)
+            {
+                // minimal final update as we've just started a fade
+                BuildOamBuffer();
+                RunTasks();
+                break;
+            }
+            else
+            {
+                RunTasks();
+                VBlankCB2_DeckBattle();
+
+                // Call it again to make sure everything is behaving as it should (this is crazy town now)
+                if (gMain.callback1)
+                    gMain.callback1();
+            }
+        }
+
+        if (fadeResult != PALETTE_FADE_STATUS_LOADING)
+        {
+            // final update
+            RunTasks();
+            AnimateSprites();
+            BuildOamBuffer();
+            DoScheduledBgTilemapCopiesToVram();
+            UpdatePaletteFade();
+            RunTextPrinters();
+        }
+    }
 }
 
 static void VBlankCB2_DeckBattle(void)
@@ -134,6 +188,7 @@ void CB2_OpenDeckBattleCustom(void)
         case 7:
             BeginNormalPaletteFade(PALETTES_ALL, 4, 16, 0, RGB_BLACK);
             SetVBlankCallback(VBlankCB2_DeckBattle);
+            gDeckStruct.isSelectionPhase = TRUE;
             CreateTask(Task_OpenDeckBattle, 0);
             SetMainCallback2(MainCB2_DeckBattle);
             break;
@@ -201,6 +256,7 @@ void Task_PrepareForActionPhase(u8 taskId)
             sprite->oam.objMode = ST_OAM_OBJ_NORMAL;
             sprite->x = GetBattlerXCoord(battler);
         }
+        gDeckStruct.isSelectionPhase = FALSE;
         ++gTasks[taskId].tState;
         break;
     case 1:
@@ -285,6 +341,7 @@ void Task_ExecuteQueuedActionOrEnd(u8 taskId)
     {
         ResetTurnValues();
         gDeckStruct.actingSide ^= 1; // get opposite side
+        gDeckStruct.isSelectionPhase = TRUE;
         if (gDeckStruct.actingSide == B_SIDE_PLAYER)
         {
             gDeckStruct.selectedPos = GetLeftmostPositionToMove(B_SIDE_PLAYER);
@@ -586,4 +643,22 @@ void UpdateBattlerHP(u32 battler, s32 damage)
         gDeckMons[battler].hp -= damage;
 
     PrintDamageNumbers(battler, damage);
+}
+
+u32 GetBattleSpeedScale(void)
+{
+    // Don't speed up during selection phase or if holding L.
+    if (JOY_HELD(L_BUTTON) || gDeckStruct.isSelectionPhase)
+        return 1;
+    
+    switch (VarGet(VAR_BATTLE_SPEED))
+    {
+    default:
+    case 0:
+        return 1;
+    case 1:
+        return 2;
+    case 2:
+        return 4;
+    }
 }
