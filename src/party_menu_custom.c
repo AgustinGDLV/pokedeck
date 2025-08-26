@@ -52,6 +52,13 @@
 #define sPartyIndex     data[0]
 #define sShadowSpriteId data[1]
 
+enum 
+{
+    PAGE_STATS,
+    PAGE_MOVE,
+    PAGE_ABILITY,
+};
+
 struct PartyMonData
 {
     u16 species;
@@ -73,37 +80,38 @@ struct PartyMenuData
     u8 battlerSpriteIds[POSITIONS_COUNT];
     u8 cursorSpriteId;
     struct PartyMonData mons[POSITIONS_COUNT];
+    u8 currentPage;
 };
 
 // windows and bgs
 enum Windows
 {
-    WINDOW_MON_INFO,
-    WINDOW_MOVE_INFO,
+    WINDOW_INFO,
+    WINDOW_CONTROL,
     WINDOW_COUNT,
 };
 
 static const struct WindowTemplate sPartyMenuWinTemplates[WINDOW_COUNT + 1] =
 {
-    [WINDOW_MON_INFO] =
+    [WINDOW_INFO] =
     {
         .bg = 1,
         .tilemapLeft = 3,
-        .tilemapTop = 9,
+        .tilemapTop = 11,
         .width = 24,
-        .height = 4,
+        .height = 8,
         .paletteNum = 0,
         .baseBlock = 1,
     },
-    [WINDOW_MOVE_INFO] =
+    [WINDOW_CONTROL] =
     {
         .bg = 1,
-        .tilemapLeft = 3,
-        .tilemapTop = 14,
-        .width = 24,
-        .height = 5,
+        .tilemapLeft = 25,
+        .tilemapTop = 0,
+        .width = 4,
+        .height = 2,
         .paletteNum = 0,
-        .baseBlock = 1+24*4,
+        .baseBlock = 1 + 24*8,
     },
     DUMMY_WIN_TEMPLATE,
 };
@@ -243,8 +251,13 @@ static const struct SpriteTemplate sBattlerSpriteTemplates[] =
 // graphics data
 static const u16 sPartyMenuPalette[] = INCBIN_U16("graphics/party_menu_custom/tiles.gbapal");
 static const u32 sPartyMenuTiles[] = INCBIN_U32("graphics/party_menu_custom/tiles.4bpp.lz");
-static const u32 sPartyMenuTilemap[] = INCBIN_U32("graphics/party_menu_custom/map.bin.lz");
-static const u32 sPartyMenuEmptyTilemap[] = INCBIN_U32("graphics/party_menu_custom/empty.bin.lz");
+static const u32 sPartyMenuStatsTilemap[] = INCBIN_U32("graphics/party_menu_custom/stats.bin.lz");
+static const u32 sPartyMenuMoveTilemap[] = INCBIN_U32("graphics/party_menu_custom/move.bin.lz");
+static const u32 sPartyMenuAbilityTilemap[] = INCBIN_U32("graphics/party_menu_custom/ability.bin.lz");
+
+static const u8 sTextColor_Black[] = {0, 3, 0}; // black text, transparent bg and shadow
+static const u8 sTextColor_Red[] = {0, 2, 0}; // gray text, transparent bg and shadow
+static const u8 sTextColor_White[] = {0, 1, 0}; // white text, transparent bg and shadow
 
 // ewram data
 EWRAM_DATA static struct PartyMenuData sPartyMenuData = {0};
@@ -266,6 +279,7 @@ static void DrawBattlerSprites(void);
 static void MoveCursorOverPosition(u32 position);
 static void InitPartyDataStruct(void);
 static void CopyPartyDataToMonData(void);
+static void IncrementCurrentPage(void);
 
 // UI functions
 static void MainCB2_PartyMenu(void)
@@ -309,7 +323,7 @@ void CB2_OpenPartyMenuCustom(void)
             break;
         case 3:
             DecompressAndCopyTileDataToVram(2, sPartyMenuTiles, 0, 0, 0);
-            LZDecompressWram(sPartyMenuTilemap, sPartyMenuTilemapPtr);
+            LZDecompressWram(sPartyMenuStatsTilemap, sPartyMenuTilemapPtr);
             LoadPalette(sPartyMenuPalette, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
             Menu_LoadStdPalAt(BG_PLTT_ID(15));
 
@@ -362,15 +376,17 @@ static void Task_OpenPartyMenu(u8 taskId)
 
 static void UpdateDisplayedMonInfo(u32 index)
 {
-    if (sPartyMenuData.mons[index].species != SPECIES_NONE)
+    switch (sPartyMenuData.currentPage)
     {
-        PrintMonInfo(index);
-        PrintMoveInfo(index);
-    }
-    else
-    {
-        FillWindowPixelBuffer(WINDOW_MON_INFO, PIXEL_FILL(0));
-        FillWindowPixelBuffer(WINDOW_MOVE_INFO, PIXEL_FILL(0));
+        case PAGE_STATS:
+            PrintMonInfo(sPartyMenuData.selectedPosition);
+            break;
+        case PAGE_MOVE:
+            PrintMoveInfo(sPartyMenuData.selectedPosition);
+            break;
+        case PAGE_ABILITY:
+            PrintMoveInfo(sPartyMenuData.selectedPosition);
+            break;
     }
 }
 
@@ -436,7 +452,7 @@ static void Task_PartyMenuHandleDefaultInput(u8 taskId)
         StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[GetPartyIndexAtPosition(sPartyMenuData.selectedPosition)]], ANIM_PAUSED);
         sPartyMenuData.selectedPosition = pos;
     }
-    if ((gMain.newKeys & A_BUTTON) || (gMain.newKeys & START_BUTTON))
+    if (gMain.newKeys & A_BUTTON)
     {
         PlaySE(SE_SELECT);
         if (sPartyMenuData.selectedPosition == POSITION_0)
@@ -447,6 +463,11 @@ static void Task_PartyMenuHandleDefaultInput(u8 taskId)
         MoveCursorOverPosition(sPartyMenuData.swapPosition);
         StartSpriteAnim(&gSprites[sPartyMenuData.battlerSpriteIds[GetPartyIndexAtPosition(sPartyMenuData.swapPosition)]], ANIM_IDLE);
         gTasks[taskId].func = Task_PartyMenuHandleSwapInput;
+    }
+    if (gMain.newKeys & START_BUTTON)
+    {
+        PlaySE(SE_SELECT);
+        IncrementCurrentPage();
     }
     if (gMain.newKeys & B_BUTTON)
     {
@@ -572,7 +593,6 @@ static void LoadPartyMenuGfx(void)
     u32 index = GetPartyIndexAtPosition(position);
     CreatePartyMenuWindows();
     PrintMonInfo(index);
-    PrintMoveInfo(index);
 
     // Load battler sprites.
     LoadSpritePalette(&gMiscGfxSpritePalette);
@@ -584,9 +604,14 @@ static void LoadPartyMenuGfx(void)
 
     // Load cursor.
     LoadSpriteSheet(&gCursorSpriteSheet);
-    sPartyMenuData.cursorSpriteId = CreateSprite(&gCursorSpriteTemplate, 40, 48-16, 0);
+    sPartyMenuData.cursorSpriteId = CreateSprite(&gCursorSpriteTemplate, 40, 60-16, 0);
     MoveCursorOverPosition(position);
     sPartyMenuData.selectedPosition = position;
+
+    // Load control text.
+    FillWindowPixelBuffer(WINDOW_CONTROL, PIXEL_FILL(0));
+    AddTextPrinterParameterized3(WINDOW_CONTROL, FONT_SMALL, 2, 0, sTextColor_White, TEXT_SKIP_DRAW, COMPOUND_STRING("MOVE"));
+    CopyWindowToVram(WINDOW_CONTROL, COPYWIN_FULL);
 }
 
 static void CreatePartyMenuWindows(void)
@@ -600,18 +625,15 @@ static void CreatePartyMenuWindows(void)
     }
 }
 
-static const u8 sTextColor_Black[] = {0, 3, 0}; // white text, transparent bg and shadow
-static const u8 sTextColor_Red[] = {0, 2, 0}; // gray text, transparent bg and shadow
-
 static void PrintMonInfo(u32 index)
 {
     u8 *strPtr;
     u32 digits = 0;
 
-    FillWindowPixelBuffer(WINDOW_MON_INFO, PIXEL_FILL(0));
+    FillWindowPixelBuffer(WINDOW_INFO, PIXEL_FILL(0));
 
     // Print nickname.
-    AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 0, 2, sTextColor_Red, TEXT_SKIP_DRAW, sPartyMenuData.mons[index].name);
+    AddTextPrinterParameterized3(WINDOW_INFO, FONT_NORMAL, 0, 12, sTextColor_Red, TEXT_SKIP_DRAW, sPartyMenuData.mons[index].name);
 
     // Print HP.
     ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].hp, STR_CONV_MODE_LEFT_ALIGN, 3);
@@ -626,11 +648,11 @@ static void PrintMonInfo(u32 index)
     *strPtr = CHAR_SLASH;
     ++strPtr;
     ConvertIntToDecimalStringN(strPtr, sPartyMenuData.mons[index].maxHP, STR_CONV_MODE_LEFT_ALIGN, 3);
-    AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 16*8+4, 2, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_INFO, FONT_NORMAL, 18*8+4, 12, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
     
     // Print LVL and EXP.
     ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].lvl, STR_CONV_MODE_LEFT_ALIGN, 3);
-    AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 3*8+4, 11, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_INFO, FONT_NORMAL, 3*8+4, 23, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
 
     ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].exp, STR_CONV_MODE_LEFT_ALIGN, 5);
     digits = 0;
@@ -645,27 +667,27 @@ static void PrintMonInfo(u32 index)
     *strPtr = CHAR_SLASH;
     ++strPtr;
     ConvertIntToDecimalStringN(strPtr, sPartyMenuData.mons[index].expToNextLvl, STR_CONV_MODE_LEFT_ALIGN, 5);
-    AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 3*8+4, 20, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_INFO, FONT_NORMAL, 3*8+4, 34, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
 
     // Print PWR and DEF.
     ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].power, STR_CONV_MODE_LEFT_ALIGN, 3);
-    AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 16*8+4, 11, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
+    AddTextPrinterParameterized3(WINDOW_INFO, FONT_NORMAL, 18*8+4, 23, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
     ConvertIntToDecimalStringN(gStringVar1, sPartyMenuData.mons[index].def, STR_CONV_MODE_LEFT_ALIGN, 3);
-    AddTextPrinterParameterized3(WINDOW_MON_INFO, FONT_NORMAL, 16*8+4, 20, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
-    CopyWindowToVram(WINDOW_MON_INFO, COPYWIN_FULL);
+    AddTextPrinterParameterized3(WINDOW_INFO, FONT_NORMAL, 18*8+4, 34, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);
+    CopyWindowToVram(WINDOW_INFO, COPYWIN_FULL);
 }
 
 static void PrintMoveInfo(u32 index)
 {
     const struct DeckMoveInfo *info = &gDeckMovesInfo[gDeckSpeciesInfo[sPartyMenuData.mons[index].species].move];
-    FillWindowPixelBuffer(WINDOW_MOVE_INFO, PIXEL_FILL(0));
+    FillWindowPixelBuffer(WINDOW_INFO, PIXEL_FILL(0));
 
-    AddTextPrinterParameterized3(WINDOW_MOVE_INFO, FONT_NORMAL, 0, 4, sTextColor_Red, TEXT_SKIP_DRAW, info->name);
+    AddTextPrinterParameterized3(WINDOW_INFO, FONT_NORMAL, 0, 8, sTextColor_Red, TEXT_SKIP_DRAW, info->name);
 
     StringCopy(gStringVar1, info->description);
     BreakStringAutomatic(gStringVar1, 176, 2, FONT_NORMAL, SHOW_SCROLL_PROMPT);
-    AddTextPrinterParameterized3(WINDOW_MOVE_INFO, FONT_NORMAL, 0, 14, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);    
-    CopyWindowToVram(WINDOW_MOVE_INFO, COPYWIN_FULL);
+    AddTextPrinterParameterized3(WINDOW_INFO, FONT_NORMAL, 0, 24, sTextColor_Black, TEXT_SKIP_DRAW, gStringVar1);    
+    CopyWindowToVram(WINDOW_INFO, COPYWIN_FULL);
 }
 
 static void DrawBattlerSprites(void)
@@ -684,11 +706,11 @@ static void DrawBattlerSprites(void)
             palIndex = LoadSpritePaletteWithTag(gDeckSpeciesInfo[species].objectPalette, TAG_BATTLER_OBJ + i);
             const struct SpriteSheet spriteSheet = {gDeckSpeciesInfo[species].opponentIdle, sizeof(sDummyObjectGfx), TAG_BATTLER_OBJ + i};
             LoadSpriteSheet(&spriteSheet);
-            sPartyMenuData.battlerSpriteIds[i] = CreateSprite(&sBattlerSpriteTemplates[i], 40 + OBJ_OFFSET*sPartyMenuData.mons[i].position, 48 + gDeckSpeciesInfo[species].opponentYOffset, 0);
+            sPartyMenuData.battlerSpriteIds[i] = CreateSprite(&sBattlerSpriteTemplates[i], 40 + OBJ_OFFSET*sPartyMenuData.mons[i].position, 60 + gDeckSpeciesInfo[species].opponentYOffset, 0);
             gSprites[sPartyMenuData.battlerSpriteIds[i]].oam.paletteNum = palIndex;
 
             // Draw shadow.
-            gSprites[sPartyMenuData.battlerSpriteIds[i]].sShadowSpriteId = CreateSprite(&gShadowSpriteTemplate, 40 + OBJ_OFFSET*sPartyMenuData.mons[i].position, 48, 16);
+            gSprites[sPartyMenuData.battlerSpriteIds[i]].sShadowSpriteId = CreateSprite(&gShadowSpriteTemplate, 40 + OBJ_OFFSET*sPartyMenuData.mons[i].position, 60, 16);
             gSprites[gSprites[sPartyMenuData.battlerSpriteIds[i]].sShadowSpriteId].callback = SpriteCallbackDummy;
         }
     }
@@ -705,6 +727,7 @@ static void InitPartyDataStruct(void)
     sPartyMenuData.selectedPosition = 0;
     sPartyMenuData.swapPosition = 0;
     sPartyMenuData.cursorSpriteId = SPRITE_NONE;
+    sPartyMenuData.currentPage = PAGE_STATS;
 
     for (u32 i = 0; i < PARTY_SIZE; ++i)
     {
@@ -744,4 +767,34 @@ static void CopyPartyDataToMonData(void)
             SetMonData(&gPlayerParty[i], MON_DATA_LEVEL, &sPartyMenuData.mons[i].lvl);
         }
     }
+}
+
+static void IncrementCurrentPage(void)
+{
+    sPartyMenuData.currentPage += 1;
+    if (sPartyMenuData.currentPage > PAGE_ABILITY)
+        sPartyMenuData.currentPage = PAGE_STATS;
+
+    switch (sPartyMenuData.currentPage)
+    {
+        case PAGE_STATS:
+            PrintMonInfo(sPartyMenuData.selectedPosition);
+            LZDecompressWram(sPartyMenuStatsTilemap, sPartyMenuTilemapPtr);
+            FillWindowPixelBuffer(WINDOW_CONTROL, PIXEL_FILL(0));
+            AddTextPrinterParameterized3(WINDOW_CONTROL, FONT_SMALL, 2, 0, sTextColor_White, TEXT_SKIP_DRAW, COMPOUND_STRING("MOVE"));
+            break;
+        case PAGE_MOVE:
+            PrintMoveInfo(sPartyMenuData.selectedPosition);
+            LZDecompressWram(sPartyMenuMoveTilemap, sPartyMenuTilemapPtr);
+            FillWindowPixelBuffer(WINDOW_CONTROL, PIXEL_FILL(0));
+            AddTextPrinterParameterized3(WINDOW_CONTROL, FONT_SMALL, 2, 0, sTextColor_White, TEXT_SKIP_DRAW, COMPOUND_STRING("ABILITY"));
+            break;
+        case PAGE_ABILITY:
+            LZDecompressWram(sPartyMenuAbilityTilemap, sPartyMenuTilemapPtr);
+            FillWindowPixelBuffer(WINDOW_CONTROL, PIXEL_FILL(0));
+            AddTextPrinterParameterized3(WINDOW_CONTROL, FONT_SMALL, 2, 0, sTextColor_White, TEXT_SKIP_DRAW, COMPOUND_STRING("STATS"));
+            break;
+    }
+    CopyWindowToVram(WINDOW_CONTROL, COPYWIN_FULL);
+    ScheduleBgCopyTilemapToVram(2);
 }
