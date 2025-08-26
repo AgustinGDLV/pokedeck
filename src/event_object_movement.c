@@ -7033,10 +7033,19 @@ void InitNpcForMovement(struct ObjectEvent *objectEvent, struct Sprite *sprite, 
     sprite->sActionFuncId = 1;
 }
 
+static const u32 sScaledMoveSpeed[][3] =
+{
+    [MOVE_SPEED_NORMAL] =   {MOVE_SPEED_NORMAL,  MOVE_SPEED_FAST_1,  MOVE_SPEED_FASTER},
+    [MOVE_SPEED_FAST_1] =   {MOVE_SPEED_FAST_1,  MOVE_SPEED_FASTER,  MOVE_SPEED_FASTEST},
+    [MOVE_SPEED_FAST_2] =   {MOVE_SPEED_FAST_2,  MOVE_SPEED_FASTER,  MOVE_SPEED_FASTEST},
+    [MOVE_SPEED_FASTER] =   {MOVE_SPEED_FASTER,  MOVE_SPEED_FASTEST, MOVE_SPEED_FASTEST},
+    [MOVE_SPEED_FASTEST] =  {MOVE_SPEED_FASTEST, MOVE_SPEED_FASTEST, MOVE_SPEED_FASTEST},
+};
+
 static void InitMovementNormal(struct ObjectEvent *objectEvent, struct Sprite *sprite, u8 direction, u8 speed)
 {
     u8 (*functions[ARRAY_COUNT(sDirectionAnimFuncsBySpeed)])(u8);
-
+    speed = sScaledMoveSpeed[speed][VarGet(VAR_OVERWORLD_SPEED)];
     memcpy(functions, sDirectionAnimFuncsBySpeed, sizeof sDirectionAnimFuncsBySpeed);
     InitNpcForMovement(objectEvent, sprite, direction, speed);
     SetStepAnimHandleAlternation(objectEvent, sprite, functions[speed](objectEvent->facingDirection));
@@ -10636,26 +10645,16 @@ static const s16 sStepTimes[] = {
     [MOVE_SPEED_FASTEST] = ARRAY_COUNT(sStep8Funcs),
 };
 
-static const u32 sScaledMoveSpeed[][3] =
-{
-    [MOVE_SPEED_NORMAL] =   {MOVE_SPEED_NORMAL,  MOVE_SPEED_FAST_1,  MOVE_SPEED_FASTER},
-    [MOVE_SPEED_FAST_1] =   {MOVE_SPEED_FAST_1,  MOVE_SPEED_FASTER,  MOVE_SPEED_FASTEST},
-    [MOVE_SPEED_FAST_2] =   {MOVE_SPEED_FAST_2,  MOVE_SPEED_FASTER,  MOVE_SPEED_FASTEST},
-    [MOVE_SPEED_FASTER] =   {MOVE_SPEED_FASTER,  MOVE_SPEED_FASTEST, MOVE_SPEED_FASTEST},
-    [MOVE_SPEED_FASTEST] =  {MOVE_SPEED_FASTEST, MOVE_SPEED_FASTEST, MOVE_SPEED_FASTEST},
-};
-
 static bool8 NpcTakeStep(struct Sprite *sprite)
 {
-    u32 speed = sScaledMoveSpeed[sprite->sSpeed][VarGet(VAR_UNUSED_0x4083)];
-    if (sprite->sTimer >= sStepTimes[speed])
+    if (sprite->sTimer >= sStepTimes[sprite->sSpeed])
         return FALSE;
 
-    sNpcStepFuncTables[speed][sprite->sTimer](sprite, sprite->sDirection);
+    sNpcStepFuncTables[sprite->sSpeed][sprite->sTimer](sprite, sprite->sDirection);
 
     sprite->sTimer++;
 
-    if (sprite->sTimer < sStepTimes[speed])
+    if (sprite->sTimer < sStepTimes[sprite->sSpeed])
         return FALSE;
 
     return TRUE;
