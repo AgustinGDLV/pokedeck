@@ -775,6 +775,7 @@ static void CopyPartyDataToMonData(void)
 
 static void IncrementCurrentPage(void)
 {
+    u32 index = GetPartyIndexAtPosition(sPartyMenuData.selectedPosition);
     sPartyMenuData.currentPage += 1;
     if (sPartyMenuData.currentPage > PAGE_ABILITY)
         sPartyMenuData.currentPage = PAGE_STATS;
@@ -782,13 +783,13 @@ static void IncrementCurrentPage(void)
     switch (sPartyMenuData.currentPage)
     {
         case PAGE_STATS:
-            PrintMonInfo(sPartyMenuData.selectedPosition);
+            PrintMonInfo(index);
             LZDecompressWram(sPartyMenuStatsTilemap, sPartyMenuTilemapPtr);
             FillWindowPixelBuffer(WINDOW_CONTROL, PIXEL_FILL(0));
             AddTextPrinterParameterized3(WINDOW_CONTROL, FONT_SMALL, 2, 0, sTextColor_White, TEXT_SKIP_DRAW, COMPOUND_STRING("MOVE"));
             break;
         case PAGE_MOVE:
-            PrintMoveInfo(sPartyMenuData.selectedPosition);
+            PrintMoveInfo(index);
             LZDecompressWram(sPartyMenuMoveTilemap, sPartyMenuTilemapPtr);
             FillWindowPixelBuffer(WINDOW_CONTROL, PIXEL_FILL(0));
             AddTextPrinterParameterized3(WINDOW_CONTROL, FONT_SMALL, 2, 0, sTextColor_White, TEXT_SKIP_DRAW, COMPOUND_STRING("ABILITY"));
