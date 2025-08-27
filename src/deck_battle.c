@@ -344,17 +344,29 @@ void Task_ExecuteQueuedActionOrEnd(u8 taskId)
         gDeckStruct.isSelectionPhase = TRUE;
         if (gDeckStruct.actingSide == B_SIDE_PLAYER)
         {
-            gDeckStruct.selectedPos = GetLeftmostPositionToMove(B_SIDE_PLAYER);
-            u32 battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
-            UpdateBattlerSelection(battler, TRUE);
-            DisplayActionSelectionInfo(battler);
+            // Return to auto battle if enabled.
+            if (gSaveBlock2Ptr->optionsBattleStyle == OPTIONS_BATTLE_STYLE_AUTO)
+            {
+                SetGpuReg(REG_OFFSET_BG0VOFS, DISPLAY_HEIGHT);
+                SetGpuReg(REG_OFFSET_BG1VOFS, DISPLAY_HEIGHT);
+                gTasks[taskId].func = Task_AutoSelectAction;
+                gTasks[taskId].tState = 0;
+                gTasks[taskId].tTimer = 0;
+            }
+            // Or set up UI for action selection.
+            else
+            {
+                gDeckStruct.selectedPos = GetLeftmostPositionToMove(B_SIDE_PLAYER);
+                u32 battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, gDeckStruct.selectedPos);
+                UpdateBattlerSelection(battler, TRUE);
+                DisplayActionSelectionInfo(battler);
 
-            // Set up UI for action selection.
-            SetBattlerBobPause(FALSE);
-            SetBattlerPortraitVisibility(TRUE);
-            SetGpuReg(REG_OFFSET_BG0VOFS, 0);
-            SetGpuReg(REG_OFFSET_BG1VOFS, 0);
-            gTasks[taskId].func = Task_PlayerSelectAction;
+                SetBattlerBobPause(FALSE);
+                SetBattlerPortraitVisibility(TRUE);
+                SetGpuReg(REG_OFFSET_BG0VOFS, 0);
+                SetGpuReg(REG_OFFSET_BG1VOFS, 0);
+                gTasks[taskId].func = Task_PlayerSelectAction;
+            }
         }
         else
         {
