@@ -394,7 +394,6 @@ static u32 GetPartyIndexAtPosition(u32 position)
 {
     for (u32 i = 0; i < PARTY_SIZE; ++i)
     {
-        DebugPrintf("Looking for %d | Checking %d (%d), at %d", position, sPartyMenuData.mons[i].species, i, sPartyMenuData.mons[i].position);
         if (sPartyMenuData.mons[i].species != SPECIES_NONE && sPartyMenuData.mons[i].position == position)
             return i;
     }
@@ -698,7 +697,6 @@ static void DrawBattlerSprites(void)
     for (u32 i = 0; i < PARTY_SIZE; ++i)
     {
         species = sPartyMenuData.mons[i].species;
-        DebugPrintf("B: %d is at %d", sPartyMenuData.mons[i].species, sPartyMenuData.mons[i].position);
         if (species == SPECIES_NONE || gDeckSpeciesInfo[species].baseHP == 0)
         {
             sPartyMenuData.battlerSpriteIds[i] = 0xFF;
@@ -756,7 +754,6 @@ static void InitPartyDataStruct(void)
                 data->position = GetMonData(&gPlayerParty[i], MON_DATA_POSITION);
             else
                 data->position = i; // empty spots have junk positions
-            DebugPrintf("A: %S (%d) is at %d", data->name, data->species, data->position);
         }
     }
 }
