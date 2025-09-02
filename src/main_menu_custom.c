@@ -195,7 +195,7 @@ void CB2_OpenMainMenuCustom(void)
             Menu_LoadStdPalAt(BG_PLTT_ID(15));
 
             DecompressAndCopyTileDataToVram(3, gGrassBackgroundTiles, 0, 0, 0);
-            LZDecompressVram(gGrassBackgroundTilemap, sEnvironmentTilemapPtr);
+            DecompressDataWithHeaderVram(gGrassBackgroundTilemap, sEnvironmentTilemapPtr);
             LoadPalette(gGrassBackgroundPalette, BG_PLTT_ID(1), PLTT_SIZE_4BPP);
             BlendPalettes(1 << 1, 12, RGB_BLACK);
             gMain.state++;
@@ -470,6 +470,6 @@ static void LoadMainMenuTilemap(u32 selectedId)
             tilemap = sMainMenuOptionsTilemap;
             break;
     }
-    LZDecompressWram(tilemap, sMainMenuTilemapPtr);
+    DecompressDataWithHeaderWram(tilemap, sMainMenuTilemapPtr);
     CopyBgTilemapBufferToVram(2);
 }

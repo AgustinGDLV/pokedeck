@@ -312,13 +312,13 @@ void LoadBattleBoxesAndBackground(void)
     ResetBgsAndClearDma3BusyFlags(0);
     InitBgsFromTemplates(0, sDeckBattleBgTemplates, ARRAY_COUNT(sDeckBattleBgTemplates));
 
-    LZDecompressVram(sDeckBattleInterfaceTiles, (void *)(BG_CHAR_ADDR(0)));
-    LZDecompressVram(sDeckBattleInterfaceTilemap, (void *)(BG_SCREEN_ADDR(24)));
+    DecompressDataWithHeaderVram(sDeckBattleInterfaceTiles, (void *)(BG_CHAR_ADDR(0)));
+    DecompressDataWithHeaderVram(sDeckBattleInterfaceTilemap, (void *)(BG_SCREEN_ADDR(24)));
     LoadPalette(sDeckBattleInterfacePalette, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
 
     // TODO: Support more backgrounds.
-    LZDecompressVram(gGrassBackgroundTiles, (void *)(BG_CHAR_ADDR(2)));
-    LZDecompressVram(gGrassBackgroundTilemap, (void *)(BG_SCREEN_ADDR(26)));
+    DecompressDataWithHeaderVram(gGrassBackgroundTiles, (void *)(BG_CHAR_ADDR(2)));
+    DecompressDataWithHeaderVram(gGrassBackgroundTilemap, (void *)(BG_SCREEN_ADDR(26)));
     LoadPalette(gGrassBackgroundPalette, BG_PLTT_ID(1), PLTT_SIZE_4BPP);
 
     CopyBgTilemapBufferToVram(0);
@@ -1129,10 +1129,12 @@ void DisplayActionSelectionInfo(enum BattleId battler)
 }
 
 // Update graphics for swap selection.
-void DisplaySwapSelectionInfo(enum BattleId battler)
+void DisplaySwapSelectionInfo(enum BattlePosition position)
 {
-    PrintSwapTargetPrompt(battler);
-    UpdatePlayerHPBar(battler);
+    u32 battler = GetDeckBattlerAtPos(B_SIDE_PLAYER, position);
+    PrintSwapTargetPrompt(position);
+    if (battler != MAX_DECK_BATTLERS_COUNT)
+        UpdatePlayerHPBar(battler);
 }
 
 // Update graphics for target selection.

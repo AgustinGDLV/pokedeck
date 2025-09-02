@@ -323,12 +323,12 @@ void CB2_OpenPartyMenuCustom(void)
             break;
         case 3:
             DecompressAndCopyTileDataToVram(2, sPartyMenuTiles, 0, 0, 0);
-            LZDecompressWram(sPartyMenuStatsTilemap, sPartyMenuTilemapPtr);
+            DecompressDataWithHeaderWram(sPartyMenuStatsTilemap, sPartyMenuTilemapPtr);
             LoadPalette(sPartyMenuPalette, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
             Menu_LoadStdPalAt(BG_PLTT_ID(15));
 
             DecompressAndCopyTileDataToVram(3, gGrassBackgroundTiles, 0, 0, 0);
-            LZDecompressVram(gGrassBackgroundTilemap, sEnvironmentTilemapPtr);
+            DecompressDataWithHeaderVram(gGrassBackgroundTilemap, sEnvironmentTilemapPtr);
             LoadPalette(gGrassBackgroundPalette, BG_PLTT_ID(1), PLTT_SIZE_4BPP);
             gMain.state++;
             break;
@@ -784,18 +784,18 @@ static void IncrementCurrentPage(void)
     {
         case PAGE_STATS:
             PrintMonInfo(index);
-            LZDecompressWram(sPartyMenuStatsTilemap, sPartyMenuTilemapPtr);
+            DecompressDataWithHeaderWram(sPartyMenuStatsTilemap, sPartyMenuTilemapPtr);
             FillWindowPixelBuffer(WINDOW_CONTROL, PIXEL_FILL(0));
             AddTextPrinterParameterized3(WINDOW_CONTROL, FONT_SMALL, 2, 0, sTextColor_White, TEXT_SKIP_DRAW, COMPOUND_STRING("MOVE"));
             break;
         case PAGE_MOVE:
             PrintMoveInfo(index);
-            LZDecompressWram(sPartyMenuMoveTilemap, sPartyMenuTilemapPtr);
+            DecompressDataWithHeaderWram(sPartyMenuMoveTilemap, sPartyMenuTilemapPtr);
             FillWindowPixelBuffer(WINDOW_CONTROL, PIXEL_FILL(0));
             AddTextPrinterParameterized3(WINDOW_CONTROL, FONT_SMALL, 2, 0, sTextColor_White, TEXT_SKIP_DRAW, COMPOUND_STRING("ABILITY"));
             break;
         case PAGE_ABILITY:
-            LZDecompressWram(sPartyMenuAbilityTilemap, sPartyMenuTilemapPtr);
+            DecompressDataWithHeaderWram(sPartyMenuAbilityTilemap, sPartyMenuTilemapPtr);
             FillWindowPixelBuffer(WINDOW_CONTROL, PIXEL_FILL(0));
             AddTextPrinterParameterized3(WINDOW_CONTROL, FONT_SMALL, 2, 0, sTextColor_White, TEXT_SKIP_DRAW, COMPOUND_STRING("STATS"));
             break;

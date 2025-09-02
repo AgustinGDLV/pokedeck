@@ -138,7 +138,7 @@ void CB2_InitTitleScreen(void)
             break;
         case 4:
             DecompressAndCopyTileDataToVram(2, sTitleScreenGfx, 0, 0, 0);
-            LZDecompressWram(sTitleScreenTilemap, sTitleScreenTilemapPtr);
+            DecompressDataWithHeaderWram(sTitleScreenTilemap, sTitleScreenTilemapPtr);
             LoadPalette(sTitleScreenPal, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
             Menu_LoadStdPalAt(BG_PLTT_ID(15));
             gMain.state++;

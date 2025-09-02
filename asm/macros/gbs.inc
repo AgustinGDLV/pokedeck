@@ -34,7 +34,7 @@
 	.byte 0			@ NumBlks
 	.byte \priority	@ Priority
 	.byte 0			@ Reverb
-	.word voicegroup000
+	.word voicegroup_dummy
 	.endm
 
 	.macro channel channel:req, label:req
