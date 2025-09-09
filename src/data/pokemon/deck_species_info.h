@@ -330,6 +330,50 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
         .portraitPalette = gChinglingPortraitPal,
     },
 
+    [SPECIES_DEINO] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gDeinoPlayerIdleGfx,
+        .opponentIdle = gDeinoOpponentIdleGfx,
+        .playerAttack = gDeinoPlayerAttackGfx,
+        .opponentAttack = gDeinoOpponentAttackGfx,
+        .playerHurt = gDeinoPlayerHurtGfx,
+        .opponentHurt = gDeinoOpponentHurtGfx,
+        .objectPalette = gDeinoObjectPal,
+        .playerYOffset = -2,
+        .opponentYOffset = 0,
+
+        .portrait = gDeinoPortraitGfx,
+        .portraitPalette = gDeinoPortraitPal,
+    },
+
+    [SPECIES_GOOMY] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gGoomyPlayerIdleGfx,
+        .opponentIdle = gGoomyOpponentIdleGfx,
+        .playerAttack = gGoomyPlayerAttackGfx,
+        .opponentAttack = gGoomyOpponentAttackGfx,
+        .playerHurt = gGoomyPlayerHurtGfx,
+        .opponentHurt = gGoomyOpponentHurtGfx,
+        .objectPalette = gGoomyObjectPal,
+        .playerYOffset = 1,
+        .opponentYOffset = 2,
+
+        .portrait = gGoomyPortraitGfx,
+        .portraitPalette = gGoomyPortraitPal,
+    },
+
     [SPECIES_APPLIN] =
     {
         .baseHP = 40,
@@ -350,6 +394,28 @@ const struct DeckSpeciesInfo gDeckSpeciesInfo[NUM_SPECIES] =
 
         .portrait = gApplinPortraitGfx,
         .portraitPalette = gApplinPortraitPal,
+    },
+
+    [SPECIES_JANGMO_O] =
+    {
+        .baseHP = 50,
+        .basePower = 75,
+        .baseDef = 35,
+        .move = MOVE_TACKLE,
+        .ability = ABILITY_NONE,
+
+        .playerIdle = gJangmoOPlayerIdleGfx,
+        .opponentIdle = gJangmoOOpponentIdleGfx,
+        .playerAttack = gJangmoOPlayerAttackGfx,
+        .opponentAttack = gJangmoOOpponentAttackGfx,
+        .playerHurt = gJangmoOPlayerHurtGfx,
+        .opponentHurt = gJangmoOOpponentHurtGfx,
+        .objectPalette = gJangmoOObjectPal,
+        .playerYOffset = -2,
+        .opponentYOffset = 0,
+
+        .portrait = gJangmoOPortraitGfx,
+        .portraitPalette = gJangmoOPortraitPal,
     },
 
     [SPECIES_WIGLETT] =
