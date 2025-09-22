@@ -97,7 +97,7 @@ static const struct BgTemplate sDeckBattleBgTemplates[] =
     {   // Interface
         .bg = 0,
         .charBaseIndex = 0,
-        .mapBaseIndex = 24,
+        .mapBaseIndex = 14,
         .screenSize = 2,
         .paletteMode = 0,
         .priority = 1,
@@ -105,26 +105,17 @@ static const struct BgTemplate sDeckBattleBgTemplates[] =
     },
     {
         .bg = 1,
-        .charBaseIndex = 1,
+        .charBaseIndex = 2,
         .mapBaseIndex = 28,
         .screenSize = 2,
         .paletteMode = 0,
         .priority = 0,
         .baseTile = 0,
     },
-    {
-        .bg = 2,
-        .charBaseIndex = 1,
-        .mapBaseIndex = 30,
-        .screenSize = 1,
-        .paletteMode = 0,
-        .priority = 2,
-        .baseTile = 0,
-    },
     {   // Background
         .bg = 3,
-        .charBaseIndex = 2,
-        .mapBaseIndex = 26,
+        .charBaseIndex = 1,
+        .mapBaseIndex = 21,
         .screenSize = 0,
         .paletteMode = 0,
         .priority = 3,
@@ -313,12 +304,12 @@ void LoadBattleBoxesAndBackground(void)
     InitBgsFromTemplates(0, sDeckBattleBgTemplates, ARRAY_COUNT(sDeckBattleBgTemplates));
 
     DecompressDataWithHeaderVram(sDeckBattleInterfaceTiles, (void *)(BG_CHAR_ADDR(0)));
-    DecompressDataWithHeaderVram(sDeckBattleInterfaceTilemap, (void *)(BG_SCREEN_ADDR(24)));
+    DecompressDataWithHeaderVram(sDeckBattleInterfaceTilemap, (void *)(BG_SCREEN_ADDR(14)));
     LoadPalette(sDeckBattleInterfacePalette, BG_PLTT_ID(0), PLTT_SIZE_4BPP);
 
     // TODO: Support more backgrounds.
-    DecompressDataWithHeaderVram(gGrassBackgroundTiles, (void *)(BG_CHAR_ADDR(2)));
-    DecompressDataWithHeaderVram(gGrassBackgroundTilemap, (void *)(BG_SCREEN_ADDR(26)));
+    DecompressDataWithHeaderVram(gGrassBackgroundTiles, (void *)(BG_CHAR_ADDR(1)));
+    DecompressDataWithHeaderVram(gGrassBackgroundTilemap, (void *)(BG_SCREEN_ADDR(21)));
     LoadPalette(gGrassBackgroundPalette, BG_PLTT_ID(1), PLTT_SIZE_4BPP);
 
     CopyBgTilemapBufferToVram(0);

@@ -11,6 +11,7 @@
 #include "event_data.h"
 #include "field_weather.h"
 #include "gpu_regs.h"
+#include "list_menu.h"
 #include "m4a.h"
 #include "main.h"
 #include "malloc.h"
@@ -19,6 +20,7 @@
 #include "money.h"
 #include "overworld.h"
 #include "palette.h"
+#include "pokemon.h"
 #include "scanline_effect.h"
 #include "sound.h"
 #include "sprite.h"
@@ -53,6 +55,7 @@ static void ResetTurnValues(void);
 
 static void Task_HandleBattleVictory(u8 taskId);
 static void Task_HandleBattleLoss(u8 taskId);
+static void Task_HandleCaughtBattler(u8 taskId);
 
 static u32 GetBattleSpeedScale(void);
 
@@ -270,16 +273,26 @@ void Task_PrepareForActionPhase(u8 taskId)
 void Task_CheckFaintAndContinue(u8 taskId)
 {
     bool32 fainted = FALSE;
+
+    // Look for fainted battlers.
     for (enum BattleId battler = B_PLAYER_0; battler < MAX_DECK_BATTLERS_COUNT; ++battler)
     {
         if (!GetBattlerSprite(battler)->invisible && !IsDeckBattlerAlive(battler))
         {
             StartBattlerAnim(battler, ANIM_FAINT);
-            if (GetDeckBattlerSide(battler) == B_SIDE_OPPONENT)
-                gDeckStruct.exp += gSpeciesInfo[gDeckMons[battler].species].expYield * gDeckMons[battler].lvl;
             fainted = TRUE;
+
+            // If opposing battler, add to EXP count and try to catch.
+            if (GetDeckBattlerSide(battler) == B_SIDE_OPPONENT)
+            {
+                gDeckStruct.exp += gSpeciesInfo[gDeckMons[battler].species].expYield * gDeckMons[battler].lvl;
+                if (gDeckStruct.battlerCaught == MAX_DECK_BATTLERS_COUNT)
+                    gDeckStruct.battlerCaught = battler;
+            }
         }
     }
+
+    // Do faint animations if fainted, otherwise continue to end turn.
     if (fainted)
     {
         PlaySE(SE_FAINT);
@@ -340,6 +353,7 @@ void Task_ExecuteQueuedActionOrEnd(u8 taskId)
     else
     {
         ResetTurnValues();
+        gDeckStruct.turns++;
         gDeckStruct.actingSide ^= 1; // get opposite side
         gDeckStruct.isSelectionPhase = TRUE;
         if (gDeckStruct.actingSide == B_SIDE_PLAYER)
@@ -380,8 +394,9 @@ static void Task_HandleBattleVictory(u8 taskId)
     switch (gTasks[taskId].tState)
     {
     default:
-    case 0:
+    case 0: // Print EXP message.
     {
+        gDeckStruct.isSelectionPhase = TRUE;
         u32 exp = gDeckStruct.exp / gPlayerPartyCount; // *TODO - variable exp gain per battler
         ConvertIntToDecimalStringN(gStringVar2, exp, STR_CONV_MODE_LEFT_ALIGN, 5);
         StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Your party gained an average of {STR_VAR_2} Exp. Points!"));
@@ -392,7 +407,7 @@ static void Task_HandleBattleVictory(u8 taskId)
         ++gTasks[taskId].tState;
         break;
     }
-    case 1:
+    case 1: // Wait for message box.
         if (++gTasks[taskId].tTimer > 10 && (gMain.newKeys & A_BUTTON))
         {
             PlaySE(SE_SELECT);
@@ -444,10 +459,17 @@ static void Task_HandleBattleVictory(u8 taskId)
         else
             gTasks[taskId].tState = 2;
         break;
-    case 5:
+    case 5: // End battle if no caught mon.
         gTasks[taskId].tState = 0;
-        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
-        gTasks[taskId].func = Task_CloseDeckBattle;
+        if (gDeckStruct.battlerCaught != MAX_DECK_BATTLERS_COUNT)
+        {
+            gTasks[taskId].func = Task_HandleCaughtBattler;
+        }
+        else
+        {
+            BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
+            gTasks[taskId].func = Task_CloseDeckBattle;
+        }
         break;
     }
 }
@@ -458,6 +480,7 @@ static void Task_HandleBattleLoss(u8 taskId)
     {
     default:
     case 0:
+        gDeckStruct.isSelectionPhase = TRUE;
         PrintStringToMessageBox(COMPOUND_STRING("You have no more Pokémon that can fight!"));
         ++gTasks[taskId].tState;
         break;
@@ -529,6 +552,142 @@ void Task_CloseDeckBattle(u8 taskId)
         SetMainCallback2(CB2_ReturnToField);
 }
 
+static const struct ListMenuItem sCaughtListMenuItems[] = 
+{
+    { COMPOUND_STRING("PARTY"),     0 },
+    { COMPOUND_STRING("PC"),        1 },
+    { COMPOUND_STRING("RELEASE"),   2 },
+};
+
+static const struct WindowTemplate sCaughtWindowTemplate =
+{
+    .bg = 1,
+    .tilemapLeft = 18,
+    .tilemapTop = 27,
+    .width = 9,
+    .height = 6,
+    .paletteNum = 15,
+    .baseBlock = 1 + 21*4 + 24*4,
+};
+
+static void Task_HandleCaughtBattler(u8 taskId)
+{
+    switch (gTasks[taskId].tState)
+    {
+    default:
+    case 0: // Print message.
+        StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gDeckStruct.battlerCaught].species));
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} wants to join\nyour team!"));
+        PrintStringToMessageBox(gStringVar1);
+        ++gTasks[taskId].tState;
+        break;
+    case 1: // Wait for message box.
+        if (++gTasks[taskId].tTimer > 15 && (gMain.newKeys & A_BUTTON))
+        {
+            PlaySE(SE_SELECT);
+            gTasks[taskId].tTimer = 0;
+            ++gTasks[taskId].tState;
+        }
+        break;
+    case 2: // Create list menu.
+    {
+        struct ListMenuTemplate menuTemplate = {0};
+        u32 windowId = AddWindow(&sCaughtWindowTemplate);
+        LoadMessageBoxAndBorderGfx();
+        DrawStdWindowFrame(windowId, FALSE);
+
+        menuTemplate.moveCursorFunc = ListMenuDefaultCursorMoveFunc;
+        menuTemplate.items = sCaughtListMenuItems;
+        menuTemplate.totalItems = 3;
+        menuTemplate.maxShowed = 3;
+        menuTemplate.windowId = windowId;
+        menuTemplate.item_X = 8;
+        menuTemplate.upText_Y = 1;
+        menuTemplate.cursorPal = 1;
+        menuTemplate.fillValue = 15;
+        menuTemplate.cursorShadowPal = 15;
+        menuTemplate.scrollMultiple = LIST_NO_MULTIPLE_SCROLL;
+        menuTemplate.fontId = FONT_NORMAL;
+        gTasks[taskId].data[2] = ListMenuInit(&menuTemplate, 0, 0);
+        CopyWindowToVram(windowId, COPYWIN_FULL);
+        CopyBgTilemapBufferToVram(1);
+        ++gTasks[taskId].tState;
+        break;
+    }
+    case 3: // Wait for input.
+    {
+        u32 input = ListMenu_ProcessInput(gTasks[taskId].data[2]);
+        if (++gTasks[taskId].tTimer > 15 && (gMain.newKeys & A_BUTTON))
+        {
+            PlaySE(SE_SELECT);
+            DestroyTask(gTasks[taskId].data[2]);
+            gTasks[taskId].tTimer = 0;
+            gTasks[taskId].tState += input + 1; // maybe better to use constants
+        }
+        else if (gTasks[taskId].tTimer > 15 && (gMain.newKeys & B_BUTTON))
+        {
+            PlaySE(SE_SELECT);
+            DestroyTask(gTasks[taskId].data[2]);
+            gTasks[taskId].tTimer = 0;
+            gTasks[taskId].tState = 6;
+        }
+        break;
+    }
+    case 4: // Party
+    {
+        if (CalculatePlayerPartyCount() == PARTY_SIZE)
+        {
+            StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gDeckStruct.battlerCaught].species));
+            StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("Your party is full!\n{STR_VAR_2} went to your PC."));
+            PrintStringToMessageBox(gStringVar1);
+        }
+        else
+        {
+            StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gDeckStruct.battlerCaught].species));
+            StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("{STR_VAR_2} joined\nyour party!"));
+            PrintStringToMessageBox(gStringVar1);
+        }
+
+        struct Pokemon *mon = &gEnemyParty[gDeckMons[gDeckStruct.battlerCaught].partyIndex];
+        u32 hp = gDeckMons[gDeckStruct.battlerCaught].maxHP;
+        SetMonData(mon, MON_DATA_HP, &hp);
+        GiveMonToPlayer(mon);
+        gTasks[taskId].tState = 7; // *TODO: remove magic numbers
+        break;
+    }
+    case 5: // PC
+        StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gDeckStruct.battlerCaught].species));
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("You sent {STR_VAR_2}\nto your PC!"));
+        PrintStringToMessageBox(gStringVar1);
+
+        struct Pokemon *mon = &gEnemyParty[gDeckMons[gDeckStruct.battlerCaught].partyIndex];
+        u32 hp = gDeckMons[gDeckStruct.battlerCaught].maxHP;
+        SetMonData(mon, MON_DATA_HP, &hp);
+        GiveMonToPlayer(mon);
+        gTasks[taskId].tState = 7;
+        break;
+    case 6: // Release
+        StringCopy(gStringVar2, GetSpeciesName(gDeckMons[gDeckStruct.battlerCaught].species));
+        StringExpandPlaceholders(gStringVar1, COMPOUND_STRING("You let {STR_VAR_2} go…"));
+        PrintStringToMessageBox(gStringVar1);
+        gTasks[taskId].tState = 7;
+        break;
+    case 7: // Wait for message box.
+        if (++gTasks[taskId].tTimer > 15 && (gMain.newKeys & A_BUTTON))
+        {
+            PlaySE(SE_SELECT);
+            gTasks[taskId].tTimer = 0;
+            ++gTasks[taskId].tState;
+        }
+        break;
+    case 8: // End battle.
+        gTasks[taskId].tState = 0;
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 0x10, RGB_BLACK);
+        gTasks[taskId].func = Task_CloseDeckBattle;
+        break;
+    }
+}
+
 #undef tState
 #undef tTimer
 
@@ -536,7 +695,10 @@ void Task_CloseDeckBattle(u8 taskId)
 static void InitBattleStructData(void)
 {
     ResetTurnValues();
+
+    gDeckStruct.turns = 0;
     gDeckStruct.exp = 0;
+    gDeckStruct.battlerCaught = MAX_DECK_BATTLERS_COUNT;
     gDeckStruct.selectedPos = GetLeftmostOccupiedPosition(B_SIDE_PLAYER);
 }
 
@@ -580,9 +742,15 @@ static void InitBattleMonData(void)
     for (u32 i = 0; i < MAX_DECK_BATTLERS_COUNT; ++i)
     {
         if (GetDeckBattlerSide(i) == B_SIDE_PLAYER)
+        {
             mon = &gPlayerParty[i];
+            gDeckMons[i].partyIndex = i;
+        }
         else
+        {
             mon = &gEnemyParty[i - POSITIONS_COUNT];
+            gDeckMons[i].partyIndex = i - POSITIONS_COUNT;
+        }
         gDeckMons[i].species = GetMonData(mon, MON_DATA_SPECIES);
         gDeckMons[i].lvl = GetMonData(mon, MON_DATA_LEVEL);
         gDeckMons[i].hp = GetMonData(mon, MON_DATA_HP);
@@ -591,7 +759,6 @@ static void InitBattleMonData(void)
         gDeckMons[i].def = GetMonData(mon, MON_DATA_DEF);
         gDeckMons[i].pos = GetMonData(mon, MON_DATA_POSITION);
         gDeckMons[i].initialPos = gDeckMons[i].pos;
-        gDeckMons[i].partyIndex = i;
     }
 }
 

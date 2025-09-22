@@ -108,8 +108,10 @@ struct DeckBattleStruct
     u8 actionsCount;
     u8 executedCount;
     u8 actingSide;
+    u8 turns;
     u32 exp;
     enum BattleId battlerExp;
+    enum BattleId battlerCaught;
     bool8 isSelectionPhase;
 };
 
